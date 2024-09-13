@@ -24,10 +24,11 @@ IntersectInfo raycast(Point start, float angle, float step, Object* ignore) {
     while (true) {
         intobj = intersect(start, ignore);
         if (intobj) {
-            intobj->raycallback(ignore);
+            intobj->raycallback(ignore, result.distance);
             if (intobj->reflects && reflections < MAX_REFLECTIONS) {
                 Vector2 r = reflect({dx, dy}, intobj->normal);
                 dx = r.x; dy = r.y;
+                ignore = intobj;
                 intobj = NULL;
                 result.points.push_back(start);
                 start.x += 2*dx;
@@ -73,11 +74,12 @@ IntersectInfo raycast(Point start, Vector2 direct, Object* ignore) {
     while (true) {
         intobj = intersect(start, ignore);
         if (intobj) {
-            intobj->raycallback(ignore);
+            intobj->raycallback(ignore, result.distance);
             if (intobj->reflects && reflections < MAX_REFLECTIONS) {
                 direct = reflect(direct, intobj->normal);
                 // direct.x *= 3/2;
                 // direct.y *= 3/2;
+                ignore = intobj;
                 intobj = NULL;
                 result.points.push_back(start);
                 start.x += 2*direct.x;
