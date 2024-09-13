@@ -16,10 +16,7 @@ int main() {
 
     Point pos = {700, 500};
     float angle = 0;
-    int Nray = 150;
-    float delta = 2*hview/Nray;
 
-    std::vector<IntersectInfo> inters(Nray);
 
     Point mouse;
     while (!WindowShouldClose()) {

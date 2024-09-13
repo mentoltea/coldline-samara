@@ -20,13 +20,15 @@
         {
             "name" : "main",
             "dependencies" : [
-                "src/game.h"
+                "src/game.h",
+                "src/definitions.h"
             ]    
         },
         {
             "name" : "game",
             "dependencies" : [
-                "src/game.h"
+                "src/game.h",
+                "src/definitions.h"
             ]    
         },
         "gamedefs"

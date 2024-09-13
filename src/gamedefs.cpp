@@ -8,3 +8,6 @@ float WinXf = WinX;
 float WinYf = WinY;
 int MAX_REFLECTIONS = 10;
 float hview = 30;
+int Nray = 150;
+float delta = 2*hview/Nray;
+std::vector<IntersectInfo> inters(Nray);
