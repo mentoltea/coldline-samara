@@ -16,7 +16,7 @@ int main() {
 
     Point pos = {700, 500};
     float angle = 0;
-    int Nray = 120;
+    int Nray = 150;
     float delta = 2*hview/Nray;
 
     std::vector<IntersectInfo> inters(Nray);
@@ -54,24 +54,29 @@ int main() {
         }
         }
 
-        // size_t idx = 1;
-        // int from = -1;
-        // int to = -1;
-        // while (idx <= maxlen) {
-        //     for (int i=0; i<(int)inters.size(); i++) {
-        //         if (inters[i].points.size() >= idx) {
-        //             if (from == -1) from = i;
-        //         } else {
-        //             if (from != -1) {
-        //                 to = i;
-        //                 DrawTriangle(inters[from].points[idx-1], inters[from].points[idx], inters[to].points[idx], {140,140,180,180});
-        //                 DrawTriangle(inters[to].points[idx-1], inters[from].points[idx], inters[to].points[idx], {140,140,180,180});
-        //                 from = -1;
-        //             }
-        //         }
-        //     }
-        //     idx++;
-        // }
+        size_t idx = 1;
+        int from = -1;
+        int to = -1;
+        while (idx <= maxlen) {
+            for (int i=0; i<(int)inters.size(); i+=2) {
+                if (inters[i].points.size() > idx) {
+                    if (from == -1) {
+                        from = i;
+                        DrawLineV(inters[from].points[idx-1],inters[from].points[idx], {140,140,250,220});
+                    }
+                } else {
+                    if (from != -1) {
+                        to = i-2;
+                        DrawLineV(inters[to].points[idx-1],inters[to].points[idx], {140,140,250,220});
+                        // DrawTriangle(inters[from].points[idx-1], inters[to].points[idx-1], inters[from].points[idx], {140,140,180,180});
+                        // DrawTriangle(inters[to].points[idx], inters[from].points[idx], inters[to].points[idx-1], {140,140,180,180});
+                        from = -1;
+                    }
+                }
+            }
+            idx++;
+            // break;
+        }
 
         if (IsKeyDown(KEY_A)) {
             pos.x -= 2;
