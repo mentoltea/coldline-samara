@@ -204,7 +204,7 @@ void page_info(short chunk_info) {
     printf("\n\n--------\n");
     while (ptr!=NULL){
         total = total + (size_t)(ptr->capacity - ptr->size);
-        printf("%d: %ld/%ld (%ld used)\n", i, ptr->size, ptr->capacity, ptr->capacity - ptr->size);
+        printf("%d: %lld/%lld (%lld used)\n", i, ptr->size, ptr->capacity, ptr->capacity - ptr->size);
         if (chunk_info) {
             ch = ptr->chunk_chain;
             while (ch != NULL) {
@@ -218,6 +218,6 @@ void page_info(short chunk_info) {
         ptr = ptr->next;
         i++;
     }
-    printf("total: %ld used\n", total);
+    printf("total: %lld used\n", total);
     printf("--------\n\n");
 }
