@@ -110,15 +110,15 @@ void Player::drawView() {
             DrawTriangle(position, inters[i-1].points[0], inters[i].points[0], viewColor);
         }
     }
-    {
-    Point curr = position;
-    Point next;
-    for (int i=0; i<(int)inters[Nray/2].points.size(); i++) {
-        next = inters[Nray/2].points[i];
-        DrawLineV(curr, next, {210, 0, 0, 210});
-        curr = next;
-    }
-    }
+    // {
+    // Point curr = position;
+    // Point next;
+    // for (int i=0; i<(int)inters[Nray/2].points.size(); i++) {
+    //     next = inters[Nray/2].points[i];
+    //     DrawLineV(curr, next, {210, 0, 0, 210});
+    //     curr = next;
+    // }
+    // }
     size_t idx = 1;
     int from = -1;
     int to = -1;

@@ -1,0 +1,8 @@
+# Game logic & structure
+* Smart enemy behaviour
+* Doors
+* Items
+
+# Render & collisions
+* Rectangle/point & Polygon/point intersection functions
+* Effects
