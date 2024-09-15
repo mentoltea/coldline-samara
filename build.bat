@@ -1,5 +1,5 @@
 @echo off
-build.exe
+build.exe build.json
 if errorlevel 1 (
     run.bat
 )

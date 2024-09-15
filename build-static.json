@@ -1,0 +1,43 @@
+{
+    "compiler" : "g++",
+    "linker" : "g++",
+    "format" : ".cpp",
+    "indir" : "src/",
+    "outdir" : "bin/",
+    "targetdir" : "build/",
+    "target" : "main-static.exe",
+    "cflags" : "-c -Wall -O0",
+    "libs" : "-lraylib -lwinmm -lgdi32 -lm --static",
+    "cpp_source" : [
+        {
+            "compiler" : "gcc",
+            "name" : "memmanager",
+            "format" : ".c",
+            "dependencies" : [
+                "src/memmanager.h"
+            ]    
+        },
+        {
+            "name" : "main",
+            "dependencies" : [
+                "src/game.h",
+                "src/definitions.h"
+            ]    
+        },
+        {
+            "name" : "game",
+            "dependencies" : [
+                "src/game.h",
+                "src/definitions.h"
+            ]    
+        },
+        {
+            "name" : "objects",
+            "dependencies" : [
+                "src/game.h",
+                "src/definitions.h"
+            ]    
+        },
+        "gamedefs"
+    ]
+}
