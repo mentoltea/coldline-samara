@@ -29,8 +29,14 @@ typedef enum ObjType {
 } ObjType;
 
 class Object;
+
 class Obtacle;
+class Wall;
+class Mirror;
+
 class Entity;
+class Player;
+class Enemy;
 
 typedef struct IntersectInfo {
     std::vector<Point> points;
@@ -42,10 +48,8 @@ extern size_t id_counter;
 extern int WinX, WinY;
 extern float WinXf, WinYf;
 extern int MAX_REFLECTIONS;
-extern float hview;
-extern int Nray;
-extern float delta;
 extern std::list<Object*> Gobjects;
+extern Player* Gplayer;
 
 
 #endif

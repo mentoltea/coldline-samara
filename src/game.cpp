@@ -1,6 +1,6 @@
 #include "game.h"
 
-Object* collide(Entity *obj, Point p, Vector2 direction) {
+Object* collide(Entity *obj, const Point& p, const Vector2& direction) {
     for (auto it=Gobjects.begin(); it!=Gobjects.end(); it++) {
         if (*it == obj || !(*it)->active) continue;
         if ((*it)->collidable && (*it)->intersects(p)) {
@@ -12,7 +12,7 @@ Object* collide(Entity *obj, Point p, Vector2 direction) {
 }
 
 
-Vector2 reflect(Vector2 v, Vector2 normal) {
+Vector2 reflect(const Vector2&  v, const Vector2&  normal) {
     float dot = v.x*normal.x + v.y*normal.y;
     return {v.x - 2*dot*normal.x, v.y - 2*dot*normal.y};
 }
