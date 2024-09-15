@@ -1,5 +1,17 @@
 #include "game.h"
 
+Object* collide(Entity *obj, Point p, Vector2 direction) {
+    for (auto it=Gobjects.begin(); it!=Gobjects.end(); it++) {
+        if (*it == obj || !(*it)->active) continue;
+        if ((*it)->collidable && (*it)->intersects(p)) {
+            (*it)->collidecallback(obj, p, direction);
+            return (*it);
+        }
+    }
+    return NULL;
+}
+
+
 Vector2 reflect(Vector2 v, Vector2 normal) {
     float dot = v.x*normal.x + v.y*normal.y;
     return {v.x - 2*dot*normal.x, v.y - 2*dot*normal.y};
@@ -12,7 +24,48 @@ Object* intersect(const Point& p, Object* ignore) {
     }
     return NULL;
 }
+IntersectInfo raycastLimited(Point start, float angle, float step, Object* ignore, float limit) {
+    float dx = cosf(angle/180 * PI)*step;
+    float dy = sinf(angle/180 * PI)*step;
+    Object* intobj = NULL;
+    IntersectInfo result;
+    result.distance = 0;
 
+    while (true) {
+        intobj = intersect(start, ignore);
+        if (intobj) {
+            intobj->raycallback(ignore, result.distance);
+            result.points.push_back(start);
+            break;
+        }
+        start.x += dx;
+        start.y += dy;
+        result.distance += step;
+        if (result.distance >= limit) {
+            result.points.push_back(start);
+            break;
+        }
+        
+        if (start.x >= WinXf) {
+            result.points.push_back({WinXf, start.y});
+            break;
+        } else if (start.x < 0) {
+            result.points.push_back({0, start.y});
+            break;
+        }
+        if (start.y >= WinYf) {
+            result.points.push_back({start.x, WinYf});
+            break;
+        } else if (start.y < 0) {
+            result.points.push_back({start.x, 0});
+            break;
+        }
+        
+    }
+    result.ptr = intobj;
+    
+    return result;
+}
 IntersectInfo raycast(Point start, float angle, float step, Object* ignore) {
     float dx = cosf(angle/180 * PI)*step;
     float dy = sinf(angle/180 * PI)*step;
@@ -56,7 +109,7 @@ IntersectInfo raycast(Point start, float angle, float step, Object* ignore) {
         }
     }
     if (intobj) {
-        result.type = intobj->type;
+        // result.type = intobj->type;
         result.points.push_back(start);
     }
     result.ptr = intobj;
@@ -107,7 +160,7 @@ IntersectInfo raycast(Point start, Vector2 direct, Object* ignore) {
         }
     }
     if (intobj) {
-        result.type = intobj->type;
+        // result.type = intobj->type;
         result.points.push_back(start);
     }
     result.ptr = intobj;

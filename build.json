@@ -6,7 +6,7 @@
     "outdir" : "bin/",
     "targetdir" : "build/",
     "target" : "main.exe",
-    "cflags" : "-c -Wall",
+    "cflags" : "-c -Wall -O0",
     "libs" : "-lraylib -lwinmm -lgdi32 -lm",
     "cpp_source" : [
         {

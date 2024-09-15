@@ -29,11 +29,12 @@ typedef enum ObjType {
 } ObjType;
 
 class Object;
+class Obtacle;
+class Entity;
 
 typedef struct IntersectInfo {
     std::vector<Point> points;
     float distance;
-    ObjType type;
     Object* ptr;
 } IntersectInfo;
 
@@ -44,7 +45,6 @@ extern int MAX_REFLECTIONS;
 extern float hview;
 extern int Nray;
 extern float delta;
-extern std::vector<IntersectInfo> inters;
 extern std::list<Object*> Gobjects;
 
 
