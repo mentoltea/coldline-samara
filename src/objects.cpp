@@ -112,7 +112,7 @@ bool Wall::intersectsCircle(const Point& circle, float radius, Point& intersecti
 Player::Player(Point pos, Vector2 size): inters(Nray), intersBack(Nrayback) {
     position = pos;
     float sl = sqrtf(size.x*size.x + size.y*size.y);
-    hitCircleSize = sl;
+    hitCircleSize = sl*0.95;
     dirSizeAngle = acosf(size.x/sl);
     this->size = sl;
     type = PLAYER;
@@ -234,7 +234,7 @@ void Player::collidecallback(Entity* obj, const Point& point, const Vector2& dir
 Enemy::Enemy(Point pos, Vector2 size): inters(Nray) {
     position = pos;
     float sl = sqrtf(size.x*size.x + size.y*size.y);
-    hitCircleSize = sl;
+    hitCircleSize = sl*0.95;
     dirSizeAngle = acosf(size.x/sl);
     this->size = sl;
     type = ENEMY;

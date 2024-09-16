@@ -3,7 +3,7 @@
     "linker" : "g++",
     "format" : ".cpp",
     "indir" : "src/",
-    "outdir" : "bin/",
+    "outdir" : "bin-static/",
     "targetdir" : "build/",
     "target" : "main-static.exe",
     "cflags" : "-c -Wall -O0",
