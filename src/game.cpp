@@ -1,5 +1,39 @@
 #include "game.h"
 
+bool lineCircleIntersection(Point start, Point end, Point circle, float radius, Point& intersection) {
+    float dx = end.x - start.x;
+    float dy = end.y - start.y;
+    if (dx==0 && dy==0) return false;
+
+    float xdif = start.x - circle.x;
+    float ydif = start.y - circle.y;
+
+    float alfa = dx*dx + dy*dy;
+    float beta = dx*xdif + dy*ydif;
+    float gamma = xdif*xdif + ydif*ydif - radius*radius;
+    // alfa t^2 + 2*beta t + gamma = 0 
+
+    float D = beta*beta - alfa*gamma;
+    if (D < 0) return false;
+    D = sqrtf(D);
+
+    float t = (-beta + D)/alfa;
+    if (t>=0 && t<=1) {
+        intersection.x = start.x + dx*t;
+        intersection.y = start.y + dy*t;
+        return true;
+    }
+    t = (-beta - D)/alfa;
+    if (t>=0 && t<=1) {
+        intersection.x = start.x + dx*t;
+        intersection.y = start.y + dy*t;
+        return true;
+    }
+
+    return false;
+}
+
+
 Object* collide(Entity *obj, const Point& p, const Vector2& direction) {
     for (auto it=Gobjects.begin(); it!=Gobjects.end(); it++) {
         if (*it == obj || !(*it)->active) continue;
@@ -11,6 +45,17 @@ Object* collide(Entity *obj, const Point& p, const Vector2& direction) {
     return NULL;
 }
 
+Object* collideCircle(Entity *obj, const Point& circle, float radius, const Vector2& direction) {
+    Point p;
+    for (auto it=Gobjects.begin(); it!=Gobjects.end(); it++) {
+        if (*it == obj || !(*it)->active) continue;
+        if ((*it)->collidable && (*it)->intersectsCircle(circle, radius, p)) {
+            (*it)->collidecallback(obj, p, direction);
+            return (*it);
+        }
+    }
+    return NULL;
+}
 
 Vector2 reflect(const Vector2&  v, const Vector2&  normal) {
     float dot = v.x*normal.x + v.y*normal.y;
@@ -123,7 +168,7 @@ void raycast(IntersectInfo& result, Point start, Vector2 direct, Object* ignore)
     result.distance = 0;
     result.points.clear();
     result.ptr = NULL;
-    
+
     Object* intobj = NULL;
     float step = sqrtf(direct.x*direct.x + direct.y*direct.y);
     int reflections = 0;

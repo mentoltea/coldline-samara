@@ -8,6 +8,19 @@ Entity::Entity() {
     reflects = false;
 }
 
+bool Entity::intersectsCircle(const Point& circle, float radius, Point& intersection) {
+    float dx = position.x - circle.x;
+    float dy = position.y - circle.y;
+    float sumrad = radius + hitCircleSize;
+    float diffrad = radius - hitCircleSize;
+    diffrad = diffrad<0? -diffrad : diffrad;
+
+    if (dx*dx + dy*dy > sumrad*sumrad) return false;
+    if (dx*dx + dy*dy < diffrad) return false;
+    
+    return true;
+}
+
 
 
 Obtacle::Obtacle() {
@@ -49,6 +62,12 @@ bool Mirror::intersects(const Point& p) {
 void Mirror::raycallback(Object* obj, float dist) {
     if (obj->type == PLAYER) raycount++;
 }
+bool Mirror::intersectsCircle(const Point& circle, float radius, Point& intersection) {
+    return lineCircleIntersection(body.p1, body.p2, circle, radius, intersection)
+        || lineCircleIntersection(body.p2, body.p4, circle, radius, intersection)
+        || lineCircleIntersection(body.p4, body.p3, circle, radius, intersection)
+        || lineCircleIntersection(body.p3, body.p1, circle, radius, intersection);
+}
 
 
 
@@ -80,12 +99,20 @@ bool Wall::intersects(const Point& p)  {
 void Wall::raycallback(Object* obj, float dist)  {
     if (obj->type == PLAYER) raycount++;
 }
+bool Wall::intersectsCircle(const Point& circle, float radius, Point& intersection) {
+    return lineCircleIntersection(body.p1, body.p2, circle, radius, intersection)
+        || lineCircleIntersection(body.p2, body.p4, circle, radius, intersection)
+        || lineCircleIntersection(body.p4, body.p3, circle, radius, intersection)
+        || lineCircleIntersection(body.p3, body.p1, circle, radius, intersection);
+}
+
 
 
 
 Player::Player(Point pos, Vector2 size): inters(Nray), intersBack(Nrayback) {
     position = pos;
     float sl = sqrtf(size.x*size.x + size.y*size.y);
+    hitCircleSize = sl;
     dirSizeAngle = acosf(size.x/sl);
     this->size = sl;
     type = PLAYER;
@@ -162,8 +189,13 @@ void Player::drawView() {
 void Player::draw()  {
     drawViewAround();
     drawView();
+    p1 = {position.x + size * cosf(angleRad - dirSizeAngle), position.y + size * sinf(angleRad - dirSizeAngle)};
+    p2 = {position.x + size * cosf(angleRad + dirSizeAngle), position.y + size * sinf(angleRad + dirSizeAngle)};
+    p3 = {position.x + size * cosf(PI + angleRad + dirSizeAngle), position.y + size * sinf(PI + angleRad + dirSizeAngle)};
+    p4 = {position.x + size * cosf(PI + angleRad - dirSizeAngle), position.y + size * sinf(PI + angleRad - dirSizeAngle)};
     DrawTriangle(p2, p1,  p3, {100, 100, 200, 250});
     DrawTriangle(p3, p4, p2,  {100, 100, 200, 250});
+    // DrawCircleLinesV(position, hitCircleSize, {255, 50, 50, 250});
 }
 void Player::update()  {
     Vector2 mouse = GetMousePosition();
@@ -174,43 +206,17 @@ void Player::update()  {
     angleRad = atan2f(direction.y, direction.x);
     angle = angleRad*180/PI;
     
-    
-    position.x += move.x;
-    p1 = {position.x + size * cosf(angleRad - dirSizeAngle), position.y + size * sinf(angleRad - dirSizeAngle)};
-    p2 = {position.x + size * cosf(angleRad + dirSizeAngle), position.y + size * sinf(angleRad + dirSizeAngle)};
-    p3 = {position.x + size * cosf(PI + angleRad + dirSizeAngle), position.y + size * sinf(PI + angleRad + dirSizeAngle)};
-    p4 = {position.x + size * cosf(PI + angleRad - dirSizeAngle), position.y + size * sinf(PI + angleRad - dirSizeAngle)};
-
     Object* collision;
-    if ((collision= collide(this, position, move))
-    || (collision=collide(this, p1, move)) || (collision=collide(this, p2, move))
-    || (collision=collide(this, p3, move)) || (collision=collide(this, p4, move))) {
-        move.x *= 1.1;
-        
+    position.x += move.x;
+    if ((collision= collideCircle(this, position, hitCircleSize, move))) {
+        if (collision->type==WALL || collision->type==MIRROR) move.x *= 1.1;
         position.x -= move.x;
-        p1.x -= move.x;
-        p2.x -= move.x;
-        p3.x -= move.x;
-        p4.x -= move.x;
     }
     
     position.y += move.y;
-    p1.y += move.y;
-    p2.y += move.y;
-    p3.y += move.y;
-    p4.y += move.y;
-
-    if ((collision= collide(this, position, move))
-    || (collision=collide(this, p1, move)) || (collision=collide(this, p2, move))
-    || (collision=collide(this, p3, move)) || (collision=collide(this, p4, move))) {
-        // move.x *= 1.5;
-        move.y *= 1.1;
-        
+    if ((collision= collideCircle(this, position, hitCircleSize, move))) {
+        if (collision->type==WALL || collision->type==MIRROR) move.y *= 1.1;
         position.y -= move.y;
-        p1.y -= move.y;
-        p2.y -= move.y;
-        p3.y -= move.y;
-        p4.y -= move.y;
     }
 }
 bool Player::intersects(const Point& p)  {
@@ -228,6 +234,7 @@ void Player::collidecallback(Entity* obj, const Point& point, const Vector2& dir
 Enemy::Enemy(Point pos, Vector2 size): inters(Nray) {
     position = pos;
     float sl = sqrtf(size.x*size.x + size.y*size.y);
+    hitCircleSize = sl;
     dirSizeAngle = acosf(size.x/sl);
     this->size = sl;
     type = ENEMY;
@@ -282,10 +289,15 @@ void Enemy::drawView(unsigned char alfa) {
 
 void Enemy::drawA(unsigned char alfa)  {
     // drawView(alfa);
+    p1 = {position.x + size * cosf(angleRad - dirSizeAngle), position.y + size * sinf(angleRad - dirSizeAngle)};
+    p2 = {position.x + size * cosf(angleRad + dirSizeAngle), position.y + size * sinf(angleRad + dirSizeAngle)};
+    p3 = {position.x + size * cosf(PI + angleRad + dirSizeAngle), position.y + size * sinf(PI + angleRad + dirSizeAngle)};
+    p4 = {position.x + size * cosf(PI + angleRad - dirSizeAngle), position.y + size * sinf(PI + angleRad - dirSizeAngle)};
     selfColor.a = alfa;
     DrawTriangle(p2, p1,  p3, selfColor);
     DrawTriangle(p3, p4, p2,  selfColor);
     DrawLine(position.x, position.y, position.x+size*direction.x, position.y+size*direction.y, selfColor);
+    // DrawCircleLinesV(position, hitCircleSize, {255, 50, 50, 250});
 }
 void Enemy::draw()  {
     int max = 255;
@@ -309,11 +321,11 @@ void Enemy::update() {
     }
     if (found_player != -1) {
         selfColor = {200, 50, 50, 250};
-        move = {Gplayer->position.x - position.x, Gplayer->position.y - position.y};
-        direction = move;
+        direction = {Gplayer->position.x - position.x, Gplayer->position.y - position.y};
+        move.x += direction.x;
+        move.y += direction.y;
     } else {
         selfColor = {150, 150, 50, 250};
-        move = {0,0};
     }
     float dl = sqrtf(direction.x*direction.x + direction.y*direction.y);
     if (dl>0) {
@@ -325,44 +337,21 @@ void Enemy::update() {
     angle = angleRad*180/PI;
     
     
-    position.x += move.x;
-    p1 = {position.x + size * cosf(angleRad - dirSizeAngle), position.y + size * sinf(angleRad - dirSizeAngle)};
-    p2 = {position.x + size * cosf(angleRad + dirSizeAngle), position.y + size * sinf(angleRad + dirSizeAngle)};
-    p3 = {position.x + size * cosf(PI + angleRad + dirSizeAngle), position.y + size * sinf(PI + angleRad + dirSizeAngle)};
-    p4 = {position.x + size * cosf(PI + angleRad - dirSizeAngle), position.y + size * sinf(PI + angleRad - dirSizeAngle)};
-
-    
     Object* collision;
-    if ((collision= collide(this, position, move))
-    || (collision=collide(this, p1, move)) || (collision=collide(this, p2, move))
-    || (collision=collide(this, p3, move)) || (collision=collide(this, p4, move))) {
-        move.x *= 1.1;
-        
+    position.x += move.x;
+    if ((collision= collideCircle(this, position, hitCircleSize, move))) {
+        if (collision->type==WALL || collision->type==MIRROR) move.x *= 1.1; 
         position.x -= move.x;
-        p1.x -= move.x;
-        p2.x -= move.x;
-        p3.x -= move.x;
-        p4.x -= move.x;
     }
     
     position.y += move.y;
-    p1.y += move.y;
-    p2.y += move.y;
-    p3.y += move.y;
-    p4.y += move.y;
 
-    if ((collision= collide(this, position, move))
-    || (collision=collide(this, p1, move)) || (collision=collide(this, p2, move))
-    || (collision=collide(this, p3, move)) || (collision=collide(this, p4, move))) {
-        // move.x *= 1.5;
-        move.y *= 1.1;
-        
+    if ((collision= collideCircle(this, position, hitCircleSize, move))) {
+        if (collision->type==WALL || collision->type==MIRROR) move.y *= 1.1;
         position.y -= move.y;
-        p1.y -= move.y;
-        p2.y -= move.y;
-        p3.y -= move.y;
-        p4.y -= move.y;
     }
+
+    move = {0,0};
 }
 bool Enemy::intersects(const Point& p)  {
     return CheckCollisionPointTriangle(p, p1, p2, p3) || CheckCollisionPointTriangle(p, p3, p2, p4);
@@ -370,4 +359,7 @@ bool Enemy::intersects(const Point& p)  {
 void Enemy::raycallback(Object* obj, float dist)  {
     if (obj->type == PLAYER) raycount++;
 }
-void Enemy::collidecallback(Entity* obj, const Point& point, const Vector2& direction)  {}
+void Enemy::collidecallback(Entity* obj, const Point& point, const Vector2& direction)  {
+    move.x += direction.x/2;
+    move.y += direction.y/2;
+}

@@ -3,9 +3,12 @@
 
 #include "definitions.h"
 
+namespace MemManager {
 extern "C" {
 #include <memmanager.h>
 }
+}
+#define NEW(T) new(MemManager::memloc(sizeof(T)))
 
 Object* intersect(const Point& p, Object* ignore);
 void raycast(IntersectInfo& result,Point start, float angle, float step, Object* ignore);
@@ -19,6 +22,9 @@ void raycastLimited(IntersectInfo& result,Point start, float angle, float step, 
 Vector2 reflect(const Vector2& v, const Vector2& normal);
 
 Object* collide(Entity *obj, const Point& p, const Vector2& direction);
+Object* collideCircle(Entity *obj, const Point& circle, float radius, const Vector2& direction);
+
+bool lineCircleIntersection(Point start, Point end, Point circle, float radius, Point& intersection);
 
 class Object {
 public:
@@ -37,6 +43,7 @@ public:
     virtual void draw() = 0;
     virtual void update() = 0;
     virtual bool intersects(const Point&) = 0;
+    virtual bool intersectsCircle(const Point& circle, float radius, Point& intersection) = 0;
     virtual void raycallback(Object* obj, float dist) = 0;
     virtual void collidecallback(Entity* obj, const Point& point, const Vector2& direction) = 0;
 };
@@ -46,8 +53,10 @@ public:
     Vector2 direction;
     Vector2 move;
     Point position;
+    float hitCircleSize;
 
     Entity();
+    bool intersectsCircle(const Point& circle, float radius, Point& intersection) override;
 };
 
 class Obtacle: public Object {
@@ -68,6 +77,7 @@ public:
     void update() override;
     bool intersects(const Point& p) override;
     void raycallback(Object* obj, float dist) override;
+    bool intersectsCircle(const Point& circle, float radius, Point& intersection) override;
 };
 
 class Wall: public Obtacle {
@@ -82,6 +92,7 @@ public:
     void update() override;
     bool intersects(const Point& p) override;
     void raycallback(Object* obj, float dist) override;
+    bool intersectsCircle(const Point& circle, float radius, Point& intersection) override;
 };
 
 
