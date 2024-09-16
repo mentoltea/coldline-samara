@@ -214,3 +214,41 @@ void raycast(IntersectInfo& result, Point start, Vector2 direct, Object* ignore)
     }
     result.ptr = intobj;
 }
+
+
+
+void update() {        
+    Vector2 move = {0};
+    if (IsKeyDown(KEY_A)) {
+        move.x -= 4;
+    } else if (IsKeyDown(KEY_D)) {
+        move.x += 4;
+    }
+
+    if (IsKeyDown(KEY_W)) {
+        move.y -= 4;
+    } else if (IsKeyDown(KEY_S)) {
+        move.y += 4;
+    }
+    Gplayer->move = move;
+    Gplayer->update();
+    
+    for (auto it=Gobjects.begin(); it!=Gobjects.end(); it++) {
+        if (!(*it)->active || (*it)==Gplayer) continue;
+        (*it)->update();
+    }
+}
+
+
+void draw() {
+    ClearBackground({25,25,25,255});
+    for (auto it=Gobjects.begin(); it!=Gobjects.end(); it++) {
+        if (!(*it)->active) continue;
+        if ((*it)->visible) {
+            (*it)->draw();
+        }
+    }
+    if (pause) {
+        DrawText("PAUSED", WinX - 6*20 - 5, 0, 30, GREEN);
+    }
+}

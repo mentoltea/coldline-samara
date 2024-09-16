@@ -50,6 +50,7 @@ extern float WinXf, WinYf;
 extern int MAX_REFLECTIONS;
 extern std::list<Object*> Gobjects;
 extern Player* Gplayer;
+extern bool pause;
 
 
 #endif

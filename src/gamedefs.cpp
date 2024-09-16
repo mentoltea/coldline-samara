@@ -8,3 +8,4 @@ float WinXf = WinX;
 float WinYf = WinY;
 int MAX_REFLECTIONS = 20;
 Player* Gplayer = NULL;
+bool pause = false;

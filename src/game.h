@@ -26,6 +26,11 @@ Object* collideCircle(Entity *obj, const Point& circle, float radius, const Vect
 
 bool lineCircleIntersection(Point start, Point end, Point circle, float radius, Point& intersection);
 
+
+void draw();
+void update();
+
+
 class Object {
 public:
     size_t id = id_counter++;
