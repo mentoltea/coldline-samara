@@ -24,12 +24,14 @@ Object* intersect(const Point& p, Object* ignore) {
     }
     return NULL;
 }
-IntersectInfo raycastLimited(Point start, float angle, float step, Object* ignore, float limit) {
+void raycastLimited(IntersectInfo& result, Point start, float angle, float step, Object* ignore, float limit) {
+    result.distance = 0;
+    result.points.clear();
+    result.ptr = NULL;
+
     float dx = cosf(angle/180 * PI)*step;
     float dy = sinf(angle/180 * PI)*step;
     Object* intobj = NULL;
-    IntersectInfo result;
-    result.distance = 0;
 
     while (true) {
         intobj = intersect(start, ignore);
@@ -63,14 +65,15 @@ IntersectInfo raycastLimited(Point start, float angle, float step, Object* ignor
         
     }
     result.ptr = intobj;
-    
-    return result;
 }
-IntersectInfo raycast(Point start, float angle, float step, Object* ignore) {
+void raycast(IntersectInfo& result, Point start, float angle, float step, Object* ignore) {
+    result.distance = 0;
+    result.points.clear();
+    result.ptr = NULL;
+
     float dx = cosf(angle/180 * PI)*step;
     float dy = sinf(angle/180 * PI)*step;
     Object* intobj = NULL;
-    IntersectInfo result;
     int reflections = 0;
     
 
@@ -113,14 +116,15 @@ IntersectInfo raycast(Point start, float angle, float step, Object* ignore) {
         result.points.push_back(start);
     }
     result.ptr = intobj;
-
-    return result;
 }
 
 // raycast with direction
-IntersectInfo raycast(Point start, Vector2 direct, Object* ignore) {
+void raycast(IntersectInfo& result, Point start, Vector2 direct, Object* ignore) {
+    result.distance = 0;
+    result.points.clear();
+    result.ptr = NULL;
+    
     Object* intobj = NULL;
-    IntersectInfo result;
     float step = sqrtf(direct.x*direct.x + direct.y*direct.y);
     int reflections = 0;
 
@@ -164,6 +168,4 @@ IntersectInfo raycast(Point start, Vector2 direct, Object* ignore) {
         result.points.push_back(start);
     }
     result.ptr = intobj;
-
-    return result;
 }

@@ -8,10 +8,10 @@ extern "C" {
 }
 
 Object* intersect(const Point& p, Object* ignore);
-IntersectInfo raycast(Point start, float angle, float step, Object* ignore);
+void raycast(IntersectInfo& result,Point start, float angle, float step, Object* ignore);
 // raycast with direction
-IntersectInfo raycast(Point start, Vector2 direct, Object* ignore);
-IntersectInfo raycastLimited(Point start, float angle, float step, Object* ignore, float limit);
+void raycast(IntersectInfo& result,Point start, Vector2 direct, Object* ignore);
+void raycastLimited(IntersectInfo& result,Point start, float angle, float step, Object* ignore, float limit);
 
 // @return normalized reflected vector
 // @param v normalized vector
@@ -98,7 +98,7 @@ public:
     Color viewColor = {110,110,110,180};
     Color viewAroundColor = {110,110,110,100};
     float hview = 30;
-    static const int Nray = 120;
+    static const int Nray = 150;
     static const int Nrayback = 80;
     float delta = 2*hview/Nray;
     float deltaback = (360-2*hview+2)/Nrayback;
