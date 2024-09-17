@@ -18,6 +18,22 @@
             ]    
         },
         {
+            "compiler" : "gcc",
+            "name" : "vector",
+            "format" : ".c",
+            "dependencies" : [
+                "src/vector.h"
+            ]    
+        },
+        {
+            "compiler" : "gcc",
+            "name" : "json",
+            "format" : ".c",
+            "dependencies" : [
+                "src/json.h"
+            ]    
+        },
+        {
             "name" : "main"
         },
         {

@@ -1,11 +1,33 @@
 #include "game.h"
 #include <raylib.h>
+#include <iostream>
 
-
+extern "C" {
+#include <string.h>
+void load_settings(FILE* fd) {
+    Json::init_json();
+    Json::json_child json = Json::read_json(fd);
+    size_t len = CVector::vec_metaptr(json.fields)->length;
+    for (size_t i=0; i<len; i++) {
+        if (CVector::strcmp(json.fields[i].key, "fullscreen")==0) {
+            fullscreen = json.fields[i].value.data.num;
+        }
+    }
+}
+}
 
 using std::cout, std::endl;
 int main() {
+    FILE* file = fopen("settings.json", "r");
+    if (file) {
+        load_settings(file);
+        fclose(file);
+        MemManager::page_info(0);
+        MemManager::destroy_pages();
+    } else fprintf(stderr, "Cannot load settings: using default\n");
+
     MemManager::prealloc(PAGE_SIZE*2);
+
     // 2----1
     // |    |
     // 4----3
@@ -25,7 +47,7 @@ int main() {
     Gobjects.push_back(en);
     
     Enemy *en2 = NEW(Enemy) Enemy({500, 500}, {10, 20});
-    en2->direction = {0, -1};
+    en2->direction = {0, 1};
     Gobjects.push_back(en2);
 
     Point pos = {700, 500};

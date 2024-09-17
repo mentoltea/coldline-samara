@@ -74,6 +74,63 @@ Object* intersect(const Point& p, Object* ignore) {
     }
     return NULL;
 }
+
+void raycastLimitedReflections(IntersectInfo& result,Point start, float angle, float step, Object* ignore, Object* origin, float limit) {
+    result.distance = 0;
+    result.points.clear();
+    result.ptr = NULL;
+
+    float dx = cosf(angle/180 * PI)*step;
+    float dy = sinf(angle/180 * PI)*step;
+    Object* intobj = NULL;
+    int reflections = 0;
+    
+
+    while (true) {
+        intobj = intersect(start, ignore);
+        if (intobj) {
+            intobj->raycallback(origin, result.distance);
+            if (intobj->reflects && reflections < MAX_REFLECTIONS) {
+                Vector2 r = reflect({dx, dy}, intobj->normal);
+                dx = r.x; dy = r.y;
+                ignore = intobj;
+                intobj = NULL;
+                result.points.push_back(start);
+                start.x += 2*dx;
+                start.y += 2*dy;
+                reflections++;
+            } else break;
+        }
+        start.x += dx;
+        start.y += dy;
+        result.distance += step;
+        if (result.distance >= limit) {
+            result.points.push_back(start);
+            break;
+        }
+
+        if (start.x >= MapXf) {
+            result.points.push_back({MapXf, start.y});
+            break;
+        } else if (start.x < 0) {
+            result.points.push_back({0, start.y});
+            break;
+        }
+        if (start.y >= MapYf) {
+            result.points.push_back({start.x, MapYf});
+            break;
+        } else if (start.y < 0) {
+            result.points.push_back({start.x, 0});
+            break;
+        }
+    }
+    if (intobj) {
+        // result.type = intobj->type;
+        result.points.push_back(start);
+    }
+    result.ptr = intobj;
+}
+
 void raycastLimited(IntersectInfo& result, Point start, float angle, float step, Object* ignore, Object* origin, float limit) {
     result.distance = 0;
     result.points.clear();
@@ -241,11 +298,14 @@ void update() {
     } else if (IsKeyDown(KEY_S)) {
         move.y += 4;
     }
-    Gplayer->move = move;
-    Gplayer->update();
     
-    camera.x = Gplayer->position.x - WinXf/2;
-    camera.y = Gplayer->position.y - WinYf/2;
+    Point mouse = GetMousePosition();
+    float koef = 1.2;
+    camera.x = (koef*(Gplayer->position.x) + camera.x + mouse.x)/(1+koef) - (WinXf)/2;
+    camera.y = (koef*(Gplayer->position.y) + camera.y + mouse.y)/(1+koef) - (WinYf)/2;
+    // camera.x = Gplayer->position.x - WinXf/2;
+    // camera.y = Gplayer->position.y - WinYf/2;
+
 
     if (camera.x + WinXf/2 - Gplayer->position.x >= Gplayer->staticDrawingBox.x) camera.x += 2;
     else if (camera.x + WinXf/2 - Gplayer->position.x < 0) camera.x -= 2;
@@ -253,6 +313,8 @@ void update() {
     if (camera.y + WinYf/2 - Gplayer->position.y >= Gplayer->staticDrawingBox.y) camera.y += 2;
     else if (camera.y + WinXf/2 - Gplayer->position.y < 0) camera.y -= 2;
 
+    Gplayer->move = move;
+    Gplayer->update();
     for (auto it=Gobjects.begin(); it!=Gobjects.end(); it++) {
         if (!(*it)->active || (*it)==Gplayer) continue;
         (*it)->update();

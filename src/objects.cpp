@@ -146,7 +146,7 @@ void Player::drawView() {
     size_t maxlen = 0;
     for (int i=0; i<Nray; i++) {
         a -= delta;
-        raycast(inters[i], position, a, 2, this, this);
+        raycastLimitedReflections(inters[i], position, a, 2, this, this, viewLength);
         maxlen = inters[i].points.size() > maxlen ? inters[i].points.size() : maxlen;
         if (i>0) {
             DrawTriangle(drawPosition, projectToCamera(inters[i-1].points[0]), projectToCamera(inters[i].points[0]), viewColor);
@@ -203,7 +203,7 @@ void Player::drawView() {
 }
 void Player::draw()  {
 
-    Point drawPosition = projectToCamera(position);
+    drawPosition = projectToCamera(position);
 
     dp1 = {drawPosition.x + size * cosf(angleRad - dirSizeAngle), drawPosition.y + size * sinf(angleRad - dirSizeAngle)};
     dp2 = {drawPosition.x + size * cosf(angleRad + dirSizeAngle), drawPosition.y + size * sinf(angleRad + dirSizeAngle)};
@@ -214,11 +214,11 @@ void Player::draw()  {
     drawView();
     DrawTriangle(dp2, dp1,  dp3, {100, 100, 200, 250});
     DrawTriangle(dp3, dp4, dp2,  {100, 100, 200, 250});
-    // DrawCircleLinesV(position, hitCircleSize, {255, 50, 50, 250});
+    // DrawCircleLinesV(drawPosition, hitCircleSize, {255, 50, 50, 250});
 }
 void Player::update()  {
-    Vector2 mouse = projectToMap(GetMousePosition());
-    direction = {mouse.x - position.x, mouse.y - position.y};
+    Vector2 mouse = GetMousePosition();
+    direction = {mouse.x - drawPosition.x, mouse.y - drawPosition.y};
     float dl = sqrtf(direction.x*direction.x + direction.y*direction.y);
     if (dl>0) {direction.x /= dl; direction.y /= dl;}
 
@@ -265,13 +265,11 @@ Enemy::Enemy(Point pos, Vector2 size): inters(Nray) {
 }
 Enemy::~Enemy() = default;
 void Enemy::drawView(unsigned char alfa) {
-    float a = angle + hview;
-    maxlen = 0;
+    Color color = {viewColor.r, viewColor.g, viewColor.b, alfa};
     for (int i=0; i<Nray; i++) {
-        a -= delta;
         if (i>0) {
             DrawTriangle(drawPosition, projectToCamera(inters[i-1].points[0]), projectToCamera(inters[i].points[0]), 
-            {viewColor.r, viewColor.g, viewColor.g, alfa});
+            color);
         }
     }
     size_t idx = 1;
@@ -284,16 +282,16 @@ void Enemy::drawView(unsigned char alfa) {
                 if (to != -1) {
                     for (int j=from+1; j<=to; j++) {
                         if (i==j) continue;
-                        int a = alfa-idx*80;
-                        Color col = {viewColor.r,viewColor.g,viewColor.b, (unsigned char)(a>0? a: 0)};//{120,120,200,180};
+                        int a = alfa-idx*20;
+                        Color col = {viewColor.r,viewColor.g,viewColor.b, (unsigned char)(a>0? a: 0)};
                         if (idx%2==0) {
-                            DrawTriangle(projectToCamera(inters[j-1].points[idx-1]), projectToCamera(inters[j-1].points[idx]),
+                            DrawTriangle(projectToCamera(inters[j-1].points[idx-1]), projectToCamera(inters[j-1].points[idx]), 
                                 projectToCamera(inters[j].points[idx-1]),   col);
                             DrawTriangle(projectToCamera(inters[j].points[idx-1]), projectToCamera(inters[j-1].points[idx]),
                                 projectToCamera(inters[j].points[idx]),   col);
                         }
                         else {
-                            DrawTriangle(projectToCamera(inters[j-1].points[idx-1]), projectToCamera(inters[j].points[idx-1]), 
+                            DrawTriangle(projectToCamera(inters[j-1].points[idx-1]), projectToCamera(inters[j].points[idx-1]),
                                 projectToCamera(inters[j-1].points[idx]),  col);
                             DrawTriangle(projectToCamera(inters[j].points[idx-1]), projectToCamera(inters[j].points[idx]), 
                                 projectToCamera(inters[j-1].points[idx]),  col);
@@ -305,13 +303,11 @@ void Enemy::drawView(unsigned char alfa) {
             } else {
                 if (from == -1) {
                     from = i;
-                    // DrawLineV(inters[from].points[idx-1],inters[from].points[idx], {140,140,250,220});
                 }
                 to = i;
             }
         }
         idx++;
-        // break;
     }
 }
 
@@ -323,6 +319,7 @@ void Enemy::drawA(unsigned char alfa)  {
     dp3 = {drawPosition.x + size * cosf(PI + angleRad + dirSizeAngle), drawPosition.y + size * sinf(PI + angleRad + dirSizeAngle)};
     dp4 = {drawPosition.x + size * cosf(PI + angleRad - dirSizeAngle), drawPosition.y + size * sinf(PI + angleRad - dirSizeAngle)};
     selfColor.a = alfa;
+    drawView(alfa/3);
     DrawTriangle(dp2, dp1,  dp3, selfColor);
     DrawTriangle(dp3, dp4, dp2,  selfColor);
     DrawLine(drawPosition.x, drawPosition.y, drawPosition.x+size*direction.x, drawPosition.y+size*direction.y, selfColor);
@@ -342,7 +339,7 @@ void Enemy::update() {
     int found_player = -1;
     for (int i=0; i<Nray; i++) {
         a -= delta;
-        raycast(inters[i], position, a, 2, this, this);
+        raycastLimitedReflections(inters[i], position, a, 2, this, this, viewLength);
         maxlen = inters[i].points.size() > maxlen ? inters[i].points.size() : maxlen;
         if (inters[i].ptr && inters[i].ptr->type==PLAYER) {
             found_player = i;
@@ -350,11 +347,13 @@ void Enemy::update() {
     }
     if (found_player != -1) {
         selfColor = {200, 50, 50, 250};
+        viewColor = {170,50,50,180};
         direction = {Gplayer->position.x - position.x, Gplayer->position.y - position.y};
         move.x += direction.x;
         move.y += direction.y;
     } else {
         selfColor = {150, 150, 50, 250};
+        viewColor = {110,110,90,180};
     }
     float dl = sqrtf(direction.x*direction.x + direction.y*direction.y);
     if (dl>0) {

@@ -3,11 +3,22 @@
 
 #include "definitions.h"
 
+namespace CVector {
+extern "C" {
+#include "vector.h"
+}
+}
 namespace MemManager {
 extern "C" {
-#include <memmanager.h>
+#include "memmanager.h"
 }
 }
+namespace Json {
+extern "C" {
+#include "json.h"
+}
+}
+
 #define NEW(T) new(MemManager::memloc(sizeof(T)))
 
 float absf(float x);
@@ -17,6 +28,7 @@ void raycast(IntersectInfo& result,Point start, float angle, float step, Object*
 // raycast with direction
 void raycast(IntersectInfo& result,Point start, Vector2 direct, Object* ignore, Object* origin);
 void raycastLimited(IntersectInfo& result,Point start, float angle, float step, Object* ignore, Object* origin, float limit);
+void raycastLimitedReflections(IntersectInfo& result,Point start, float angle, float step, Object* ignore, Object* origin, float limit);
 
 // @return normalized reflected vector
 // @param v normalized vector
@@ -118,6 +130,7 @@ public:
     float angle, angleRad;
     float dirSizeAngle;
     float viewAround = 50;
+    float viewLength = 800;
     std::vector<IntersectInfo> inters;
     std::vector<IntersectInfo> intersBack;
     Color viewColor = {110,110,110,180};
@@ -148,6 +161,7 @@ public:
     float angle, angleRad;
     float dirSizeAngle;
     float viewAround = 30;
+    float viewLength = 650;
     std::vector<IntersectInfo> inters;
     Color viewColor = {110,50,50,180};
     Color selfColor = {150, 150, 50, 250};
