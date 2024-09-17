@@ -93,15 +93,15 @@ void raycastLimited(IntersectInfo& result, Point start, float angle, float step,
             break;
         }
         
-        if (start.x >= WinXf) {
-            result.points.push_back({WinXf, start.y});
+        if (start.x >= MapXf) {
+            result.points.push_back({MapXf, start.y});
             break;
         } else if (start.x < 0) {
             result.points.push_back({0, start.y});
             break;
         }
-        if (start.y >= WinYf) {
-            result.points.push_back({start.x, WinYf});
+        if (start.y >= MapYf) {
+            result.points.push_back({start.x, MapYf});
             break;
         } else if (start.y < 0) {
             result.points.push_back({start.x, 0});
@@ -141,15 +141,15 @@ void raycast(IntersectInfo& result, Point start, float angle, float step, Object
         start.y += dy;
         result.distance += step;
 
-        if (start.x >= WinXf) {
-            result.points.push_back({WinXf, start.y});
+        if (start.x >= MapXf) {
+            result.points.push_back({MapXf, start.y});
             break;
         } else if (start.x < 0) {
             result.points.push_back({0, start.y});
             break;
         }
-        if (start.y >= WinYf) {
-            result.points.push_back({start.x, WinYf});
+        if (start.y >= MapYf) {
+            result.points.push_back({start.x, MapYf});
             break;
         } else if (start.y < 0) {
             result.points.push_back({start.x, 0});
@@ -193,15 +193,15 @@ void raycast(IntersectInfo& result, Point start, Vector2 direct, Object* ignore)
         start.y += direct.y;
         result.distance += step;
 
-        if (start.x >= WinXf) {
-            result.points.push_back({WinXf, start.y});
+        if (start.x >= MapXf) {
+            result.points.push_back({MapXf, start.y});
             break;
         } else if (start.x < 0) {
             result.points.push_back({0, start.y});
             break;
         }
-        if (start.y >= WinYf) {
-            result.points.push_back({start.x, WinYf});
+        if (start.y >= MapYf) {
+            result.points.push_back({start.x, MapYf});
             break;
         } else if (start.y < 0) {
             result.points.push_back({start.x, 0});

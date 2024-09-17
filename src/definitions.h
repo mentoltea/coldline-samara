@@ -47,6 +47,8 @@ typedef struct IntersectInfo {
 extern size_t id_counter;
 extern int WinX, WinY;
 extern float WinXf, WinYf;
+extern int MapX, MapY;
+extern float MapXf, MapYf;
 extern int MAX_REFLECTIONS;
 extern std::list<Object*> Gobjects;
 extern Player* Gplayer;
