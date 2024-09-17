@@ -134,7 +134,7 @@ void Player::drawViewAround() {
     float a = angle - hview + 2;
     for (int i=0; i<Nrayback; i++) {
         a -= deltaback;
-        raycastLimited(inters[i], position, a, 1, this, viewAround);
+        raycastLimited(inters[i], position, a, 1, this, this, viewAround);
         if (i>0) {
             // DrawCircleV(inters[i].points[0], 1, {255,255,0,250});
             DrawTriangle( drawPosition , projectToCamera( inters[i-1].points[0] ), projectToCamera(inters[i].points[0]),  viewAroundColor);
@@ -146,7 +146,7 @@ void Player::drawView() {
     size_t maxlen = 0;
     for (int i=0; i<Nray; i++) {
         a -= delta;
-        raycast(inters[i], position, a, 2, this);
+        raycast(inters[i], position, a, 2, this, this);
         maxlen = inters[i].points.size() > maxlen ? inters[i].points.size() : maxlen;
         if (i>0) {
             DrawTriangle(drawPosition, projectToCamera(inters[i-1].points[0]), projectToCamera(inters[i].points[0]), viewColor);
@@ -331,7 +331,7 @@ void Enemy::drawA(unsigned char alfa)  {
 void Enemy::draw()  {
     int max = 255;
     int base = 5;
-    float rate = 20;
+    float rate = 12;
     int a = base + rate*(float)raycount/(float)(Player::Nray) * (max-base);
     drawA((unsigned char) (a > max ? max : a));
     raycount = 0;
@@ -342,7 +342,7 @@ void Enemy::update() {
     int found_player = -1;
     for (int i=0; i<Nray; i++) {
         a -= delta;
-        raycast(inters[i], position, a, 2, this);
+        raycast(inters[i], position, a, 2, this, this);
         maxlen = inters[i].points.size() > maxlen ? inters[i].points.size() : maxlen;
         if (inters[i].ptr && inters[i].ptr->type==PLAYER) {
             found_player = i;

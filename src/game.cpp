@@ -74,7 +74,7 @@ Object* intersect(const Point& p, Object* ignore) {
     }
     return NULL;
 }
-void raycastLimited(IntersectInfo& result, Point start, float angle, float step, Object* ignore, float limit) {
+void raycastLimited(IntersectInfo& result, Point start, float angle, float step, Object* ignore, Object* origin, float limit) {
     result.distance = 0;
     result.points.clear();
     result.ptr = NULL;
@@ -86,7 +86,7 @@ void raycastLimited(IntersectInfo& result, Point start, float angle, float step,
     while (true) {
         intobj = intersect(start, ignore);
         if (intobj) {
-            intobj->raycallback(ignore, result.distance);
+            intobj->raycallback(origin, result.distance);
             result.points.push_back(start);
             break;
         }
@@ -116,7 +116,7 @@ void raycastLimited(IntersectInfo& result, Point start, float angle, float step,
     }
     result.ptr = intobj;
 }
-void raycast(IntersectInfo& result, Point start, float angle, float step, Object* ignore) {
+void raycast(IntersectInfo& result, Point start, float angle, float step, Object* ignore, Object* origin) {
     result.distance = 0;
     result.points.clear();
     result.ptr = NULL;
@@ -130,7 +130,7 @@ void raycast(IntersectInfo& result, Point start, float angle, float step, Object
     while (true) {
         intobj = intersect(start, ignore);
         if (intobj) {
-            intobj->raycallback(ignore, result.distance);
+            intobj->raycallback(origin, result.distance);
             if (intobj->reflects && reflections < MAX_REFLECTIONS) {
                 Vector2 r = reflect({dx, dy}, intobj->normal);
                 dx = r.x; dy = r.y;
@@ -169,7 +169,7 @@ void raycast(IntersectInfo& result, Point start, float angle, float step, Object
 }
 
 // raycast with direction
-void raycast(IntersectInfo& result, Point start, Vector2 direct, Object* ignore) {
+void raycast(IntersectInfo& result, Point start, Vector2 direct, Object* ignore, Object* origin) {
     result.distance = 0;
     result.points.clear();
     result.ptr = NULL;
@@ -181,7 +181,7 @@ void raycast(IntersectInfo& result, Point start, Vector2 direct, Object* ignore)
     while (true) {
         intobj = intersect(start, ignore);
         if (intobj) {
-            intobj->raycallback(ignore, result.distance);
+            intobj->raycallback(origin, result.distance);
             if (intobj->reflects && reflections < MAX_REFLECTIONS) {
                 direct = reflect(direct, intobj->normal);
                 // direct.x *= 3/2;

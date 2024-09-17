@@ -13,10 +13,10 @@ extern "C" {
 float absf(float x);
 
 Object* intersect(const Point& p, Object* ignore);
-void raycast(IntersectInfo& result,Point start, float angle, float step, Object* ignore);
+void raycast(IntersectInfo& result,Point start, float angle, float step, Object* ignore, Object* origin);
 // raycast with direction
-void raycast(IntersectInfo& result,Point start, Vector2 direct, Object* ignore);
-void raycastLimited(IntersectInfo& result,Point start, float angle, float step, Object* ignore, float limit);
+void raycast(IntersectInfo& result,Point start, Vector2 direct, Object* ignore, Object* origin);
+void raycastLimited(IntersectInfo& result,Point start, float angle, float step, Object* ignore, Object* origin, float limit);
 
 // @return normalized reflected vector
 // @param v normalized vector
