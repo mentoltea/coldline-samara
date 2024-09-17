@@ -26,6 +26,8 @@ Object* collideCircle(Entity *obj, const Point& circle, float radius, const Vect
 
 bool lineCircleIntersection(Point start, Point end, Point circle, float radius, Point& intersection);
 
+Point projectToCamera(const Point& p);
+Point projectToMap(const Point& p);
 
 void draw();
 void update();
@@ -58,6 +60,7 @@ public:
     Vector2 direction;
     Vector2 move;
     Point position;
+    Point drawPosition;
     float hitCircleSize;
 
     Entity();
@@ -73,6 +76,7 @@ public:
 class Mirror: public Obtacle {
 public:
     Poly body;
+    Poly drawBody;
 
     Mirror(Poly b, Vector2 n);
     ~Mirror() = default;
@@ -88,6 +92,7 @@ public:
 class Wall: public Obtacle {
 public:
     Poly body;
+    Poly drawBody;
 
     Wall(Poly b);
     ~Wall() override;
@@ -106,6 +111,7 @@ class Player : public Entity {
 public:
     float size;
     Point p1, p2, p3, p4;
+    Point dp1, dp2, dp3, dp4;
     float angle, angleRad;
     float dirSizeAngle;
     float viewAround = 50;
@@ -135,6 +141,7 @@ class Enemy : public Entity {
 public:
     float size;
     Point p1, p2, p3, p4;
+    Point dp1, dp2, dp3, dp4;
     float angle, angleRad;
     float dirSizeAngle;
     float viewAround = 30;

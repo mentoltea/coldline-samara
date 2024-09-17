@@ -13,3 +13,4 @@ float MapYf = MapY;
 int MAX_REFLECTIONS = 20;
 Player* Gplayer = NULL;
 bool pause = false;
+Point camera;

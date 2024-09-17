@@ -215,7 +215,13 @@ void raycast(IntersectInfo& result, Point start, Vector2 direct, Object* ignore)
     result.ptr = intobj;
 }
 
+Point projectToCamera(const Point& p) {
+    return {p.x - camera.x, p.y - camera.y};
+}
 
+Point projectToMap(const Point& p) {
+    return {p.x + camera.x, p.y + camera.y};
+}
 
 void update() {        
     Vector2 move = {0};
@@ -233,6 +239,9 @@ void update() {
     Gplayer->move = move;
     Gplayer->update();
     
+    camera.x = Gplayer->position.x - WinXf/2;
+    camera.y = Gplayer->position.y - WinYf/2;
+
     for (auto it=Gobjects.begin(); it!=Gobjects.end(); it++) {
         if (!(*it)->active || (*it)==Gplayer) continue;
         (*it)->update();

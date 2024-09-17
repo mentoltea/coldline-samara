@@ -44,8 +44,8 @@ Mirror::Mirror(Poly b, Vector2 n) {
 }
 
 void Mirror::drawA(unsigned char alfa) {
-    DrawTriangle(body.p1, body.p2, body.p3, {213,245,242,alfa} );
-    DrawTriangle(body.p3, body.p2, body.p4, {213,245,242,alfa} );
+    DrawTriangle(drawBody.p1, drawBody.p2, drawBody.p3, {213,245,242,alfa} );
+    DrawTriangle(drawBody.p3, drawBody.p2, drawBody.p4, {213,245,242,alfa} );
 }
 void Mirror::draw() {
     int max = 255;
@@ -55,7 +55,12 @@ void Mirror::draw() {
     drawA((unsigned char) (a > 255 ? 255 : a));
     raycount = 0;
 }
-void Mirror::update() {}
+void Mirror::update() {
+    drawBody.p1 = projectToCamera(body.p1);
+    drawBody.p2 = projectToCamera(body.p2);
+    drawBody.p3 = projectToCamera(body.p3);
+    drawBody.p4 = projectToCamera(body.p4);
+}
 bool Mirror::intersects(const Point& p) {
     return CheckCollisionPointTriangle(p, body.p1, body.p2, body.p3) || CheckCollisionPointTriangle(p, body.p3, body.p2, body.p4);
 }
@@ -81,8 +86,8 @@ Wall::Wall(Poly b) {
 Wall::~Wall() = default;
 
 void Wall::drawA(unsigned char alfa) {
-    DrawTriangle(body.p1, body.p2, body.p3, {181,67,22,alfa} );
-    DrawTriangle(body.p3, body.p2, body.p4, {181,67,22,alfa} );
+    DrawTriangle(drawBody.p1, drawBody.p2, drawBody.p3, {181,67,22,alfa} );
+    DrawTriangle(drawBody.p3, drawBody.p2, drawBody.p4, {181,67,22,alfa} );
 }
 void Wall::draw()  {
     int max = 255;
@@ -92,7 +97,12 @@ void Wall::draw()  {
     drawA((unsigned char) (a > 255 ? 255 : a));
     raycount = 0;
 }
-void Wall::update()  {}
+void Wall::update()  {
+    drawBody.p1 = projectToCamera(body.p1);
+    drawBody.p2 = projectToCamera(body.p2);
+    drawBody.p3 = projectToCamera(body.p3);
+    drawBody.p4 = projectToCamera(body.p4);
+}
 bool Wall::intersects(const Point& p)  {
     return CheckCollisionPointTriangle(p, body.p1, body.p2, body.p3) || CheckCollisionPointTriangle(p, body.p3, body.p2, body.p4);
 }
@@ -111,6 +121,7 @@ bool Wall::intersectsCircle(const Point& circle, float radius, Point& intersecti
 
 Player::Player(Point pos, Vector2 size): inters(Nray), intersBack(Nrayback) {
     position = pos;
+    drawPosition = {WinXf/2, WinYf/2};
     float sl = sqrtf(size.x*size.x + size.y*size.y);
     hitCircleSize = sl*0.95;
     dirSizeAngle = acosf(size.x/sl);
@@ -126,7 +137,7 @@ void Player::drawViewAround() {
         raycastLimited(inters[i], position, a, 1, this, viewAround);
         if (i>0) {
             // DrawCircleV(inters[i].points[0], 1, {255,255,0,250});
-            DrawTriangle( position,inters[i-1].points[0], inters[i].points[0],  viewAroundColor);
+            DrawTriangle( drawPosition , projectToCamera( inters[i-1].points[0] ), projectToCamera(inters[i].points[0]),  viewAroundColor);
         }
     }
 }
@@ -138,7 +149,7 @@ void Player::drawView() {
         raycast(inters[i], position, a, 2, this);
         maxlen = inters[i].points.size() > maxlen ? inters[i].points.size() : maxlen;
         if (i>0) {
-            DrawTriangle(position, inters[i-1].points[0], inters[i].points[0], viewColor);
+            DrawTriangle(drawPosition, projectToCamera(inters[i-1].points[0]), projectToCamera(inters[i].points[0]), viewColor);
         }
     }
     // {
@@ -163,12 +174,16 @@ void Player::drawView() {
                         int a = 180-idx*80;
                         Color col = {viewColor.r,viewColor.g,viewColor.b, (unsigned char)(a>0? a: 0)};//{120,120,200,180};
                         if (idx%2==0) {
-                            DrawTriangle(inters[j-1].points[idx-1], inters[j-1].points[idx],inters[j].points[idx-1],   col);
-                            DrawTriangle(inters[j].points[idx-1], inters[j-1].points[idx],inters[j].points[idx],   col);
+                            DrawTriangle(projectToCamera(inters[j-1].points[idx-1]), projectToCamera(inters[j-1].points[idx]), 
+                                projectToCamera(inters[j].points[idx-1]),   col);
+                            DrawTriangle(projectToCamera(inters[j].points[idx-1]), projectToCamera(inters[j-1].points[idx]),
+                                projectToCamera(inters[j].points[idx]),   col);
                         }
                         else {
-                            DrawTriangle(inters[j-1].points[idx-1], inters[j].points[idx-1], inters[j-1].points[idx],  col);
-                            DrawTriangle(inters[j].points[idx-1], inters[j].points[idx], inters[j-1].points[idx],  col);
+                            DrawTriangle(projectToCamera(inters[j-1].points[idx-1]), projectToCamera(inters[j].points[idx-1]),
+                                projectToCamera(inters[j-1].points[idx]),  col);
+                            DrawTriangle(projectToCamera(inters[j].points[idx-1]), projectToCamera(inters[j].points[idx]), 
+                                projectToCamera(inters[j-1].points[idx]),  col);
                         }
                     }
                     from = -1;
@@ -189,16 +204,17 @@ void Player::drawView() {
 void Player::draw()  {
     drawViewAround();
     drawView();
-    p1 = {position.x + size * cosf(angleRad - dirSizeAngle), position.y + size * sinf(angleRad - dirSizeAngle)};
-    p2 = {position.x + size * cosf(angleRad + dirSizeAngle), position.y + size * sinf(angleRad + dirSizeAngle)};
-    p3 = {position.x + size * cosf(PI + angleRad + dirSizeAngle), position.y + size * sinf(PI + angleRad + dirSizeAngle)};
-    p4 = {position.x + size * cosf(PI + angleRad - dirSizeAngle), position.y + size * sinf(PI + angleRad - dirSizeAngle)};
-    DrawTriangle(p2, p1,  p3, {100, 100, 200, 250});
-    DrawTriangle(p3, p4, p2,  {100, 100, 200, 250});
+    drawPosition = projectToCamera(position);
+    dp1 = {drawPosition.x + size * cosf(angleRad - dirSizeAngle), drawPosition.y + size * sinf(angleRad - dirSizeAngle)};
+    dp2 = {drawPosition.x + size * cosf(angleRad + dirSizeAngle), drawPosition.y + size * sinf(angleRad + dirSizeAngle)};
+    dp3 = {drawPosition.x + size * cosf(PI + angleRad + dirSizeAngle), drawPosition.y + size * sinf(PI + angleRad + dirSizeAngle)};
+    dp4 = {drawPosition.x + size * cosf(PI + angleRad - dirSizeAngle), drawPosition.y + size * sinf(PI + angleRad - dirSizeAngle)};
+    DrawTriangle(dp2, dp1,  dp3, {100, 100, 200, 250});
+    DrawTriangle(dp3, dp4, dp2,  {100, 100, 200, 250});
     // DrawCircleLinesV(position, hitCircleSize, {255, 50, 50, 250});
 }
 void Player::update()  {
-    Vector2 mouse = GetMousePosition();
+    Vector2 mouse = projectToMap(GetMousePosition());
     direction = {mouse.x - position.x, mouse.y - position.y};
     float dl = sqrtf(direction.x*direction.x + direction.y*direction.y);
     if (dl>0) {direction.x /= dl; direction.y /= dl;}
@@ -218,6 +234,11 @@ void Player::update()  {
         if (collision->type==WALL || collision->type==MIRROR) move.y *= 1.1;
         position.y -= move.y;
     }
+
+    p1 = {position.x + size * cosf(angleRad - dirSizeAngle), position.y + size * sinf(angleRad - dirSizeAngle)};
+    p2 = {position.x + size * cosf(angleRad + dirSizeAngle), position.y + size * sinf(angleRad + dirSizeAngle)};
+    p3 = {position.x + size * cosf(PI + angleRad + dirSizeAngle), position.y + size * sinf(PI + angleRad + dirSizeAngle)};
+    p4 = {position.x + size * cosf(PI + angleRad - dirSizeAngle), position.y + size * sinf(PI + angleRad - dirSizeAngle)};
 }
 bool Player::intersects(const Point& p)  {
     // return CheckCollisionPointPoly(p, (Vector2*)&body, 4);
@@ -246,7 +267,7 @@ void Enemy::drawView(unsigned char alfa) {
     for (int i=0; i<Nray; i++) {
         a -= delta;
         if (i>0) {
-            DrawTriangle(position, inters[i-1].points[0], inters[i].points[0], 
+            DrawTriangle(drawPosition, projectToCamera(inters[i-1].points[0]), projectToCamera(inters[i].points[0]), 
             {viewColor.r, viewColor.g, viewColor.g, alfa});
         }
     }
@@ -263,12 +284,16 @@ void Enemy::drawView(unsigned char alfa) {
                         int a = alfa-idx*80;
                         Color col = {viewColor.r,viewColor.g,viewColor.b, (unsigned char)(a>0? a: 0)};//{120,120,200,180};
                         if (idx%2==0) {
-                            DrawTriangle(inters[j-1].points[idx-1], inters[j-1].points[idx],inters[j].points[idx-1],   col);
-                            DrawTriangle(inters[j].points[idx-1], inters[j-1].points[idx],inters[j].points[idx],   col);
+                            DrawTriangle(projectToCamera(inters[j-1].points[idx-1]), projectToCamera(inters[j-1].points[idx]),
+                                projectToCamera(inters[j].points[idx-1]),   col);
+                            DrawTriangle(projectToCamera(inters[j].points[idx-1]), projectToCamera(inters[j-1].points[idx]),
+                                projectToCamera(inters[j].points[idx]),   col);
                         }
                         else {
-                            DrawTriangle(inters[j-1].points[idx-1], inters[j].points[idx-1], inters[j-1].points[idx],  col);
-                            DrawTriangle(inters[j].points[idx-1], inters[j].points[idx], inters[j-1].points[idx],  col);
+                            DrawTriangle(projectToCamera(inters[j-1].points[idx-1]), projectToCamera(inters[j].points[idx-1]), 
+                                projectToCamera(inters[j-1].points[idx]),  col);
+                            DrawTriangle(projectToCamera(inters[j].points[idx-1]), projectToCamera(inters[j].points[idx]), 
+                                projectToCamera(inters[j-1].points[idx]),  col);
                         }
                     }
                     from = -1;
@@ -289,14 +314,15 @@ void Enemy::drawView(unsigned char alfa) {
 
 void Enemy::drawA(unsigned char alfa)  {
     // drawView(alfa);
-    p1 = {position.x + size * cosf(angleRad - dirSizeAngle), position.y + size * sinf(angleRad - dirSizeAngle)};
-    p2 = {position.x + size * cosf(angleRad + dirSizeAngle), position.y + size * sinf(angleRad + dirSizeAngle)};
-    p3 = {position.x + size * cosf(PI + angleRad + dirSizeAngle), position.y + size * sinf(PI + angleRad + dirSizeAngle)};
-    p4 = {position.x + size * cosf(PI + angleRad - dirSizeAngle), position.y + size * sinf(PI + angleRad - dirSizeAngle)};
+    drawPosition = projectToCamera(position);
+    dp1 = {drawPosition.x + size * cosf(angleRad - dirSizeAngle), drawPosition.y + size * sinf(angleRad - dirSizeAngle)};
+    dp2 = {drawPosition.x + size * cosf(angleRad + dirSizeAngle), drawPosition.y + size * sinf(angleRad + dirSizeAngle)};
+    dp3 = {drawPosition.x + size * cosf(PI + angleRad + dirSizeAngle), drawPosition.y + size * sinf(PI + angleRad + dirSizeAngle)};
+    dp4 = {drawPosition.x + size * cosf(PI + angleRad - dirSizeAngle), drawPosition.y + size * sinf(PI + angleRad - dirSizeAngle)};
     selfColor.a = alfa;
-    DrawTriangle(p2, p1,  p3, selfColor);
-    DrawTriangle(p3, p4, p2,  selfColor);
-    DrawLine(position.x, position.y, position.x+size*direction.x, position.y+size*direction.y, selfColor);
+    DrawTriangle(dp2, dp1,  dp3, selfColor);
+    DrawTriangle(dp3, dp4, dp2,  selfColor);
+    DrawLine(drawPosition.x, drawPosition.y, drawPosition.x+size*direction.x, drawPosition.y+size*direction.y, selfColor);
     // DrawCircleLinesV(position, hitCircleSize, {255, 50, 50, 250});
 }
 void Enemy::draw()  {
@@ -350,6 +376,11 @@ void Enemy::update() {
         if (collision->type==WALL || collision->type==MIRROR) move.y *= 1.1;
         position.y -= move.y;
     }
+
+    p1 = {position.x + size * cosf(angleRad - dirSizeAngle), position.y + size * sinf(angleRad - dirSizeAngle)};
+    p2 = {position.x + size * cosf(angleRad + dirSizeAngle), position.y + size * sinf(angleRad + dirSizeAngle)};
+    p3 = {position.x + size * cosf(PI + angleRad + dirSizeAngle), position.y + size * sinf(PI + angleRad + dirSizeAngle)};
+    p4 = {position.x + size * cosf(PI + angleRad - dirSizeAngle), position.y + size * sinf(PI + angleRad - dirSizeAngle)};
 
     move = {0,0};
 }
