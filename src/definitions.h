@@ -45,6 +45,7 @@ typedef struct IntersectInfo {
 } IntersectInfo;
 
 extern size_t id_counter;
+extern bool fullscreen;
 extern int WinX, WinY;
 extern float WinXf, WinYf;
 extern int MapX, MapY;

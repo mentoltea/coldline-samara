@@ -10,6 +10,8 @@ extern "C" {
 }
 #define NEW(T) new(MemManager::memloc(sizeof(T)))
 
+float absf(float x);
+
 Object* intersect(const Point& p, Object* ignore);
 void raycast(IntersectInfo& result,Point start, float angle, float step, Object* ignore);
 // raycast with direction
@@ -112,6 +114,7 @@ public:
     float size;
     Point p1, p2, p3, p4;
     Point dp1, dp2, dp3, dp4;
+    Vector2 staticDrawingBox = {100, 100};
     float angle, angleRad;
     float dirSizeAngle;
     float viewAround = 50;

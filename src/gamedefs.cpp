@@ -2,8 +2,9 @@
 
 size_t id_counter = 0;
 std::list<Object*> Gobjects;
-int WinX = 800;
-int WinY = 600;
+bool fullscreen = false;
+int WinX = 16*80;
+int WinY = 9*80;
 float WinXf = WinX; 
 float WinYf = WinY;
 int MapX = 800;

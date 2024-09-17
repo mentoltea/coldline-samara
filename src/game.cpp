@@ -1,5 +1,10 @@
 #include "game.h"
 
+float absf(float x) {
+    if (x<0) return -x;
+    return x;
+}
+
 bool lineCircleIntersection(Point start, Point end, Point circle, float radius, Point& intersection) {
     float dx = end.x - start.x;
     float dy = end.y - start.y;
@@ -242,6 +247,12 @@ void update() {
     camera.x = Gplayer->position.x - WinXf/2;
     camera.y = Gplayer->position.y - WinYf/2;
 
+    if (camera.x + WinXf/2 - Gplayer->position.x >= Gplayer->staticDrawingBox.x) camera.x += 2;
+    else if (camera.x + WinXf/2 - Gplayer->position.x < 0) camera.x -= 2;
+
+    if (camera.y + WinYf/2 - Gplayer->position.y >= Gplayer->staticDrawingBox.y) camera.y += 2;
+    else if (camera.y + WinXf/2 - Gplayer->position.y < 0) camera.y -= 2;
+
     for (auto it=Gobjects.begin(); it!=Gobjects.end(); it++) {
         if (!(*it)->active || (*it)==Gplayer) continue;
         (*it)->update();
@@ -250,7 +261,8 @@ void update() {
 
 
 void draw() {
-    ClearBackground({25,25,25,255});
+    ClearBackground({0,0,0,255});
+    DrawRectangleV(projectToCamera({0,0}), {MapXf, MapYf}, {25,25,25,255});
     for (auto it=Gobjects.begin(); it!=Gobjects.end(); it++) {
         if (!(*it)->active) continue;
         if ((*it)->visible) {

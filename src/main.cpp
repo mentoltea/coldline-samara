@@ -38,6 +38,7 @@ int main() {
 
 
     InitWindow(WinX, WinY, "Coldline Samara");
+    if (fullscreen) ToggleFullscreen();
     SetExitKey(KEY_F4);
     SetTargetFPS(60);
     WaitTime(0.1);

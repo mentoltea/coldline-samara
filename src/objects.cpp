@@ -202,13 +202,16 @@ void Player::drawView() {
     }
 }
 void Player::draw()  {
-    drawViewAround();
-    drawView();
-    drawPosition = projectToCamera(position);
+
+    Point drawPosition = projectToCamera(position);
+
     dp1 = {drawPosition.x + size * cosf(angleRad - dirSizeAngle), drawPosition.y + size * sinf(angleRad - dirSizeAngle)};
     dp2 = {drawPosition.x + size * cosf(angleRad + dirSizeAngle), drawPosition.y + size * sinf(angleRad + dirSizeAngle)};
     dp3 = {drawPosition.x + size * cosf(PI + angleRad + dirSizeAngle), drawPosition.y + size * sinf(PI + angleRad + dirSizeAngle)};
     dp4 = {drawPosition.x + size * cosf(PI + angleRad - dirSizeAngle), drawPosition.y + size * sinf(PI + angleRad - dirSizeAngle)};
+    
+    drawViewAround();
+    drawView();
     DrawTriangle(dp2, dp1,  dp3, {100, 100, 200, 250});
     DrawTriangle(dp3, dp4, dp2,  {100, 100, 200, 250});
     // DrawCircleLinesV(position, hitCircleSize, {255, 50, 50, 250});
