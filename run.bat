@@ -1,2 +1,3 @@
 @echo off
-build\main.exe;
+cd build\
+main.exe;

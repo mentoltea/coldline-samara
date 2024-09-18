@@ -1,2 +1,3 @@
 @echo off
-build\main-static.exe;
+cd build\
+main-static.exe;

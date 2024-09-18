@@ -3,11 +3,6 @@
 
 #include "definitions.h"
 
-namespace CVector {
-extern "C" {
-#include "vector.h"
-}
-}
 namespace MemManager {
 extern "C" {
 #include "memmanager.h"

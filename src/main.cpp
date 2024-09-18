@@ -7,10 +7,18 @@ extern "C" {
 void load_settings(FILE* fd) {
     Json::init_json();
     Json::json_child json = Json::read_json(fd);
-    size_t len = CVector::vec_metaptr(json.fields)->length;
+    size_t len = Json::vec_metaptr(json.fields)->length;
     for (size_t i=0; i<len; i++) {
-        if (CVector::strcmp(json.fields[i].key, "fullscreen")==0) {
+        if (Json::strcmp(json.fields[i].key, "fullscreen")==0) {
             fullscreen = json.fields[i].value.data.num;
+        } else if (Json::strcmp(json.fields[i].key, "WinX")==0) {
+            WinX = json.fields[i].value.data.num;
+            WinXf = WinX;
+        } else if (Json::strcmp(json.fields[i].key, "WinY")==0) {
+            WinY = json.fields[i].value.data.num;
+            WinYf = WinY;
+        } else if (Json::strcmp(json.fields[i].key, "MAX_REFLECTIONS")==0) {
+            MAX_REFLECTIONS = json.fields[i].value.data.num;
         }
     }
 }
@@ -42,7 +50,7 @@ int main() {
     Gobjects.push_back(m2);
 
 
-    Enemy *en = NEW(Enemy) Enemy({450, 500}, {10, 20});
+    Enemy *en = NEW(Enemy) Enemy({450, 500}, {10, 10});
     en->direction = {-1, 0};
     Gobjects.push_back(en);
     
