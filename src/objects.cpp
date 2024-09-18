@@ -143,25 +143,25 @@ void Door::drawA(unsigned char alfa) {
     drawBody.p3 = projectToCamera({position.x + drawsize * cosf(PI + anglerad + dirSizeAngle), position.y + drawsize * sinf(PI + anglerad + dirSizeAngle)});
     drawBody.p4 = projectToCamera({position.x + drawsize * cosf(PI + anglerad - dirSizeAngle), position.y + drawsize * sinf(PI + anglerad - dirSizeAngle)});
 
-    DrawLineV(drawBody.p1, drawBody.p2, {255,0,0,250});
-    DrawLineV(drawBody.p2, drawBody.p4, {255,0,0,250});
-    DrawLineV(drawBody.p4, drawBody.p3, {255,0,0,250});
-    DrawLineV(drawBody.p3, drawBody.p1, {255,0,0,250});
+    // DrawLineV(drawBody.p1, drawBody.p2, {255,0,0,250});
+    // DrawLineV(drawBody.p2, drawBody.p4, {255,0,0,250});
+    // DrawLineV(drawBody.p4, drawBody.p3, {255,0,0,250});
+    // DrawLineV(drawBody.p3, drawBody.p1, {255,0,0,250});
 
-    DrawLineV(projectToCamera( body.p1), projectToCamera(body.p2), {255,255,0,250});
-    DrawLineV(projectToCamera(body.p2), projectToCamera(body.p4), {255,255,0,250});
-    DrawLineV(projectToCamera(body.p4), projectToCamera(body.p3), {255,255,0,250});
-    DrawLineV(projectToCamera(body.p3), projectToCamera(body.p1), {255,255,0,250});
-    DrawCircleV(projectToCamera( origin), 1, {0, 250, 0, 250});
-    DrawCircleV(projectToCamera( position), 1, {250, 0, 0, 250});
+    // DrawLineV(projectToCamera( body.p1), projectToCamera(body.p2), {255,255,0,250});
+    // DrawLineV(projectToCamera(body.p2), projectToCamera(body.p4), {255,255,0,250});
+    // DrawLineV(projectToCamera(body.p4), projectToCamera(body.p3), {255,255,0,250});
+    // DrawLineV(projectToCamera(body.p3), projectToCamera(body.p1), {255,255,0,250});
+    // DrawCircleV(projectToCamera( origin), 1, {0, 250, 0, 250});
+    // DrawCircleV(projectToCamera( position), 1, {250, 0, 0, 250});
     
-    DrawTriangle(drawBody.p3, drawBody.p2, drawBody.p1, {100,40,5,alfa} );
-    DrawTriangle(drawBody.p2, drawBody.p3, drawBody.p4, {100,40,5,alfa} );
+    DrawTriangle(drawBody.p3, drawBody.p2, drawBody.p1, {240,20,50,alfa} );
+    DrawTriangle(drawBody.p2, drawBody.p3, drawBody.p4, {240,20,50,alfa} );
 }
 void Door::draw()  {
     int max = 255;
     int base = 20;
-    float rate = 2;
+    float rate = 4;
     int a = base + rate*(float)raycount/(float)(Player::Nray + Player::Nrayback/2) * (max-base);
     drawA((unsigned char) (a > 255 ? 255 : a));
     raycount = 0;
