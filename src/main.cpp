@@ -108,6 +108,7 @@ int main(int argc, char** argv) {
 
 
     InitWindow(gamestate.WinX, gamestate.WinY, "Coldline Samara");
+    // ToggleBorderlessWindowed();
     if (gamestate.fullscreen) ToggleFullscreen();
     SetExitKey(KEY_F4);
     SetTargetFPS(60);
@@ -117,7 +118,10 @@ int main(int argc, char** argv) {
     while (!WindowShouldClose()) {
         BeginDrawing();
         if (IsKeyPressed(KEY_ESCAPE)) gamestate.pause = !gamestate.pause;
-        
+        if (IsKeyPressed(KEY_F11)) {
+            gamestate.fullscreen = !gamestate.fullscreen;
+            ToggleFullscreen();
+        }
 
         if (!gamestate.pause) update();
         draw();

@@ -152,7 +152,7 @@ public:
     static const int Nray = 150;
     static const int Nrayback = 80;
     float delta = 2*hview/Nray;
-    float deltaback = (360-2*hview+2)/Nrayback;
+    float deltaback = (360-2*hview+5)/Nrayback;
     Player(Point pos, Vector2 size);
     ~Player() override;
 

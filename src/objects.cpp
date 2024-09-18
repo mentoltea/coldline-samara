@@ -231,13 +231,13 @@ Player::Player(Point pos, Vector2 size): inters(Nray), intersBack(Nrayback) {
 Player::~Player() = default;
 
 void Player::drawViewAround() {
-    float a = angle - hview + 2;
+    float a = angle - hview + 4;
     for (int i=0; i<Nrayback; i++) {
         a -= deltaback;
-        raycastLimited(inters[i], position, a, 1, this, this, viewAround);
+        raycastLimited(intersBack[i], position, a, 1, this, this, viewAround);
         if (i>0) {
             // DrawCircleV(inters[i].points[0], 1, {255,255,0,250});
-            DrawTriangle( drawPosition , projectToCamera( inters[i-1].points[0] ), projectToCamera(inters[i].points[0]),  viewAroundColor);
+            DrawTriangle( drawPosition , projectToCamera( intersBack[i-1].points[0] ), projectToCamera(intersBack[i].points[0]),  viewAroundColor);
         }
     }
 }
