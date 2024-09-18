@@ -7,7 +7,26 @@
 #include <list>
 #include <array>
 #include <math.h>
-#include "iostream"
+#include <iostream>
+
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
+
+namespace MemManager {
+extern "C" {
+#include "memmanager.h"
+}
+}
+namespace Json {
+extern "C" {
+#include "json.h"
+}
+}
+
+#define NEW(T) new(MemManager::memloc(sizeof(T)))
+
 
 typedef Vector2 Point;
 typedef struct Poly {
@@ -44,17 +63,21 @@ typedef struct IntersectInfo {
     Object* ptr;
 } IntersectInfo;
 
-extern size_t id_counter;
-extern bool fullscreen;
-extern int WinX, WinY;
-extern float WinXf, WinYf;
-extern int MapX, MapY;
-extern float MapXf, MapYf;
-extern int MAX_REFLECTIONS;
-extern std::list<Object*> Gobjects;
-extern Player* Gplayer;
-extern bool pause;
-extern Point camera;
+typedef struct GameState {
+    size_t id_counter;
+    bool fullscreen;
+    int WinX, WinY;
+    float WinXf, WinYf;
+    int MapX, MapY;
+    float MapXf, MapYf;
+    int MAX_REFLECTIONS;
+    std::list<Object*> Gobjects;
+    Player* Gplayer;
+    bool pause;
+    Point camera;
+} GameState;
+
+extern GameState gamestate;
 
 
 #endif

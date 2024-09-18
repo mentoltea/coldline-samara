@@ -3,18 +3,6 @@
 
 #include "definitions.h"
 
-namespace MemManager {
-extern "C" {
-#include "memmanager.h"
-}
-}
-namespace Json {
-extern "C" {
-#include "json.h"
-}
-}
-
-#define NEW(T) new(MemManager::memloc(sizeof(T)))
 
 float absf(float x);
 
@@ -44,7 +32,7 @@ void update();
 
 class Object {
 public:
-    size_t id = id_counter++;
+    size_t id = gamestate.id_counter++;
     bool active;
     bool collidable;
     bool visible;

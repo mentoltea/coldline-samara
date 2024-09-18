@@ -40,7 +40,7 @@ bool lineCircleIntersection(Point start, Point end, Point circle, float radius, 
 
 
 Object* collide(Entity *obj, const Point& p, const Vector2& direction) {
-    for (auto it=Gobjects.begin(); it!=Gobjects.end(); it++) {
+    for (auto it=gamestate.Gobjects.begin(); it!=gamestate.Gobjects.end(); it++) {
         if (*it == obj || !(*it)->active) continue;
         if ((*it)->collidable && (*it)->intersects(p)) {
             (*it)->collidecallback(obj, p, direction);
@@ -52,7 +52,7 @@ Object* collide(Entity *obj, const Point& p, const Vector2& direction) {
 
 Object* collideCircle(Entity *obj, const Point& circle, float radius, const Vector2& direction) {
     Point p;
-    for (auto it=Gobjects.begin(); it!=Gobjects.end(); it++) {
+    for (auto it=gamestate.Gobjects.begin(); it!=gamestate.Gobjects.end(); it++) {
         if (*it == obj || !(*it)->active) continue;
         if ((*it)->collidable && (*it)->intersectsCircle(circle, radius, p)) {
             (*it)->collidecallback(obj, p, direction);
@@ -68,7 +68,7 @@ Vector2 reflect(const Vector2&  v, const Vector2&  normal) {
 }
 
 Object* intersect(const Point& p, Object* ignore) {
-    for (auto it=Gobjects.begin(); it!=Gobjects.end(); it++) {
+    for (auto it=gamestate.Gobjects.begin(); it!=gamestate.Gobjects.end(); it++) {
         if (*it == ignore || !(*it)->active) continue;
         if (!(*it)->opaque && (*it)->intersects(p)) return *it;
     }
@@ -90,7 +90,7 @@ void raycastLimitedReflections(IntersectInfo& result,Point start, float angle, f
         intobj = intersect(start, ignore);
         if (intobj) {
             intobj->raycallback(origin, result.distance);
-            if (intobj->reflects && reflections < MAX_REFLECTIONS) {
+            if (intobj->reflects && reflections < gamestate.MAX_REFLECTIONS) {
                 Vector2 r = reflect({dx, dy}, intobj->normal);
                 dx = r.x; dy = r.y;
                 ignore = intobj;
@@ -109,15 +109,15 @@ void raycastLimitedReflections(IntersectInfo& result,Point start, float angle, f
             break;
         }
 
-        if (start.x >= MapXf) {
-            result.points.push_back({MapXf, start.y});
+        if (start.x >= gamestate.MapXf) {
+            result.points.push_back({gamestate.MapXf, start.y});
             break;
         } else if (start.x < 0) {
             result.points.push_back({0, start.y});
             break;
         }
-        if (start.y >= MapYf) {
-            result.points.push_back({start.x, MapYf});
+        if (start.y >= gamestate.MapYf) {
+            result.points.push_back({start.x, gamestate.MapYf});
             break;
         } else if (start.y < 0) {
             result.points.push_back({start.x, 0});
@@ -155,15 +155,15 @@ void raycastLimited(IntersectInfo& result, Point start, float angle, float step,
             break;
         }
         
-        if (start.x >= MapXf) {
-            result.points.push_back({MapXf, start.y});
+        if (start.x >= gamestate.MapXf) {
+            result.points.push_back({gamestate.MapXf, start.y});
             break;
         } else if (start.x < 0) {
             result.points.push_back({0, start.y});
             break;
         }
-        if (start.y >= MapYf) {
-            result.points.push_back({start.x, MapYf});
+        if (start.y >= gamestate.MapYf) {
+            result.points.push_back({start.x, gamestate.MapYf});
             break;
         } else if (start.y < 0) {
             result.points.push_back({start.x, 0});
@@ -188,7 +188,7 @@ void raycast(IntersectInfo& result, Point start, float angle, float step, Object
         intobj = intersect(start, ignore);
         if (intobj) {
             intobj->raycallback(origin, result.distance);
-            if (intobj->reflects && reflections < MAX_REFLECTIONS) {
+            if (intobj->reflects && reflections < gamestate.MAX_REFLECTIONS) {
                 Vector2 r = reflect({dx, dy}, intobj->normal);
                 dx = r.x; dy = r.y;
                 ignore = intobj;
@@ -203,15 +203,15 @@ void raycast(IntersectInfo& result, Point start, float angle, float step, Object
         start.y += dy;
         result.distance += step;
 
-        if (start.x >= MapXf) {
-            result.points.push_back({MapXf, start.y});
+        if (start.x >= gamestate.MapXf) {
+            result.points.push_back({gamestate.MapXf, start.y});
             break;
         } else if (start.x < 0) {
             result.points.push_back({0, start.y});
             break;
         }
-        if (start.y >= MapYf) {
-            result.points.push_back({start.x, MapYf});
+        if (start.y >= gamestate.MapYf) {
+            result.points.push_back({start.x, gamestate.MapYf});
             break;
         } else if (start.y < 0) {
             result.points.push_back({start.x, 0});
@@ -239,7 +239,7 @@ void raycast(IntersectInfo& result, Point start, Vector2 direct, Object* ignore,
         intobj = intersect(start, ignore);
         if (intobj) {
             intobj->raycallback(origin, result.distance);
-            if (intobj->reflects && reflections < MAX_REFLECTIONS) {
+            if (intobj->reflects && reflections < gamestate.MAX_REFLECTIONS) {
                 direct = reflect(direct, intobj->normal);
                 // direct.x *= 3/2;
                 // direct.y *= 3/2;
@@ -255,15 +255,15 @@ void raycast(IntersectInfo& result, Point start, Vector2 direct, Object* ignore,
         start.y += direct.y;
         result.distance += step;
 
-        if (start.x >= MapXf) {
-            result.points.push_back({MapXf, start.y});
+        if (start.x >= gamestate.MapXf) {
+            result.points.push_back({gamestate.MapXf, start.y});
             break;
         } else if (start.x < 0) {
             result.points.push_back({0, start.y});
             break;
         }
-        if (start.y >= MapYf) {
-            result.points.push_back({start.x, MapYf});
+        if (start.y >= gamestate.MapYf) {
+            result.points.push_back({start.x, gamestate.MapYf});
             break;
         } else if (start.y < 0) {
             result.points.push_back({start.x, 0});
@@ -278,11 +278,11 @@ void raycast(IntersectInfo& result, Point start, Vector2 direct, Object* ignore,
 }
 
 Point projectToCamera(const Point& p) {
-    return {p.x - camera.x, p.y - camera.y};
+    return {p.x - gamestate.camera.x, p.y - gamestate.camera.y};
 }
 
 Point projectToMap(const Point& p) {
-    return {p.x + camera.x, p.y + camera.y};
+    return {p.x + gamestate.camera.x, p.y + gamestate.camera.y};
 }
 
 void update() {        
@@ -301,22 +301,17 @@ void update() {
     
     Point mouse = GetMousePosition();
     float koef = 1.2;
-    camera.x = (koef*(Gplayer->position.x) + camera.x + mouse.x)/(1+koef) - (WinXf)/2;
-    camera.y = (koef*(Gplayer->position.y) + camera.y + mouse.y)/(1+koef) - (WinYf)/2;
-    // camera.x = Gplayer->position.x - WinXf/2;
-    // camera.y = Gplayer->position.y - WinYf/2;
+    gamestate.camera.x = (koef*(gamestate.Gplayer->position.x) + gamestate.camera.x + mouse.x)/(1+koef) - (gamestate.WinXf)/2;
+    gamestate.camera.y = (koef*(gamestate.Gplayer->position.y) + gamestate.camera.y + mouse.y)/(1+koef) - (gamestate.WinYf)/2;
+    // gamestate.camera.x = gamestate.Gplayer->position.x - gamestate.WinXf/2;
+    // gamestate.camera.y = gamestate.Gplayer->position.y - gamestate.WinYf/2;
 
-
-    if (camera.x + WinXf/2 - Gplayer->position.x >= Gplayer->staticDrawingBox.x) camera.x += 2;
-    else if (camera.x + WinXf/2 - Gplayer->position.x < 0) camera.x -= 2;
-
-    if (camera.y + WinYf/2 - Gplayer->position.y >= Gplayer->staticDrawingBox.y) camera.y += 2;
-    else if (camera.y + WinXf/2 - Gplayer->position.y < 0) camera.y -= 2;
-
-    Gplayer->move = move;
-    Gplayer->update();
-    for (auto it=Gobjects.begin(); it!=Gobjects.end(); it++) {
-        if (!(*it)->active || (*it)==Gplayer) continue;
+    if (gamestate.Gplayer) {
+        gamestate.Gplayer->move = move;
+        gamestate.Gplayer->update();
+    }
+    for (auto it=gamestate.Gobjects.begin(); it!=gamestate.Gobjects.end(); it++) {
+        if (!(*it)->active || (*it)==gamestate.Gplayer) continue;
         (*it)->update();
     }
 }
@@ -324,14 +319,14 @@ void update() {
 
 void draw() {
     ClearBackground({0,0,0,255});
-    DrawRectangleV(projectToCamera({0,0}), {MapXf, MapYf}, {25,25,25,255});
-    for (auto it=Gobjects.begin(); it!=Gobjects.end(); it++) {
+    DrawRectangleV(projectToCamera({0,0}), {gamestate.MapXf, gamestate.MapYf}, {25,25,25,255});
+    for (auto it=gamestate.Gobjects.begin(); it!=gamestate.Gobjects.end(); it++) {
         if (!(*it)->active) continue;
         if ((*it)->visible) {
             (*it)->draw();
         }
     }
-    if (pause) {
-        DrawText("PAUSED", WinX - 6*20 - 5, 0, 30, GREEN);
+    if (gamestate.pause) {
+        DrawText("PAUSED", gamestate.WinX - 6*20 - 5, 0, 30, GREEN);
     }
 }

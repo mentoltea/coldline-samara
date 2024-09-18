@@ -121,7 +121,7 @@ bool Wall::intersectsCircle(const Point& circle, float radius, Point& intersecti
 
 Player::Player(Point pos, Vector2 size): inters(Nray), intersBack(Nrayback) {
     position = pos;
-    drawPosition = {WinXf/2, WinYf/2};
+    drawPosition = {gamestate.WinXf/2, gamestate.WinYf/2};
     float sl = sqrtf(size.x*size.x + size.y*size.y);
     hitCircleSize = sl*0.95;
     dirSizeAngle = acosf(size.x/sl);
@@ -348,7 +348,7 @@ void Enemy::update() {
     if (found_player != -1) {
         selfColor = {200, 50, 50, 250};
         viewColor = {170,50,50,180};
-        direction = {Gplayer->position.x - position.x, Gplayer->position.y - position.y};
+        direction = {gamestate.Gplayer->position.x - position.x, gamestate.Gplayer->position.y - position.y};
         move.x += direction.x;
         move.y += direction.y;
     } else {
