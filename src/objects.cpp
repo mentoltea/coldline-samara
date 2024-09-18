@@ -209,7 +209,7 @@ void Door::collidecallback(Entity* obj, const Point& point, const Vector2& direc
     //     return;
     // }
     float dot = (normal.x*direction.x + normal.y*direction.y);
-    anglevel = dot*3 - anglevel;
+    anglevel += (dot*3 - anglevel)/2;
     obj->move.x -= direction.x/3;
     obj->move.y -= direction.y/3;
     // obj->position.x -= direction.x/3 + 1;
