@@ -118,6 +118,106 @@ bool Wall::intersectsCircle(const Point& circle, float radius, Point& intersecti
 
 
 
+Door::Door(float minangle, float maxangle, float angle, Point origin, Vector2 hitboxsize, Vector2 drawsize) {
+    opaque = false;
+    reflects = false;
+    type = DOOR;
+
+    this->maxangle = maxangle;
+    this->minangle = minangle;
+    this->angle = angle;
+    this->origin = origin;
+    float hl = sqrtf(hitboxsize.x*hitboxsize.x + hitboxsize.y*hitboxsize.y);
+    this->hitboxsize = hl;
+    this->hitSizeAngle = acos(hitboxsize.x/hl);
+    float sl = sqrtf(drawsize.x*drawsize.x + drawsize.y*drawsize.y);
+    dirSizeAngle = acosf(drawsize.x/sl);
+    this->drawsize = sl;
+    this->posoriginsize = this->hitboxsize/2;
+}
+Door::~Door() = default;
+
+void Door::drawA(unsigned char alfa) {
+    drawBody.p1 = projectToCamera({position.x + drawsize * cosf(anglerad - dirSizeAngle), position.y + drawsize * sinf(anglerad - dirSizeAngle)});
+    drawBody.p2 = projectToCamera({position.x + drawsize * cosf(anglerad + dirSizeAngle), position.y + drawsize * sinf(anglerad + dirSizeAngle)});
+    drawBody.p3 = projectToCamera({position.x + drawsize * cosf(PI + anglerad + dirSizeAngle), position.y + drawsize * sinf(PI + anglerad + dirSizeAngle)});
+    drawBody.p4 = projectToCamera({position.x + drawsize * cosf(PI + anglerad - dirSizeAngle), position.y + drawsize * sinf(PI + anglerad - dirSizeAngle)});
+
+    DrawLineV(drawBody.p1, drawBody.p2, {255,0,0,250});
+    DrawLineV(drawBody.p2, drawBody.p4, {255,0,0,250});
+    DrawLineV(drawBody.p4, drawBody.p3, {255,0,0,250});
+    DrawLineV(drawBody.p3, drawBody.p1, {255,0,0,250});
+
+    DrawLineV(projectToCamera( body.p1), projectToCamera(body.p2), {255,255,0,250});
+    DrawLineV(projectToCamera(body.p2), projectToCamera(body.p4), {255,255,0,250});
+    DrawLineV(projectToCamera(body.p4), projectToCamera(body.p3), {255,255,0,250});
+    DrawLineV(projectToCamera(body.p3), projectToCamera(body.p1), {255,255,0,250});
+    DrawCircleV(projectToCamera( origin), 1, {0, 250, 0, 250});
+    DrawCircleV(projectToCamera( position), 1, {250, 0, 0, 250});
+    
+    DrawTriangle(drawBody.p3, drawBody.p2, drawBody.p1, {100,40,5,alfa} );
+    DrawTriangle(drawBody.p2, drawBody.p3, drawBody.p4, {100,40,5,alfa} );
+}
+void Door::draw()  {
+    int max = 255;
+    int base = 20;
+    float rate = 2;
+    int a = base + rate*(float)raycount/(float)(Player::Nray + Player::Nrayback/2) * (max-base);
+    drawA((unsigned char) (a > 255 ? 255 : a));
+    raycount = 0;
+}
+void Door::update() {
+    angle += anglevel;
+    anglevel *= koef;
+    while (angle >= 360) {
+        angle -= 360;
+    }
+    while (angle <= -360) {
+        angle += 360;
+    }
+
+    if (angle>maxangle || angle < minangle) {
+        angle -= anglevel;
+        anglevel *= -koef;
+    }
+    anglerad = PI*angle/180;
+
+    normal = {-sinf(anglerad), cosf(anglerad)};
+
+    position = {origin.x + hitboxsize*cosf(anglerad), origin.y + hitboxsize*sinf(anglerad)};
+    body.p1 = {position.x + hitboxsize * cosf(anglerad - hitSizeAngle), position.y + hitboxsize * sinf(anglerad - hitSizeAngle)};
+    body.p2 = {position.x + hitboxsize * cosf(anglerad + hitSizeAngle), position.y + hitboxsize * sinf(anglerad + hitSizeAngle)};
+    body.p3 = {position.x + hitboxsize * cosf(PI + anglerad + hitSizeAngle), position.y + hitboxsize * sinf(PI + anglerad + hitSizeAngle)};
+    body.p4 = {position.x + hitboxsize * cosf(PI + anglerad - hitSizeAngle), position.y + hitboxsize * sinf(PI + anglerad - hitSizeAngle)};
+}
+bool Door::intersects(const Point& p) {
+    return CheckCollisionPointTriangle(p, body.p1, body.p2, body.p3) || CheckCollisionPointTriangle(p, body.p3, body.p2, body.p4);
+}
+void Door::raycallback(Object* obj, float dist) {
+    if (obj->type == PLAYER) raycount++;
+}
+bool Door::intersectsCircle(const Point& circle, float radius, Point& intersection) {
+    return lineCircleIntersection(body.p1, body.p2, circle, radius, intersection)
+        || lineCircleIntersection(body.p2, body.p4, circle, radius, intersection)
+        || lineCircleIntersection(body.p4, body.p3, circle, radius, intersection)
+        || lineCircleIntersection(body.p3, body.p1, circle, radius, intersection);
+}
+void Door::collidecallback(Entity* obj, const Point& point, const Vector2& direction) {
+    // float dl = sqrtf(direction.x*direction.x + direction.y*direction.y);
+    // if (dl==0) {
+    //     anglevel = -anglevel;
+    //     return;
+    // }
+    float dot = (normal.x*direction.x + normal.y*direction.y);
+    anglevel = dot*3 - anglevel;
+    obj->move.x -= direction.x/3;
+    obj->move.y -= direction.y/3;
+    // obj->position.x -= direction.x/3 + 1;
+    // obj->position.y -= direction.y/3 + 1;
+}
+
+
+
 
 Player::Player(Point pos, Vector2 size): inters(Nray), intersBack(Nrayback) {
     position = pos;

@@ -103,6 +103,36 @@ public:
 };
 
 
+class Door: public Obtacle {
+public:
+    Poly body;
+    Poly drawBody;
+    Point origin;
+    Point position;
+    float anglevel;
+    float angle, anglerad;
+    float dirSizeAngle;
+    float hitSizeAngle;
+    float drawsize;
+    float maxangle;
+    float minangle;
+    float hitboxsize;
+    float posoriginsize;
+    float koef = 0.95;
+
+
+    Door(float minangle, float maxangle, float angle, Point origin, Vector2 hitboxsize, Vector2 drawsize);
+    ~Door();
+    
+    void drawA(unsigned char alfa) ;
+    void draw() override;
+    void update() override;
+    bool intersects(const Point& p) override;
+    void raycallback(Object* obj, float dist) override;
+    bool intersectsCircle(const Point& circle, float radius, Point& intersection) override;
+    void collidecallback(Entity* obj, const Point& point, const Vector2& direction) override;
+};
+
 
 class Player : public Entity {
 public:

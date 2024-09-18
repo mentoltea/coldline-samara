@@ -7,7 +7,7 @@
     "targetdir" : "build/",
     "target" : "main-static.exe",
     "cflags" : "-c -Wall -O0",
-    "libs" : "-lraylib -lwinmm -lgdi32 -lm --static",
+    "libs" : "-lraylibdll -lwinmm -lgdi32 -lm --static",
     "cpp_source" : [
         {
             "compiler" : "gcc",
@@ -18,11 +18,23 @@
             ]    
         },
         {
-            "name" : "main",
+            "compiler" : "gcc",
+            "name" : "vector",
+            "format" : ".c",
             "dependencies" : [
-                "src/game.h",
-                "src/definitions.h"
+                "src/vector.h"
             ]    
+        },
+        {
+            "compiler" : "gcc",
+            "name" : "json",
+            "format" : ".c",
+            "dependencies" : [
+                "src/json.h"
+            ]    
+        },
+        {
+            "name" : "main"
         },
         {
             "name" : "game",

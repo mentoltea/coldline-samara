@@ -59,6 +59,7 @@ int main(int argc, char** argv) {
     if (argc>=2) {
         libfilename = argv[1];
     }
+    cout << libfilename << endl;
 
     MemManager::prealloc(PAGE_SIZE*2);
     
@@ -77,15 +78,24 @@ int main(int argc, char** argv) {
     Mirror *m2 = NEW(Mirror) Mirror({{600, 200}, {590, 200}, {500, 300}, {490, 300}}, {-1, -1});
     gamestate.Gobjects.push_back(m2);
 
-    Enemy *en = NEW(Enemy) Enemy({450, 500}, {10, 10});
-    en->direction = {-1, 0};
-    gamestate.Gobjects.push_back(en);
+    // Enemy *en = NEW(Enemy) Enemy({450, 500}, {10, 10});
+    // en->direction = {-1, 0};
+    // gamestate.Gobjects.push_back(en);
     
-    Enemy *en2 = NEW(Enemy) Enemy({500, 500}, {10, 20});
-    en2->direction = {0, 1};
-    gamestate.Gobjects.push_back(en2);
+    // Enemy *en2 = NEW(Enemy) Enemy({500, 500}, {10, 20});
+    // en2->direction = {0, 1};
+    // gamestate.Gobjects.push_back(en2);
 
-    Point pos = {700, 500};
+    Door *d = NEW(Door) Door(-170, 170, 0, {450,500}, {50, 5}, {50, 5});
+    gamestate.Gobjects.push_back(d);
+
+    w = NEW(Wall) Wall({{450, 495}, {0, 495}, {450, 505}, {0, 505},});
+    gamestate.Gobjects.push_back(w);
+
+     w = NEW(Wall) Wall({{gamestate.MapXf, 495}, {550, 495}, {gamestate.MapXf, 505}, {550, 505},});
+    gamestate.Gobjects.push_back(w);
+
+    Point pos = {700, 550};
     Player *p = NEW(Player) Player(pos, {10, 20});
     gamestate.Gobjects.push_back(p);
     gamestate.Gplayer = p;
