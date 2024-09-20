@@ -294,6 +294,11 @@ void update() {
     } else if (IsKeyDown(KEY_S)) {
         move.y += 4;
     }
+
+    if (IsKeyDown(KEY_LEFT_SHIFT)){
+        move.x *= 1.5;
+        move.y *= 1.5;
+    }
     
 
     Point mouse = GetMousePosition();

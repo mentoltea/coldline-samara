@@ -61,14 +61,14 @@ int main(int argc, char** argv) {
     MemManager::page_info(0);
 
 
-    InitWindow(gamestate.WinX, gamestate.WinY, "Coldline Samara");
-    SetWindowState(FLAG_WINDOW_RESIZABLE);
     SetWindowState(FLAG_VSYNC_HINT); 
-    SetWindowState(FLAG_WINDOW_UNDECORATED); 
     SetWindowState(FLAG_WINDOW_ALWAYS_RUN); 
-    SetWindowState(FLAG_WINDOW_TRANSPARENT); 
+    // SetWindowState(FLAG_WINDOW_TRANSPARENT); 
     SetWindowState(FLAG_WINDOW_HIGHDPI); 
     SetWindowState(FLAG_MSAA_4X_HINT);
+    InitWindow(gamestate.WinX, gamestate.WinY, "Coldline Samara");
+    SetWindowState(FLAG_WINDOW_RESIZABLE);
+    SetWindowState(FLAG_WINDOW_UNDECORATED); 
 
     if (gamestate.fullscreen) ToggleFullscreen();
     SetExitKey(KEY_F4);
