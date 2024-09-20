@@ -8,11 +8,14 @@
 #include <array>
 #include <math.h>
 #include <iostream>
+#include <assert.h>
+#include <stdint.h>
 
+namespace Cstd {
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-
+}
 
 namespace MemManager {
 extern "C" {
@@ -25,7 +28,11 @@ extern "C" {
 }
 }
 
+float absf(float x);
+size_t max(size_t, size_t);
+
 #define NEW(T) new(MemManager::memloc(sizeof(T)))
+
 
 
 typedef Vector2 Point;
@@ -48,20 +55,27 @@ typedef enum ObjType {
 } ObjType;
 
 class Object;
-
 class Obtacle;
-class Wall;
-class Mirror;
-
+class Wall; // final
+class Mirror; // final
+class Door; // final
 class Entity;
-class Player;
-class Enemy;
+class Player; // final
+class Enemy; // final
+#define MAX_OBJECT_SIZE \
+    max(sizeof(Wall), \
+    max(sizeof(Mirror), \
+    max(sizeof(Door), \
+    max(sizeof(Player),\
+    max(sizeof(Enemy), 1)))))
+
 
 typedef struct IntersectInfo {
     std::vector<Point> points;
     float distance;
     Object* ptr;
 } IntersectInfo;
+
 
 typedef struct GameState {
     size_t id_counter;
@@ -72,6 +86,7 @@ typedef struct GameState {
     float MapXf, MapYf;
     int MAX_REFLECTIONS;
     std::list<Object*> Gobjects;
+    std::list<Object*> GlevelReference;
     Player* Gplayer;
     bool pause;
     Point camera;

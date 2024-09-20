@@ -4,8 +4,6 @@
 #include "definitions.h"
 
 
-float absf(float x);
-
 Object* intersect(const Point& p, Object* ignore);
 void raycast(IntersectInfo& result,Point start, float angle, float step, Object* ignore, Object* origin);
 // raycast with direction
@@ -32,6 +30,7 @@ void update();
 
 class Object {
 public:
+    size_t emptyVar;
     size_t id = gamestate.id_counter++;
     bool active;
     bool collidable;
@@ -54,8 +53,8 @@ public:
 
 class Entity : public Object {
 public:
-    Vector2 direction;
-    Vector2 move;
+    Vector2 direction = {0,0};
+    Vector2 move = {0,0};
     Point position;
     Point drawPosition;
     float hitCircleSize;
@@ -75,6 +74,7 @@ public:
     Poly body;
     Poly drawBody;
 
+    Mirror() {};
     Mirror(Poly b, Vector2 n);
     ~Mirror() = default;
     
@@ -91,6 +91,7 @@ public:
     Poly body;
     Poly drawBody;
 
+    Wall() {}
     Wall(Poly b);
     ~Wall() override;
     
@@ -120,7 +121,7 @@ public:
     float posoriginsize;
     float koef = 0.95;
 
-
+    Door() {}
     Door(float minangle, float maxangle, float angle, Point origin, Vector2 hitboxsize, Vector2 drawsize);
     ~Door();
     
@@ -153,6 +154,8 @@ public:
     static const int Nrayback = 80;
     float delta = 2*hview/Nray;
     float deltaback = (360-2*hview+5)/Nrayback;
+
+    Player() {}
     Player(Point pos, Vector2 size);
     ~Player() override;
 
@@ -182,6 +185,8 @@ public:
     static const int Nray = 60;
     float delta = 2*hview/Nray;
     size_t maxlen;
+
+    Enemy() {}
     Enemy(Point pos, Vector2 size);
     ~Enemy() override;
 

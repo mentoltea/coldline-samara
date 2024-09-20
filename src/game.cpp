@@ -1,10 +1,5 @@
 #include "game.h"
 
-float absf(float x) {
-    if (x<0) return -x;
-    return x;
-}
-
 bool lineCircleIntersection(Point start, Point end, Point circle, float radius, Point& intersection) {
     float dx = end.x - start.x;
     float dy = end.y - start.y;
@@ -286,6 +281,7 @@ Point projectToMap(const Point& p) {
 }
 
 void update() {        
+    // std::cout << "Update" << std::endl;
     Vector2 move = {0};
     if (IsKeyDown(KEY_A)) {
         move.x -= 4;
@@ -299,6 +295,7 @@ void update() {
         move.y += 4;
     }
     
+
     Point mouse = GetMousePosition();
     float koef = 1.2;
     gamestate.camera.x = (koef*(gamestate.Gplayer->position.x) + gamestate.camera.x + mouse.x)/(1+koef) - (gamestate.WinXf)/2;
@@ -312,6 +309,7 @@ void update() {
     }
     for (auto it=gamestate.Gobjects.begin(); it!=gamestate.Gobjects.end(); it++) {
         if (!(*it)->active || (*it)==gamestate.Gplayer) continue;
+        // std::cout << (*it)->type << std::endl;
         (*it)->update();
     }
 }

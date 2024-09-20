@@ -412,6 +412,7 @@ void Enemy::drawView(unsigned char alfa) {
 }
 
 void Enemy::drawA(unsigned char alfa)  {
+    if (alfa==0) return;
     // drawView(alfa);
     drawPosition = projectToCamera(position);
     dp1 = {drawPosition.x + size * cosf(angleRad - dirSizeAngle), drawPosition.y + size * sinf(angleRad - dirSizeAngle)};
@@ -423,7 +424,7 @@ void Enemy::drawA(unsigned char alfa)  {
     DrawTriangle(dp2, dp1,  dp3, selfColor);
     DrawTriangle(dp3, dp4, dp2,  selfColor);
     DrawLine(drawPosition.x, drawPosition.y, drawPosition.x+size*direction.x, drawPosition.y+size*direction.y, selfColor);
-    // DrawCircleLinesV(position, hitCircleSize, {255, 50, 50, 250});
+    DrawCircleLinesV(drawPosition, hitCircleSize, {255, 50, 50, 250});
 }
 void Enemy::draw()  {
     int max = 255;

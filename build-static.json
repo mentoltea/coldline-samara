@@ -50,6 +50,14 @@
                 "src/definitions.h"
             ]    
         },
+        {
+            "name" : "levelloader",
+            "dependencies" : [
+                "src/levelloader.h",
+                "src/game.h",
+                "src/definitions.h"
+            ]    
+        },
         "gamedefs"
     ]
 }
