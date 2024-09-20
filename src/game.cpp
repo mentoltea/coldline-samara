@@ -318,8 +318,9 @@ void update() {
 void draw() {
     ClearBackground({0,0,0,255});
     DrawRectangleV(projectToCamera({0,0}), {gamestate.MapXf, gamestate.MapYf}, {25,25,25,255});
+    if (gamestate.Gplayer) gamestate.Gplayer->draw();
     for (auto it=gamestate.Gobjects.begin(); it!=gamestate.Gobjects.end(); it++) {
-        if (!(*it)->active) continue;
+        if (!(*it)->active || (*it)==gamestate.Gplayer) continue;
         if ((*it)->visible) {
             (*it)->draw();
         }

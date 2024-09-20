@@ -44,6 +44,7 @@ typedef enum ObjType {
     UNKNOWN = 0,
     
     WALL,
+    TEXTSEGMENT,
     DOOR,
     MIRROR,
 
@@ -57,6 +58,7 @@ typedef enum ObjType {
 class Object;
 class Obtacle;
 class Wall; // final
+class TextSegment; //final
 class Mirror; // final
 class Door; // final
 class Entity;
@@ -76,6 +78,12 @@ typedef struct IntersectInfo {
     Object* ptr;
 } IntersectInfo;
 
+typedef struct CheatFlags {
+    bool HideAndSeek = false; // See enemies hitboxes
+    bool BigBrother = false; // See everything brightly
+    bool InfinityIsNotLimit = false; // Unlimit your vision length
+    bool ShowFPS = true;
+} CheatFlags;
 
 typedef struct GameState {
     size_t id_counter;
@@ -90,6 +98,7 @@ typedef struct GameState {
     Player* Gplayer;
     bool pause;
     Point camera;
+    CheatFlags cheats;
 } GameState;
 
 extern GameState gamestate;

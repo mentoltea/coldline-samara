@@ -7,6 +7,7 @@ Door DoorExample;
 Mirror MirrorExample;
 Enemy EnemyExample;
 Player PlayerExample;
+TextSegment TextSegmentExample;
 }
 
 void InitializeObject(Object* obj) {
@@ -16,13 +17,18 @@ void InitializeObject(Object* obj) {
         // nothing special, just values
     }
     break;
-    case MIRROR: {
-        *(size_t*)obj = *(size_t*)&ObjectExamples::MirrorExample;
+    case TEXTSEGMENT: {
+        *(size_t*)obj = *(size_t*)&ObjectExamples::TextSegmentExample;
         // nothing special, just values
     }
     break;
     case DOOR: {
         *(size_t*)obj = *(size_t*)&ObjectExamples::DoorExample;
+        // nothing special, just values
+    }
+    break;
+    case MIRROR: {
+        *(size_t*)obj = *(size_t*)&ObjectExamples::MirrorExample;
         // nothing special, just values
     }
     break;
@@ -51,7 +57,7 @@ void InitializeObject(Object* obj) {
     break;
 
     default:
-        fprintf(stderr, "ERROR [READ]: Cannot figure out how to initialize the object.\n");
+        fprintf(stderr, "ERROR [READ]: Cannot figure out how to initialize the object %d.\n", obj->type);
         assert(0 && "CANNOT INITIALIZE OBJECT");
         break;
     }
@@ -64,6 +70,7 @@ size_t ObjectSize(Object* obj) {
     case DOOR: return sizeof(Door);
     case PLAYER: return sizeof(Player);
     case ENEMY: return sizeof(Enemy);
+    case TEXTSEGMENT: return sizeof(TextSegment);
     
     default:
         fprintf(stderr, "ERROR [WRITE]: Cannot figure out the size of object.\n");

@@ -34,7 +34,11 @@
             ]    
         },
         {
-            "name" : "main"
+            "name" : "main",
+            "dependencies" : [
+                "src/game.h",
+                "src/definitions.h"
+            ]
         },
         {
             "name" : "game",

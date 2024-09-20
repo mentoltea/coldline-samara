@@ -103,6 +103,20 @@ public:
     bool intersectsCircle(const Point& circle, float radius, Point& intersection) override;
 };
 
+class TextSegment: public Wall {
+public:
+    int fontsize;
+    Vector2 offset = {0,0};
+    Color textColor = {50, 100, 50, 250};
+    char text[64];
+
+    TextSegment() {}
+    TextSegment(Poly b, std::string text, int fontsize);
+    ~TextSegment() override;
+
+    void drawA(unsigned char alfa);
+    void draw() override;
+};
 
 class Door: public Obtacle {
 public:

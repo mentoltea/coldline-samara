@@ -42,42 +42,17 @@ int main(int argc, char** argv) {
 
     MemManager::prealloc(PAGE_SIZE*8);
     
-    // Wall *w;
-    // Enemy *en2 = NEW(Enemy) Enemy({600, 700}, {10, 20});
-    // en2->direction = {0, 1};
-    // gamestate.Gobjects.push_back(en2);
 
-    // en2 = NEW(Enemy) Enemy({300, 700}, {30, 10});
-    // en2->direction = {0, 1};
-    // gamestate.Gobjects.push_back(en2);
+    // Player *p = NEW(Player) Player({500, 400}, {10, 20});
+    // gamestate.GlevelReference.push_back(p);
 
-    // Mirror *m = NEW(Mirror) Mirror({{500, 100}, {490, 100}, {600, 200}, {590, 200}}, {-1, 1});
-    // gamestate.Gobjects.push_back(m);
+    // TextSegment *tg = NEW(TextSegment) TextSegment({{450, 100}, {100, 100}, {450, 250}, {100, 250}}, "THIS IS\n\n\n\nMENU LEVEL", 50);
+    // tg->offset = {10, 10};
+    // gamestate.GlevelReference.push_back(tg);
 
-    // Mirror *m2 = NEW(Mirror) Mirror({{600, 200}, {590, 200}, {500, 300}, {490, 300}}, {-1, -1});
-    // gamestate.Gobjects.push_back(m2);
+    LoadLevel("text.level");
 
-    // w = NEW(Wall) Wall({{300, 200}, {200, 200}, {250, 400}, {200, 400},});
-    // gamestate.Gobjects.push_back(w);
-
-    // Door *d = NEW(Door) Door(-170, 170, 0, {450,500}, {50, 5}, {50, 5});
-    // gamestate.Gobjects.push_back(d);
-
-    // w = NEW(Wall) Wall({{450, 495}, {0, 495}, {450, 505}, {0, 505},});
-    // gamestate.Gobjects.push_back(w);
-
-    //  w = NEW(Wall) Wall({{gamestate.MapXf, 495}, {550, 495}, {gamestate.MapXf, 505}, {550, 505},});
-    // gamestate.Gobjects.push_back(w);
-
-    // Point pos = {700, 550};
-    // Player *p = NEW(Player) Player(pos, {10, 20});
-    // gamestate.Gplayer = p;
-    // gamestate.Gobjects.push_back(p);
-
-    
-    LoadLevel("demo.level");
     ReloadLevel();
-
     
     // 2----1
     // |    |
@@ -88,12 +63,21 @@ int main(int argc, char** argv) {
 
     InitWindow(gamestate.WinX, gamestate.WinY, "Coldline Samara");
     SetWindowState(FLAG_WINDOW_RESIZABLE);
+    SetWindowState(FLAG_VSYNC_HINT); 
+    SetWindowState(FLAG_WINDOW_UNDECORATED); 
+    SetWindowState(FLAG_WINDOW_ALWAYS_RUN); 
+    SetWindowState(FLAG_WINDOW_TRANSPARENT); 
+    SetWindowState(FLAG_WINDOW_HIGHDPI); 
+    SetWindowState(FLAG_MSAA_4X_HINT);
+
     if (gamestate.fullscreen) ToggleFullscreen();
     SetExitKey(KEY_F4);
     SetTargetFPS(60);
     WaitTime(0.1);
 
-    
+    char buffer[64] = {0};
+    int buffer_idx = 0;
+
     while (!WindowShouldClose()) {
         BeginDrawing();
         if (IsWindowResized()) {
@@ -101,6 +85,16 @@ int main(int argc, char** argv) {
             gamestate.WinY = GetScreenHeight();
             gamestate.WinXf = gamestate.WinX;
             gamestate.WinYf = gamestate.WinY;
+        }
+
+        buffer[buffer_idx] = GetCharPressed();
+        if (buffer[buffer_idx] > 32) {
+            buffer_idx++;
+            // cout << buffer << endl;
+        }
+        if (buffer_idx>=63) {
+            memcpy(buffer, buffer+32, 31);
+            buffer_idx = buffer_idx%63;
         }
 
         if (IsKeyPressed(KEY_ESCAPE)) gamestate.pause = !gamestate.pause;
@@ -111,6 +105,8 @@ int main(int argc, char** argv) {
         if (IsKeyPressed(KEY_R)) {
             ReloadLevel();
         }
+        
+
         if (!gamestate.pause) update();
         draw();
         DrawFPS(0,0);
@@ -119,6 +115,7 @@ int main(int argc, char** argv) {
     CloseWindow();
 
     // SaveLevel("demo.level");
+    // SaveLevel("text.level");
     UnloadLevel();
 
 

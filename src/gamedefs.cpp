@@ -25,5 +25,5 @@ GameState gamestate = {
     .MAX_REFLECTIONS = 20 ,
     .Gplayer = NULL ,
     .pause = false ,
-    .camera = {0,0}
+    .camera = {0,0},
 };

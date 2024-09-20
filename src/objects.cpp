@@ -117,6 +117,30 @@ bool Wall::intersectsCircle(const Point& circle, float radius, Point& intersecti
 }
 
 
+TextSegment::TextSegment(Poly b, std::string text, int fontsize): Wall(b) {
+    snprintf(this->text, 64, text.c_str());
+    this->fontsize = fontsize;
+    opaque = false;
+    reflects = false;
+    type = TEXTSEGMENT;
+}
+TextSegment::~TextSegment() = default;
+
+void TextSegment::drawA(unsigned char alfa) {
+    DrawTriangle(drawBody.p1, drawBody.p2, drawBody.p3, {181,67,22,alfa} );
+    DrawTriangle(drawBody.p3, drawBody.p2, drawBody.p4, {181,67,22,alfa} );
+    DrawText(text, drawBody.p2.x + offset.x, drawBody.p2.y + offset.y, fontsize, {textColor.r, textColor.g, textColor.b, alfa});
+}
+
+void TextSegment::draw()  {
+    int max = 255;
+    int base = 10;
+    float rate = 2;
+    int a = base + rate*(float)raycount/(float)(Player::Nray + Player::Nrayback/2) * (max-base);
+    drawA((unsigned char) (a > 255 ? 255 : a));
+    raycount = 0;
+}
+
 
 Door::Door(float minangle, float maxangle, float angle, Point origin, Vector2 hitboxsize, Vector2 drawsize) {
     opaque = false;
