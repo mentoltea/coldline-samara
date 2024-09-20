@@ -88,7 +88,6 @@ int main(int argc, char** argv) {
 
     InitWindow(gamestate.WinX, gamestate.WinY, "Coldline Samara");
     SetWindowState(FLAG_WINDOW_RESIZABLE);
-    // ToggleBorderlessWindowed();
     if (gamestate.fullscreen) ToggleFullscreen();
     SetExitKey(KEY_F4);
     SetTargetFPS(60);
@@ -120,6 +119,8 @@ int main(int argc, char** argv) {
     CloseWindow();
 
     // SaveLevel("demo.level");
+    UnloadLevel();
+
 
     MemManager::page_info(0);
     MemManager::destroy_pages();

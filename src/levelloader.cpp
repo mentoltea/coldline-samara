@@ -37,7 +37,7 @@ void InitializeObject(Object* obj) {
         for (int i=0; i<p->Nrayback; i++) {
             p->intersBack[i].points = *(new(&p->intersBack[i].points) std::vector<Point>);
         }
-        gamestate.Gplayer = p;
+        // gamestate.Gplayer = p;
     }
     break;
     case ENEMY: {
@@ -52,7 +52,7 @@ void InitializeObject(Object* obj) {
 
     default:
         fprintf(stderr, "ERROR [READ]: Cannot figure out how to initialize the object.\n");
-        assert(0 && "CANNOT INITIALIZE");
+        assert(0 && "CANNOT INITIALIZE OBJECT");
         break;
     }
 }
@@ -67,6 +67,7 @@ size_t ObjectSize(Object* obj) {
     
     default:
         fprintf(stderr, "ERROR [WRITE]: Cannot figure out the size of object.\n");
+        assert(0 && "CANNOT WRITE OBJECT");
         break;
     }
 
@@ -140,5 +141,14 @@ void ReloadLevel() {
 }
 
 void UnloadLevel() {
+    for (auto git = gamestate.Gobjects.begin(); git != gamestate.Gobjects.end(); git++) {
+        MemManager::memfree(*git);
+    }
+    for (auto it = gamestate.GlevelReference.begin(); it != gamestate.GlevelReference.end(); it++) {
+        MemManager::memfree(*it);
+    }
 
+    gamestate.Gplayer = NULL;
+    gamestate.GlevelReference.clear();
+    gamestate.Gobjects.clear();
 }

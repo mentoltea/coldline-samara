@@ -298,14 +298,14 @@ void update() {
 
     Point mouse = GetMousePosition();
     float koef = 1.2;
-    gamestate.camera.x = (koef*(gamestate.Gplayer->position.x) + gamestate.camera.x + mouse.x)/(1+koef) - (gamestate.WinXf)/2;
-    gamestate.camera.y = (koef*(gamestate.Gplayer->position.y) + gamestate.camera.y + mouse.y)/(1+koef) - (gamestate.WinYf)/2;
-    // gamestate.camera.x = gamestate.Gplayer->position.x - gamestate.WinXf/2;
-    // gamestate.camera.y = gamestate.Gplayer->position.y - gamestate.WinYf/2;
-
     if (gamestate.Gplayer) {
+        gamestate.camera.x = (koef*(gamestate.Gplayer->position.x) + gamestate.camera.x + mouse.x)/(1+koef) - (gamestate.WinXf)/2;
+        gamestate.camera.y = (koef*(gamestate.Gplayer->position.y) + gamestate.camera.y + mouse.y)/(1+koef) - (gamestate.WinYf)/2;
         gamestate.Gplayer->move = move;
         gamestate.Gplayer->update();
+    } else {
+        gamestate.camera.x += move.x;
+        gamestate.camera.y += move.y;
     }
     for (auto it=gamestate.Gobjects.begin(); it!=gamestate.Gobjects.end(); it++) {
         if (!(*it)->active || (*it)==gamestate.Gplayer) continue;
