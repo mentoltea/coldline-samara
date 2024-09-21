@@ -41,16 +41,31 @@ int main(int argc, char** argv) {
     } else fprintf(stderr, "Cannot load settings: using default\n");
 
     MemManager::prealloc(PAGE_SIZE*8);
+
+    SetWindowState(FLAG_VSYNC_HINT); 
+    SetWindowState(FLAG_WINDOW_ALWAYS_RUN); 
+    // SetWindowState(FLAG_WINDOW_TRANSPARENT); 
+    SetWindowState(FLAG_WINDOW_HIGHDPI); 
+    SetWindowState(FLAG_MSAA_4X_HINT);
+    InitWindow(gamestate.WinX, gamestate.WinY, "Coldline Samara");
+    SetWindowState(FLAG_WINDOW_RESIZABLE);
+    // SetWindowState(FLAG_WINDOW_UNDECORATED); 
+
+    if (gamestate.fullscreen) ToggleFullscreen();
+    SetExitKey(KEY_F4);
+    SetTargetFPS(60);
     
 
-    // Player *p = NEW(Player) Player({500, 400}, {10, 20});
-    // gamestate.GlevelReference.push_back(p);
+    TM::LoadT("char.png", TM::Tid::TPlayer);
+    Player *p = NEW(Player) Player({500, 400}, {10, 20});
+    // p->selfTexture = std::make_shared<Texture>(t);
+    gamestate.GlevelReference.push_back(p);
 
-    // TextSegment *tg = NEW(TextSegment) TextSegment({{450, 100}, {100, 100}, {450, 250}, {100, 250}}, "THIS IS\n\n\n\nMENU LEVEL", 50);
-    // tg->offset = {10, 10};
-    // gamestate.GlevelReference.push_back(tg);
+    TextSegment *tg = NEW(TextSegment) TextSegment({{450, 100}, {100, 100}, {450, 250}, {100, 250}}, "THIS IS\n\n\n\nMENU LEVEL", 50);
+    tg->offset = {10, 10};
+    gamestate.GlevelReference.push_back(tg);
 
-    LoadLevel("text.level");
+    // LoadLevel("text.level");
 
     ReloadLevel();
     
@@ -60,20 +75,6 @@ int main(int argc, char** argv) {
 
     MemManager::page_info(0);
 
-
-    SetWindowState(FLAG_VSYNC_HINT); 
-    SetWindowState(FLAG_WINDOW_ALWAYS_RUN); 
-    // SetWindowState(FLAG_WINDOW_TRANSPARENT); 
-    SetWindowState(FLAG_WINDOW_HIGHDPI); 
-    SetWindowState(FLAG_MSAA_4X_HINT);
-    InitWindow(gamestate.WinX, gamestate.WinY, "Coldline Samara");
-    SetWindowState(FLAG_WINDOW_RESIZABLE);
-    SetWindowState(FLAG_WINDOW_UNDECORATED); 
-
-    if (gamestate.fullscreen) ToggleFullscreen();
-    SetExitKey(KEY_F4);
-    SetTargetFPS(60);
-    WaitTime(0.1);
 
     char buffer[64] = {0};
     int buffer_idx = 0;
@@ -113,12 +114,14 @@ int main(int argc, char** argv) {
         EndDrawing();
     }
     CloseWindow();
+    MemManager::page_info(0);
 
     // SaveLevel("demo.level");
     // SaveLevel("text.level");
     UnloadLevel();
-
-
+    TextureManager::UnloadT();
+    // UnloadTexture(t);
+    
     MemManager::page_info(0);
     MemManager::destroy_pages();
 

@@ -76,7 +76,7 @@ public:
 
     Mirror() {};
     Mirror(Poly b, Vector2 n);
-    ~Mirror() = default;
+    ~Mirror() override;
     
     void drawA(unsigned char alfa) ;
     void draw() override;
@@ -137,7 +137,7 @@ public:
 
     Door() {}
     Door(float minangle, float maxangle, float angle, Point origin, Vector2 hitboxsize, Vector2 drawsize);
-    ~Door();
+    ~Door() override;
     
     void drawA(unsigned char alfa) ;
     void draw() override;
@@ -159,8 +159,8 @@ public:
     float dirSizeAngle;
     float viewAround = 50;
     float viewLength = 800;
-    std::vector<IntersectInfo> inters;
-    std::vector<IntersectInfo> intersBack;
+    std::vector<IntersectInfo, MemManager::Allocator<IntersectInfo> > inters;
+    std::vector<IntersectInfo, MemManager::Allocator<IntersectInfo> > intersBack;
     Color viewColor = {110,110,110,180};
     Color viewAroundColor = {110,110,110,100};
     float hview = 30;
@@ -168,6 +168,7 @@ public:
     static const int Nrayback = 80;
     float delta = 2*hview/Nray;
     float deltaback = (360-2*hview+5)/Nrayback;
+    Texture *selfTexture = NULL;
 
     Player() {}
     Player(Point pos, Vector2 size);
@@ -192,7 +193,7 @@ public:
     float dirSizeAngle;
     float viewAround = 30;
     float viewLength = 650;
-    std::vector<IntersectInfo> inters;
+    std::vector<IntersectInfo, MemManager::Allocator<IntersectInfo> > inters;
     Color viewColor = {110,50,50,180};
     Color selfColor = {150, 150, 50, 250};
     float hview = 30;

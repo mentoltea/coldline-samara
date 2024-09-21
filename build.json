@@ -34,24 +34,38 @@
             ]    
         },
         {
+            "name" : "texturemanager",
+            "dependencies" : [
+                "src/texturemanager.h",
+                "src/MManager.hpp"
+            ]    
+        },
+        {
             "name" : "main",
             "dependencies" : [
                 "src/game.h",
-                "src/definitions.h"
+                "src/definitions.h",
+                "src/MManager.hpp",
+                "src/texturemanager.h"
             ]
         },
         {
             "name" : "game",
             "dependencies" : [
                 "src/game.h",
-                "src/definitions.h"
+                "src/definitions.h",
+                "src/MManager.hpp",
+                "src/texturemanager.h"
             ]    
         },
+        "gamedefs",
         {
             "name" : "objects",
             "dependencies" : [
                 "src/game.h",
-                "src/definitions.h"
+                "src/definitions.h",
+                "src/MManager.hpp",
+                "src/texturemanager.h"
             ]    
         },
         {
@@ -59,9 +73,10 @@
             "dependencies" : [
                 "src/levelloader.h",
                 "src/game.h",
-                "src/definitions.h"
+                "src/definitions.h",
+                "src/MManager.hpp",
+                "src/texturemanager.h"
             ]    
-        },
-        "gamedefs"
+        }
     ]
 }

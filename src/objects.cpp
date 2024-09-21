@@ -43,6 +43,8 @@ Mirror::Mirror(Poly b, Vector2 n) {
     body = b;
 }
 
+Mirror::~Mirror() = default;
+
 void Mirror::drawA(unsigned char alfa) {
     DrawTriangle(drawBody.p1, drawBody.p2, drawBody.p3, {213,245,242,alfa} );
     DrawTriangle(drawBody.p3, drawBody.p2, drawBody.p4, {213,245,242,alfa} );
@@ -251,8 +253,11 @@ Player::Player(Point pos, Vector2 size): inters(Nray), intersBack(Nrayback) {
     dirSizeAngle = acosf(size.x/sl);
     this->size = sl;
     type = PLAYER;
+    
+    selfTexture = TM::GetT(TM::Tid::TPlayer);
 }
 Player::~Player() = default;
+
 
 void Player::drawViewAround() {
     float a = angle - hview + 4;
@@ -336,8 +341,13 @@ void Player::draw()  {
     
     drawViewAround();
     drawView();
-    DrawTriangle(dp2, dp1,  dp3, {100, 100, 200, 250});
-    DrawTriangle(dp3, dp4, dp2,  {100, 100, 200, 250});
+    if (selfTexture) {
+        DrawTextureEx(*selfTexture, drawPosition, angle, 3, RAYWHITE);
+    }
+    else {
+        DrawTriangle(dp2, dp1,  dp3, {100, 100, 200, 250});
+        DrawTriangle(dp3, dp4, dp2,  {100, 100, 200, 250});
+    }
     // DrawCircleLinesV(drawPosition, hitCircleSize, {255, 50, 50, 250});
 }
 void Player::update()  {

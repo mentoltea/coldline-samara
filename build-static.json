@@ -37,21 +37,24 @@
             "name" : "main",
             "dependencies" : [
                 "src/game.h",
-                "src/definitions.h"
+                "src/definitions.h",
+                "MManager.hpp"
             ]
         },
         {
             "name" : "game",
             "dependencies" : [
                 "src/game.h",
-                "src/definitions.h"
+                "src/definitions.h",
+                "MManager.hpp"
             ]    
         },
         {
             "name" : "objects",
             "dependencies" : [
                 "src/game.h",
-                "src/definitions.h"
+                "src/definitions.h",
+                "MManager.hpp"
             ]    
         },
         {
@@ -59,7 +62,8 @@
             "dependencies" : [
                 "src/levelloader.h",
                 "src/game.h",
-                "src/definitions.h"
+                "src/definitions.h",
+                "MManager.hpp"
             ]    
         },
         "gamedefs"

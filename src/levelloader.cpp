@@ -35,13 +35,13 @@ void InitializeObject(Object* obj) {
     case PLAYER: {
         *(size_t*)obj = *(size_t*)&ObjectExamples::PlayerExample;
         Player *p = (Player*)obj;
-        p->inters = *(new(&(p->inters)) std::vector<IntersectInfo>(p->Nray));
+        p->inters = *(new(&(p->inters)) std::vector<IntersectInfo, MemManager::Allocator<IntersectInfo> >(p->Nray));
         for (int i=0; i<p->Nray; i++) {
-            p->inters[i].points = *(new(&p->inters[i].points) std::vector<Point>);
+            p->inters[i].points = *(new(&p->inters[i].points) std::vector<Point, MemManager::Allocator<Point> >);
         }
-        p->intersBack = *(new(&(p->intersBack)) std::vector<IntersectInfo>(p->Nrayback));
+        p->intersBack = *(new(&(p->intersBack)) std::vector<IntersectInfo, MemManager::Allocator<IntersectInfo> >(p->Nrayback));
         for (int i=0; i<p->Nrayback; i++) {
-            p->intersBack[i].points = *(new(&p->intersBack[i].points) std::vector<Point>);
+            p->intersBack[i].points = *(new(&p->intersBack[i].points) std::vector<Point, MemManager::Allocator<Point> >);
         }
         // gamestate.Gplayer = p;
     }
@@ -49,9 +49,9 @@ void InitializeObject(Object* obj) {
     case ENEMY: {
         *(size_t*)obj = *(size_t*)&ObjectExamples::EnemyExample;
         Enemy *e = (Enemy*)obj;
-        e->inters = *(new(&(e->inters)) std::vector<IntersectInfo>(e->Nray));
+        e->inters = *(new(&(e->inters)) std::vector<IntersectInfo, MemManager::Allocator<IntersectInfo> >(e->Nray));
         for (int i=0; i<e->Nray; i++) {
-            e->inters[i].points = *(new(&e->inters[i].points) std::vector<Point>);
+            e->inters[i].points = *(new(&e->inters[i].points) std::vector<Point, MemManager::Allocator<Point> >);
         }
     }
     break;
@@ -125,6 +125,7 @@ void ReloadLevel() {
     Object *temp;
     for (; it != gamestate.GlevelReference.end() && git != gamestate.Gobjects.end(); it++) {
         MemManager::memfree(*git);
+        // DELETE(Object, (*git));
         temp = (Object*)MemManager::memloc(ObjectSize(*it));
         memcpy((void*)temp, *it, ObjectSize(*it));
         *git = temp;
@@ -133,7 +134,8 @@ void ReloadLevel() {
     }
     // std::cout << "Step1" << std::endl;
     for (; git != gamestate.Gobjects.end();) {
-        MemManager::memfree(*git);
+        // MemManager::memfree(*git);
+        DELETE(Object, (*git));
         git = gamestate.Gobjects.erase(git);
     }
     // std::cout << "Step2" << std::endl;
@@ -150,10 +152,14 @@ void ReloadLevel() {
 void UnloadLevel() {
     for (auto git = gamestate.Gobjects.begin(); git != gamestate.Gobjects.end(); git++) {
         MemManager::memfree(*git);
+        // DELETE(Object, (*git));
     }
+    // std::cout << "Step1" << std::endl;
     for (auto it = gamestate.GlevelReference.begin(); it != gamestate.GlevelReference.end(); it++) {
-        MemManager::memfree(*it);
+        // MemManager::memfree(*it);
+        DELETE(Object, (*it));
     }
+    // std::cout << "Step2" << std::endl;
 
     gamestate.Gplayer = NULL;
     gamestate.GlevelReference.clear();

@@ -2,26 +2,27 @@
 #define DEFINITIONS_H
 
 #include <raylib.h>
-#include <cstdlib>
 #include <vector>
 #include <list>
 #include <array>
+#include <unordered_map>
 #include <math.h>
 #include <iostream>
 #include <assert.h>
 #include <stdint.h>
+#include <memory>
 
 namespace Cstd {
-#include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <cstdlib>
 }
 
-namespace MemManager {
-extern "C" {
-#include "memmanager.h"
-}
-}
+
+#include "MManager.hpp"
+#include "texturemanager.h"
+
 namespace Json {
 extern "C" {
 #include "json.h"
@@ -32,7 +33,7 @@ float absf(float x);
 size_t max(size_t, size_t);
 
 #define NEW(T) new(MemManager::memloc(sizeof(T)))
-
+#define DELETE(T, O) O->~T(); MemManager::memfree(O);
 
 
 typedef Vector2 Point;
@@ -73,7 +74,7 @@ class Enemy; // final
 
 
 typedef struct IntersectInfo {
-    std::vector<Point> points;
+    std::vector<Point, MemManager::Allocator<Point> > points;
     float distance;
     Object* ptr;
 } IntersectInfo;
@@ -93,8 +94,8 @@ typedef struct GameState {
     int MapX, MapY;
     float MapXf, MapYf;
     int MAX_REFLECTIONS;
-    std::list<Object*> Gobjects;
-    std::list<Object*> GlevelReference;
+    std::list<Object*, MemManager::Allocator<Object*> > Gobjects;
+    std::list<Object*, MemManager::Allocator<Object*> > GlevelReference;
     Player* Gplayer;
     bool pause;
     Point camera;
@@ -103,5 +104,12 @@ typedef struct GameState {
 
 extern GameState gamestate;
 
+namespace TextureManager {
+typedef enum Tid {
+    TPlayer,
+} Tid;
+}
+
+namespace TM = TextureManager;
 
 #endif
