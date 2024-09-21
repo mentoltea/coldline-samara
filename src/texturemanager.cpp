@@ -9,9 +9,14 @@ namespace TextureManager {
 //     > THolder; // Textures 
 std::unordered_map<int, Texture> THolder;
 
-void LoadT(const char* filename, int id) {
-    if (THolder.count(id) != 0) return;
+void LoadT(const char* filename, int id, bool force) {
+    if (!force && THolder.count(id) != 0) return;
     Texture T = LoadTexture(filename);
+    THolder.insert({id, T});
+}
+void LoadTfromI(Image I, int id, bool force) {
+    if (!force && THolder.count(id) != 0) return;
+    Texture T = LoadTextureFromImage(I);
     THolder.insert({id, T});
 }
 Texture *GetT(int id) {
@@ -22,7 +27,7 @@ Texture *GetT(int id) {
 Texture *GetOrLoadT(const char* filename, int id) {
     auto it = THolder.find(id);
     if (it == THolder.end()) {
-        LoadT(filename, id);
+        LoadT(filename, id, true);
         return GetT(id);
     }
     return &(it->second);

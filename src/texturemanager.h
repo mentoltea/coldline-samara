@@ -9,7 +9,8 @@
 
 namespace TextureManager {
 
-void LoadT(const char* filename, int id);
+void LoadT(const char* filename, int id, bool force=0);
+void LoadTfromI(Image I, int id, bool force=0);
 Texture *GetT(int id);
 Texture *GetOrLoadT(const char* filename, int id);
 void UnloadT();

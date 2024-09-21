@@ -253,8 +253,9 @@ Player::Player(Point pos, Vector2 size): inters(Nray), intersBack(Nrayback) {
     dirSizeAngle = acosf(size.x/sl);
     this->size = sl;
     type = PLAYER;
-    
+
     selfTexture = TM::GetT(TM::Tid::TPlayer);
+    if(selfTexture) this->size = sqrtf((float)selfTexture->width*(float)selfTexture->width + (float)selfTexture->height*(float)selfTexture->height);
 }
 Player::~Player() = default;
 
@@ -334,21 +335,44 @@ void Player::draw()  {
 
     drawPosition = projectToCamera(position);
 
-    dp1 = {drawPosition.x + size * cosf(angleRad - dirSizeAngle), drawPosition.y + size * sinf(angleRad - dirSizeAngle)};
-    dp2 = {drawPosition.x + size * cosf(angleRad + dirSizeAngle), drawPosition.y + size * sinf(angleRad + dirSizeAngle)};
-    dp3 = {drawPosition.x + size * cosf(PI + angleRad + dirSizeAngle), drawPosition.y + size * sinf(PI + angleRad + dirSizeAngle)};
-    dp4 = {drawPosition.x + size * cosf(PI + angleRad - dirSizeAngle), drawPosition.y + size * sinf(PI + angleRad - dirSizeAngle)};
     
     drawViewAround();
     drawView();
-    if (selfTexture) {
-        DrawTextureEx(*selfTexture, drawPosition, angle, 3, RAYWHITE);
-    }
-    else {
+    if (!selfTexture) {
+        dp1 = {drawPosition.x + size * cosf(angleRad - dirSizeAngle), drawPosition.y + size * sinf(angleRad - dirSizeAngle)};
+        dp2 = {drawPosition.x + size * cosf(angleRad + dirSizeAngle), drawPosition.y + size * sinf(angleRad + dirSizeAngle)};
+        dp3 = {drawPosition.x + size * cosf(PI + angleRad + dirSizeAngle), drawPosition.y + size * sinf(PI + angleRad + dirSizeAngle)};
+        dp4 = {drawPosition.x + size * cosf(PI + angleRad - dirSizeAngle), drawPosition.y + size * sinf(PI + angleRad - dirSizeAngle)};
         DrawTriangle(dp2, dp1,  dp3, {100, 100, 200, 250});
         DrawTriangle(dp3, dp4, dp2,  {100, 100, 200, 250});
     }
+    else {
+        float k = 3;
+        
+        dp1 =  {drawPosition.x - ((k)/2)*size* cosf(angleRad - dirSizeAngle)/2,
+                drawPosition.y - ((k)/2)*size* sinf(angleRad - dirSizeAngle)/2};
+        dp2 =  {drawPosition.x - ((k)/2)*size * cosf(angleRad + dirSizeAngle)/2,
+                drawPosition.y - ((k)/2)*size * sinf(angleRad + dirSizeAngle)/2};
+        dp3 =  {drawPosition.x - ((k)/2)*size * cosf(PI + angleRad + dirSizeAngle)/2, 
+                drawPosition.y - ((k)/2)*size * sinf(PI + angleRad + dirSizeAngle)/2};
+        dp4 =  {drawPosition.x - ((k)/2)*size * cosf(PI + angleRad - dirSizeAngle)/2, 
+                drawPosition.y - ((k)/2)*size * sinf(PI + angleRad - dirSizeAngle)/2};
+        // DrawTextureEx(*selfTexture, {drawPosition.x - selfTexture->width/2, drawPosition.y - selfTexture->height/2,}, angle, 2, RAYWHITE);
+        DrawTexturePro(*selfTexture, {.x=0, .y=0, .width=(float)selfTexture->width, .height=(float)selfTexture->height},
+            {   .x= dp2.x,
+                .y= dp2.y,
+                .width= (k)*(float)selfTexture->width,
+                .height= (k)*(float)selfTexture->height}, // dest
+            {.x=(float)selfTexture->width/2, .y=(float)selfTexture->height/2}, // origin
+            angle, 
+            RAYWHITE);
+    }
     // DrawCircleLinesV(drawPosition, hitCircleSize, {255, 50, 50, 250});
+    // DrawCircleLinesV(dp1, 2, {50, 50, 250, 250});
+    // DrawCircleLinesV(dp2, 2, {50, 50, 250, 250});
+    // DrawCircleLinesV(dp3, 2, {50, 50, 250, 250});
+    // DrawCircleLinesV(dp4, 2, {50, 50, 250, 250});
+    // DrawCircleLinesV(drawPosition, 2, {50, 50, 250, 250});
 }
 void Player::update()  {
     Vector2 mouse = GetMousePosition();
@@ -357,6 +381,7 @@ void Player::update()  {
     if (dl>0) {direction.x /= dl; direction.y /= dl;}
 
     angleRad = atan2f(direction.y, direction.x);
+    // angleRad = 0;
     angle = angleRad*180/PI;
     
     Object* collision;

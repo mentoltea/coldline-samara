@@ -56,8 +56,17 @@ int main(int argc, char** argv) {
     SetTargetFPS(60);
     
 
-    TM::LoadT("char.png", TM::Tid::TPlayer);
-    Player *p = NEW(Player) Player({500, 400}, {10, 20});
+    Image I = LoadImage("char.png");
+    float xof = 2;
+    float yof = 5;
+    ImageCrop(&I, {.x=xof, .y=yof, .width=I.width-xof, .height=I.height-yof});
+    // ImageResize(&I, 16, 16);
+    
+    // TM::LoadTfromI(I, TM::Tid::TPlayer);
+    TM::LoadTfromI(I, TM::Tid::TPlayer);
+
+
+    Player *p = NEW(Player) Player({500, 400}, {32-xof, 32-yof});
     // p->selfTexture = std::make_shared<Texture>(t);
     gamestate.GlevelReference.push_back(p);
 
