@@ -16,7 +16,12 @@ public:
     Allocator(const size_t sizeBytes, void* const start) noexcept {
         prealloc(sizeBytes);
     }
-    Allocator(const Allocator<T>& other) = default;
+    template <class U>
+    Allocator(const Allocator<U>& other) {
+    };
+
+    ~Allocator() = default;
+
     T* allocate(size_t n) {
         return (T*)memloc(n * sizeof(T));
     }

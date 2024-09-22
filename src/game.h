@@ -24,6 +24,8 @@ bool lineCircleIntersection(Point start, Point end, Point circle, float radius, 
 Point projectToCamera(const Point& p);
 Point projectToMap(const Point& p);
 
+void DrawTexturePoly(Texture2D texture, Vector2 center, Vector2 *points, Vector2 *texcoords, int pointCount, Color tint);
+
 void draw();
 void update();
 

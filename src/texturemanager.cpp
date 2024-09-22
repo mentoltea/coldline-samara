@@ -1,13 +1,13 @@
 #include "texturemanager.h"
 namespace TextureManager {
 
-// std::unordered_map<int,
-//     Texture,
-//     std::hash<int>,
-//     std::equal_to<int>,
-//     MemManager::Allocator< std::pair< int, Texture > >
-//     > THolder; // Textures 
-std::unordered_map<int, Texture> THolder;
+std::unordered_map<int,
+    Texture,
+    std::hash<int>,
+    std::equal_to<int>,
+    MemManager::Allocator< std::pair< int, Texture > >
+    > THolder; // Textures 
+// std::unordered_map<int, Texture> THolder;
 
 void LoadT(const char* filename, int id, bool force) {
     if (!force && THolder.count(id) != 0) return;

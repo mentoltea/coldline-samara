@@ -2,6 +2,7 @@
 #define DEFINITIONS_H
 
 #include <raylib.h>
+#include <rlgl.h>
 #include <vector>
 #include <list>
 #include <array>
