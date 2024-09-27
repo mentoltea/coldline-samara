@@ -41,6 +41,14 @@
             ]    
         },
         {
+            "name" : "levelmanager",
+            "dependencies" : [
+                "src/definitions.h",
+                "src/game.h",
+                "src/MManager.hpp"
+            ]    
+        },
+        {
             "name" : "main",
             "dependencies" : [
                 "src/game.h",

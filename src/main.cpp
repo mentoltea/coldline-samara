@@ -62,21 +62,26 @@ int main(int argc, char** argv) {
     ImageCrop(&I, {.x=xof, .y=yof, .width=I.width-xof, .height=I.height-yof});
     // ImageResize(&I, 16, 16);
     
-    // TM::LoadTfromI(I, TM::Tid::TPlayer);
     TM::LoadTfromI(I, TM::Tid::TPlayer);
 
+    // UnloadImage(I);
 
-    Player *p = NEW(Player) Player({500, 400}, {32-xof, 32-yof});
-    // p->selfTexture = std::make_shared<Texture>(t);
-    gamestate.GlevelReference.push_back(p);
+    // Player *p = NEW(Player) Player({500, 400}, {32-xof, 32-yof});
+    // // p->selfTexture = std::make_shared<Texture>(t);
+    // gamestate.levelReference.objects.push_back(p);
 
-    TextSegment *tg = NEW(TextSegment) TextSegment({{450, 100}, {100, 100}, {450, 250}, {100, 250}}, "THIS IS\n\n\n\nMENU LEVEL", 50);
-    tg->offset = {10, 10};
-    gamestate.GlevelReference.push_back(tg);
+    // TextSegment *tg = NEW(TextSegment) TextSegment({{450, 100}, {100, 100}, {450, 250}, {100, 250}}, "THIS IS\n\n\n\nMENU LEVEL", 50);
+    // tg->offset = {10, 10};
+    // gamestate.levelReference.objects.push_back(tg);
 
-    // LoadLevel("text.level");
+    // gamestate.levelReference.MapX = 1000;
+    // gamestate.levelReference.MapY = 800;
+    // gamestate.levelReference.MapXf = gamestate.levelReference.MapX;
+    // gamestate.levelReference.MapYf = gamestate.levelReference.MapY;
 
-    ReloadLevel();
+    gamestate.levelReference = LoadLevel("text.level");
+    // ReloadLevel();
+    gamestate.currentLevel = gamestate.levelReference;
             
     // 2----1
     // |    |
@@ -112,8 +117,8 @@ int main(int argc, char** argv) {
             gamestate.fullscreen = !gamestate.fullscreen;
             ToggleFullscreen();
         }
-        if (IsKeyPressed(KEY_R)) {
-            ReloadLevel();
+        if (IsKeyPressed(KEY_R) && !gamestate.pause) {
+            gamestate.currentLevel = gamestate.levelReference;
         }
         
 
@@ -125,11 +130,10 @@ int main(int argc, char** argv) {
     CloseWindow();
     MemManager::page_info(0);
 
-    // SaveLevel("demo.level");
-    // SaveLevel("text.level");
-    UnloadLevel();
+    gamestate.currentLevel.clear();
+    UnloadLevel(gamestate.levelReference);
+
     TextureManager::UnloadT();
-    // UnloadTexture(t);
     
     MemManager::page_info(0);
     MemManager::destroy_pages();

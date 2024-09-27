@@ -34,7 +34,7 @@ float absf(float x);
 size_t max(size_t, size_t);
 
 #define NEW(T) new(MemManager::memloc(sizeof(T)))
-#define DELETE(T, O) O->~T(); MemManager::memfree(O);
+#define DELETE(T, O) (O)->~T(); MemManager::memfree((O));
 
 
 typedef Vector2 Point;
@@ -69,13 +69,14 @@ class Door; // final
 class Entity;
 class Player; // final
 class Enemy; // final
-#define MAX_OBJECT_SIZE \
-    max(sizeof(Wall), \
-    max(sizeof(Mirror), \
-    max(sizeof(Door), \
-    max(sizeof(Player),\
-    max(sizeof(Enemy), 1)))))
+// #define MAX_OBJECT_SIZE 
+//     max(sizeof(Wall), 
+//     max(sizeof(Mirror), 
+//     max(sizeof(Door), 
+//     max(sizeof(Player),
+//     max(sizeof(Enemy), 1)))))
 
+size_t ObjectSize(Object* obj);
 
 typedef struct IntersectInfo {
     std::vector<Point, MemManager::Allocator<Point> > points;
@@ -90,20 +91,36 @@ typedef struct CheatFlags {
     bool ShowFPS = true;
 } CheatFlags;
 
+
+struct Level {
+    int MapX, MapY;
+    float MapXf, MapYf;
+    std::list<Object*, MemManager::Allocator<Object*> > objects;
+    Player* player = NULL;
+    CheatFlags cheats = {0};
+
+    Level();
+    Level(const Level& other);
+    ~Level();
+
+    Level& operator=(const Level& other);
+    Level& operator=(Level&& other);
+
+    void clear();
+    void destroy();
+};
+
+
 typedef struct GameState {
     size_t id_counter;
     bool fullscreen;
     int WinX, WinY;
     float WinXf, WinYf;
-    int MapX, MapY;
-    float MapXf, MapYf;
     int MAX_REFLECTIONS;
-    std::list<Object*, MemManager::Allocator<Object*> > Gobjects;
-    std::list<Object*, MemManager::Allocator<Object*> > GlevelReference;
-    Player* Gplayer;
+    Level currentLevel;
+    Level levelReference;
     bool pause;
     Point camera;
-    CheatFlags cheats;
 } GameState;
 
 extern GameState gamestate;

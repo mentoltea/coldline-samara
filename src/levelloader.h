@@ -3,12 +3,8 @@
 
 void InitializeObject(Object* obj);
 
-size_t ObjectSize(Object* obj);
+Level LoadLevel(std::string filename);
 
-void LoadLevel(std::string filename);
+void SaveLevel(Level& level, std::string filename);
 
-void SaveLevel(std::string filename);
-
-void ReloadLevel();
-
-void UnloadLevel();
+void UnloadLevel(Level& level);

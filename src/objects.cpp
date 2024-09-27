@@ -336,8 +336,8 @@ void Player::drawView() {
 void Player::draw()  {
 
     drawPosition = projectToCamera(position);
+    selfTexture = TM::GetT(TM::Tid::TPlayer);
 
-    
     drawViewAround();
     drawView();
     if (!selfTexture) {
@@ -510,7 +510,7 @@ void Enemy::update() {
     if (found_player != -1) {
         selfColor = {200, 50, 50, 250};
         viewColor = {170,50,50,180};
-        direction = {gamestate.Gplayer->position.x - position.x, gamestate.Gplayer->position.y - position.y};
+        direction = {gamestate.currentLevel.player->position.x - position.x, gamestate.currentLevel.player->position.y - position.y};
         move.x += direction.x;
         move.y += direction.y;
     } else {

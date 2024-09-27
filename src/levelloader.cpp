@@ -63,105 +63,45 @@ void InitializeObject(Object* obj) {
     }
 }
 
-size_t ObjectSize(Object* obj) {
-    switch (obj->type) {
-    case WALL: return sizeof(Wall);
-    case MIRROR: return sizeof(Mirror);
-    case DOOR: return sizeof(Door);
-    case PLAYER: return sizeof(Player);
-    case ENEMY: return sizeof(Enemy);
-    case TEXTSEGMENT: return sizeof(TextSegment);
-    
-    default:
-        fprintf(stderr, "ERROR [WRITE]: Cannot figure out the size of object.\n");
-        assert(0 && "CANNOT WRITE OBJECT");
-        break;
-    }
-
-    return MAX_OBJECT_SIZE;
-}
-
-void LoadLevel(std::string filename) {
+Level LoadLevel(std::string filename) {
+    Level level;
     std::ifstream fd(filename, std::ios::binary);
+    fd.read((char*)&level.MapX, sizeof(int));
+    fd.read((char*)&level.MapY, sizeof(int));
+    level.MapXf = level.MapX;
+    level.MapYf = level.MapY;
     size_t length = 0;
-    size_t maxsize = MAX_OBJECT_SIZE;
-    fd.read((char*)&gamestate.MapX, sizeof(int));
-    fd.read((char*)&gamestate.MapY, sizeof(int));
-    gamestate.MapXf = gamestate.MapX;
-    gamestate.MapYf = gamestate.MapY;
     fd.read((char*)&length, sizeof(size_t));
     size_t idx = 0;
-    uint8_t *buffer = (uint8_t*)MemManager::memloc(maxsize*length);
     while (!fd.eof() && idx<length) {
-        fd.read((char*)(buffer + idx*maxsize), maxsize);
-        InitializeObject((Object*)(buffer + idx*maxsize));
-        gamestate.GlevelReference.push_back((Object*)(buffer + idx*maxsize));
+        size_t objsize;
+        fd.read((char*)&objsize, sizeof(size_t));
+        Object *buffer = (Object*)MemManager::memloc(objsize);
+        fd.read((char*)buffer, objsize);
+        assert((objsize == ObjectSize(buffer)) && "Level of incompatible version");
+        InitializeObject(buffer);
+        level.objects.push_back(buffer);
         idx++;
     }
+    fd.close();
+    gamestate.currentLevel = level;
+    return level;
 }
 
-void SaveLevel(std::string filename) {
+void SaveLevel(Level& level, std::string filename) {
     std::ofstream fd(filename, std::ios::binary);
-    size_t length = gamestate.GlevelReference.size();
-    size_t maxsize = MAX_OBJECT_SIZE;
-    fd.write((char*)&gamestate.MapX, sizeof(int));
-    fd.write((char*)&gamestate.MapY, sizeof(int));
+    fd.write((char*)&level.MapX, sizeof(int));
+    fd.write((char*)&level.MapY, sizeof(int));
+    size_t length = level.objects.size();
     fd.write((char*)(&length), sizeof(size_t));
-    size_t currsize;
-    auto it = gamestate.GlevelReference.begin();
-    while (it != gamestate.GlevelReference.end()) {
-        currsize = ObjectSize(*it);
-        fd.write((char*)*it, currsize);
-        for (size_t i=0; i<maxsize-currsize; i++) fd.put(0);
-        it++;
+    for (auto it = level.objects.begin(); it != level.objects.end(); it++) {
+        size_t objsize = ObjectSize(*it);
+        fd.write((char*)&objsize, sizeof(size_t));
+        fd.write((char*)*it, objsize);               
     }
+    fd.close();
 }
 
-
-
-void ReloadLevel() {
-    auto git = gamestate.Gobjects.begin();
-    auto it = gamestate.GlevelReference.begin();
-    Object *temp;
-    for (; it != gamestate.GlevelReference.end() && git != gamestate.Gobjects.end(); it++) {
-        MemManager::memfree(*git);
-        // DELETE(Object, (*git));
-        temp = (Object*)MemManager::memloc(ObjectSize(*it));
-        memcpy((void*)temp, *it, ObjectSize(*it));
-        *git = temp;
-        if ((*git)->type == PLAYER) gamestate.Gplayer = (Player*) *git;
-        git++;
-    }
-    // std::cout << "Step1" << std::endl;
-    for (; git != gamestate.Gobjects.end();) {
-        // MemManager::memfree(*git);
-        DELETE(Object, (*git));
-        git = gamestate.Gobjects.erase(git);
-    }
-    // std::cout << "Step2" << std::endl;
-    while (it != gamestate.GlevelReference.end()) {
-        temp = (Object*)MemManager::memloc(ObjectSize(*it));
-        memcpy((void*)temp, *it, ObjectSize(*it));
-        gamestate.Gobjects.push_back(temp);
-        if (temp->type == PLAYER) gamestate.Gplayer = (Player*) temp;
-        it++;
-    }
-    // std::cout << "Step3" << std::endl;
-}
-
-void UnloadLevel() {
-    for (auto git = gamestate.Gobjects.begin(); git != gamestate.Gobjects.end(); git++) {
-        MemManager::memfree(*git);
-        // DELETE(Object, (*git));
-    }
-    // std::cout << "Step1" << std::endl;
-    for (auto it = gamestate.GlevelReference.begin(); it != gamestate.GlevelReference.end(); it++) {
-        // MemManager::memfree(*it);
-        DELETE(Object, (*it));
-    }
-    // std::cout << "Step2" << std::endl;
-
-    gamestate.Gplayer = NULL;
-    gamestate.GlevelReference.clear();
-    gamestate.Gobjects.clear();
+void UnloadLevel(Level& level) {
+    level.destroy();
 }
