@@ -6,6 +6,7 @@ Entity::Entity() {
     visible = true;
     opaque = false;
     reflects = false;
+    gentype = ENTITY;
 }
 
 bool Entity::intersectsCircle(const Point& circle, float radius, Point& intersection) {
@@ -27,6 +28,7 @@ Obtacle::Obtacle() {
     active = true;
     collidable = true;
     visible = true;
+    gentype = OBTACLE;
 }
 void Obtacle::collidecallback(Entity* obj, const Point& point, const Vector2& direction) {}
 
@@ -387,13 +389,13 @@ void Player::update()  {
     Object* collision;
     position.x += move.x;
     if ((collision= collideCircle(this, position, hitCircleSize, move))) {
-        if (collision->type==WALL || collision->type==MIRROR) move.x *= 1.1;
+        if (collision->gentype == OBTACLE) move.x *= 1.1;
         position.x -= move.x;
     }
     
     position.y += move.y;
     if ((collision= collideCircle(this, position, hitCircleSize, move))) {
-        if (collision->type==WALL || collision->type==MIRROR) move.y *= 1.1;
+        if (collision->gentype == OBTACLE) move.y *= 1.1;
         position.y -= move.y;
     }
 
@@ -528,14 +530,14 @@ void Enemy::update() {
     Object* collision;
     position.x += move.x;
     if ((collision= collideCircle(this, position, hitCircleSize, move))) {
-        if (collision->type==WALL || collision->type==MIRROR) move.x *= 1.1; 
+        if (collision->gentype == OBTACLE) move.x *= 1.1; 
         position.x -= move.x;
     }
     
     position.y += move.y;
 
     if ((collision= collideCircle(this, position, hitCircleSize, move))) {
-        if (collision->type==WALL || collision->type==MIRROR) move.y *= 1.1;
+        if (collision->gentype == OBTACLE) move.y *= 1.1;
         position.y -= move.y;
     }
 

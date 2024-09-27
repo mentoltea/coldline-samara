@@ -38,6 +38,7 @@ public:
     bool collidable;
     bool visible;
     bool opaque;
+    ObjType gentype;
     ObjType type;
     bool reflects;
     Vector2 normal;

@@ -45,16 +45,19 @@ typedef struct Poly {
 typedef enum ObjType {
     UNKNOWN = 0,
     
+    OBTACLE, // General
     WALL,
     TEXTSEGMENT,
     DOOR,
     MIRROR,
 
-    ENTITY,
+    ENTITY, // General
     PLAYER,
     ENEMY,
 
-    ITEM,
+    ITEM, // General
+
+    PROJECTILE, // General
 } ObjType;
 
 class Object;
