@@ -510,20 +510,63 @@ void Enemy::update() {
     if (found_player != -1) {
         selfColor = {200, 50, 50, 250};
         viewColor = {170,50,50,180};
-        direction = {gamestate.currentLevel.player->position.x - position.x, gamestate.currentLevel.player->position.y - position.y};
-        move.x += direction.x;
-        move.y += direction.y;
+        // direction = {gamestate.currentLevel.player->position.x - position.x, gamestate.currentLevel.player->position.y - position.y};
+        // move.x += direction.x;
+        // move.y += direction.y;
     } else {
         selfColor = {150, 150, 50, 250};
         viewColor = {110,110,90,180};
     }
+
+    // std::cout << "1" << std::endl;
+    
+    if (selfway.size() > 0) {
+        if (currentway.empty()) {
+            near = gamestate.currentLevel.nearPoint(position);
+            currentway = gamestate.currentLevel.way(std::get<1>(near), selfway.at(selfwayidx));
+            selfwayidx = (selfwayidx+1)%selfway.size();
+        }
+        
+        target = gamestate.currentLevel.MapPoints[currentway.top()];
+
+        if (distance(target, position) < hitCircleSize*2/5 && !currentway.empty()) {
+            currentway.pop();
+            if (currentway.empty()) {
+                near = gamestate.currentLevel.nearPoint(position);
+                currentway = gamestate.currentLevel.way(std::get<1>(near), selfway.at(selfwayidx));
+                selfwayidx = (selfwayidx+1)%selfway.size();
+                currentway.pop();
+                target = gamestate.currentLevel.MapPoints[currentway.top()];
+            }
+        }
+
+
+        // std::cout << "3" << std::endl;
+        Vector2 targetdirection = {target.x - position.x, target.y - position.y};
+        float targetangleRad = atan2f(targetdirection.y, targetdirection.x);
+        
+        float anglediffRad = angleRad-targetangleRad;
+        
+        angleRad -= (anglediffRad)/8;
+        // if (absf(anglediffRad) < PI) {
+        // } else {
+        //     angleRad += (anglediffRad)/10;
+        // }
+        
+        direction = {cosf(angleRad), sinf(angleRad)};
+        move.x += direction.x * (cosf(anglediffRad) + 0.1f);
+        move.y += direction.y * (cosf(anglediffRad) + 0.1f);
+        angleRad = constraintBetween(angleRad, -PI, PI);
+    }
+
     float dl = sqrtf(direction.x*direction.x + direction.y*direction.y);
     if (dl>0) {
         direction.x /= dl; direction.y /= dl;
-        move.x /= 2*dl; move.y /= 2*dl;
+        move.x /= dl/4;
+        move.y /= dl/4;
     }
 
-    angleRad = atan2f(direction.y, direction.x);
+    // angleRad = atan2f(direction.y, direction.x);
     angle = angleRad*180/PI;
     
     
@@ -547,6 +590,7 @@ void Enemy::update() {
     p4 = {position.x + size * cosf(PI + angleRad - dirSizeAngle), position.y + size * sinf(PI + angleRad - dirSizeAngle)};
 
     move = {0,0};
+    // std::cout << "4" << std::endl;
 }
 bool Enemy::intersects(const Point& p)  {
     return CheckCollisionPointTriangle(p, p1, p2, p3) || CheckCollisionPointTriangle(p, p3, p2, p4);

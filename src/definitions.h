@@ -6,6 +6,8 @@
 #include <vector>
 #include <list>
 #include <array>
+#include <queue>
+#include <stack>
 #include <unordered_map>
 #include <math.h>
 #include <iostream>
@@ -30,14 +32,19 @@ extern "C" {
 }
 }
 
+typedef Vector2 Point;
+
 float absf(float x);
 size_t max(size_t, size_t);
+float distance(const Point& p1, const Point& p2);
+float distSquare(const Point& p1, const Point& p2);
+float constraintBetween(float value, float low, float hight);
 
 #define NEW(T) new(MemManager::memloc(sizeof(T)))
+// #define NEW(T, ...) new(MemManager::memloc(sizeof(T))) T(__VA_ARGS__)
 #define DELETE(T, O) (O)->~T(); MemManager::memfree((O));
 
 
-typedef Vector2 Point;
 typedef struct Poly {
     Point p1, p2, p3, p4;
 } Poly;
@@ -91,13 +98,17 @@ typedef struct CheatFlags {
     bool ShowFPS = true;
 } CheatFlags;
 
+struct ConnectedPoint: public Point {
+    std::vector<int, MemManager::Allocator<int> > connections; // indexes in MapPoints
+};
 
 struct Level {
     int MapX, MapY;
     float MapXf, MapYf;
+    std::vector<ConnectedPoint, MemManager::Allocator<ConnectedPoint> > MapPoints;
+    CheatFlags cheats = {0};
     std::list<Object*, MemManager::Allocator<Object*> > objects;
     Player* player = NULL;
-    CheatFlags cheats = {0};
 
     Level();
     Level(const Level& other);
@@ -108,6 +119,9 @@ struct Level {
 
     void clear();
     void destroy();
+
+    std::tuple<Point, int, float> nearPoint(const Point& p) const; // Point, index, distance
+    std::stack<int, std::deque<int, MemManager::Allocator<int> > > way(int fromIdx, int toIdx) const; // Next point on a way
 };
 
 

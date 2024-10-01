@@ -26,6 +26,8 @@ Point projectToMap(const Point& p);
 
 void DrawTexturePoly(Texture2D texture, Vector2 center, Vector2 *points, Vector2 *texcoords, int pointCount, Color tint);
 
+extern int TICK;
+extern int tickcount;
 void draw();
 void update();
 
@@ -203,6 +205,12 @@ public:
     static const int Nray = 60;
     float delta = 2*hview/Nray;
     size_t maxlen;
+
+    Point target;
+    std::vector<int, MemManager::Allocator<int> > selfway;
+    std::stack<int, std::deque<int, MemManager::Allocator<int> > > currentway;
+    int selfwayidx = 0;
+    std::tuple<Point, int, float> near;
 
     Enemy() {}
     Enemy(Point pos, Vector2 size);

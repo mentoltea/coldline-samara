@@ -29,7 +29,7 @@ void load_settings(FILE* fd) {
 }
 }
 
-
+int TICK = 60;
 using std::cout, std::endl;
 int main(int argc, char** argv) {
     FILE* file = fopen("settings.json", "r");
@@ -53,35 +53,104 @@ int main(int argc, char** argv) {
 
     if (gamestate.fullscreen) ToggleFullscreen();
     SetExitKey(KEY_F4);
-    SetTargetFPS(60);
+    SetTargetFPS(TICK);
     
+    gamestate.levelReference.MapX = 1000;
+    gamestate.levelReference.MapY = 800;
+    gamestate.levelReference.MapXf = gamestate.levelReference.MapX;
+    gamestate.levelReference.MapYf = gamestate.levelReference.MapY;
 
-    Image I = LoadImage("char.png");
-    float xof = 2;
-    float yof = 5;
-    ImageCrop(&I, {.x=xof, .y=yof, .width=I.width-xof, .height=I.height-yof});
-    // ImageResize(&I, 16, 16);
+    ConnectedPoint cp;
+
+    //0
+    cp.x = 40;
+    cp.y = 40;
+    cp.connections = {1, 2};
+    gamestate.levelReference.MapPoints.push_back(cp);
+
+    //1
+    cp.x = 200;
+    cp.y = 50;
+    cp.connections = {0, 4, 5};
+    gamestate.levelReference.MapPoints.push_back(cp);
+
+    //2
+    cp.x = 40;
+    cp.y = 100;
+    cp.connections = {0, 3};
+    gamestate.levelReference.MapPoints.push_back(cp);
+
+    //3
+    cp.x = 140;
+    cp.y = 140;
+    cp.connections = {2, 4, 5};
+    gamestate.levelReference.MapPoints.push_back(cp);
     
-    TM::LoadTfromI(I, TM::Tid::TPlayer);
+    //4
+    cp.x = 250;
+    cp.y = 250;
+    cp.connections = {1, 3, 6};
+    gamestate.levelReference.MapPoints.push_back(cp);
 
-    // UnloadImage(I);
+    //5
+    cp.x = 300;
+    cp.y = 140;
+    cp.connections = {1, 3, 6};
+    gamestate.levelReference.MapPoints.push_back(cp);
 
-    // Player *p = NEW(Player) Player({500, 400}, {32-xof, 32-yof});
-    // // p->selfTexture = std::make_shared<Texture>(t);
-    // gamestate.levelReference.objects.push_back(p);
+    //6
+    cp.x = 500;
+    cp.y = 500;
+    cp.connections = {4, 5};
+    gamestate.levelReference.MapPoints.push_back(cp);
 
-    // TextSegment *tg = NEW(TextSegment) TextSegment({{450, 100}, {100, 100}, {450, 250}, {100, 250}}, "THIS IS\n\n\n\nMENU LEVEL", 50);
-    // tg->offset = {10, 10};
-    // gamestate.levelReference.objects.push_back(tg);
+    Player *p = NEW(Player) Player({500, 400}, {10, 20});
+    gamestate.levelReference.objects.push_back(p);
 
-    // gamestate.levelReference.MapX = 1000;
-    // gamestate.levelReference.MapY = 800;
-    // gamestate.levelReference.MapXf = gamestate.levelReference.MapX;
-    // gamestate.levelReference.MapYf = gamestate.levelReference.MapY;
+    Wall *w;
 
-    gamestate.levelReference = LoadLevel("text.level");
-    // ReloadLevel();
-    gamestate.currentLevel = gamestate.levelReference;
+    w = NEW(Wall) Wall({ 
+        {gamestate.levelReference.MapXf, 0}, 
+        {0, 0},
+        {gamestate.levelReference.MapXf, 10}, 
+        {0, 10} });
+    gamestate.levelReference.objects.push_back(w);
+
+    w = NEW(Wall) Wall({ 
+        {gamestate.levelReference.MapXf, gamestate.levelReference.MapYf-10}, 
+        {0, gamestate.levelReference.MapYf-10},
+        {gamestate.levelReference.MapXf, gamestate.levelReference.MapYf}, 
+        {0, gamestate.levelReference.MapYf} });
+    gamestate.levelReference.objects.push_back(w);
+
+
+    w = NEW(Wall) Wall({ 
+        {10, 0}, 
+        {0, 0},
+        {10, gamestate.levelReference.MapYf}, 
+        {0, gamestate.levelReference.MapYf} });
+    gamestate.levelReference.objects.push_back(w);
+
+    w = NEW(Wall) Wall({ 
+        {gamestate.levelReference.MapXf, 0}, 
+        {gamestate.levelReference.MapXf-10, 0},
+        {gamestate.levelReference.MapXf, gamestate.levelReference.MapYf}, 
+        {gamestate.levelReference.MapXf-10, gamestate.levelReference.MapYf} });
+    gamestate.levelReference.objects.push_back(w);
+
+
+    Enemy *en = NEW(Enemy) Enemy({200, 600}, {10, 20});
+    en->direction = {-1, 0};
+    en->selfway = {1, 2, 5};
+    gamestate.levelReference.objects.push_back(en);
+
+
+
+    // gamestate.levelReference = LoadLevel("text.level");
+    ReloadLevel();
+    ReloadLevel();
+    ReloadLevel();
+    // gamestate.currentLevel = gamestate.levelReference;
             
     // 2----1
     // |    |
@@ -94,7 +163,6 @@ int main(int argc, char** argv) {
     int buffer_idx = 0;
 
     while (!WindowShouldClose()) {
-        BeginDrawing();
         if (IsWindowResized()) {
             gamestate.WinX = GetScreenWidth();
             gamestate.WinY = GetScreenHeight();
@@ -118,10 +186,11 @@ int main(int argc, char** argv) {
             ToggleFullscreen();
         }
         if (IsKeyPressed(KEY_R) && !gamestate.pause) {
-            gamestate.currentLevel = gamestate.levelReference;
+            ReloadLevel();
         }
         
 
+        BeginDrawing();
         if (!gamestate.pause) update();
         draw();
         DrawFPS(0,0);
@@ -129,6 +198,14 @@ int main(int argc, char** argv) {
     }
     CloseWindow();
     MemManager::page_info(0);
+
+    // auto s = gamestate.levelReference.way(4, 0);
+    // while (!s.empty()) {
+    //     auto x = s.top();
+    //     cout << x << " ";
+    //     s.pop();
+    // }
+    // cout << endl;
 
     gamestate.currentLevel.clear();
     UnloadLevel(gamestate.levelReference);

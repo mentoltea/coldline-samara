@@ -105,3 +105,7 @@ void SaveLevel(Level& level, std::string filename) {
 void UnloadLevel(Level& level) {
     level.destroy();
 }
+
+void ReloadLevel() {
+    gamestate.currentLevel = gamestate.levelReference;
+}

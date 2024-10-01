@@ -1,5 +1,7 @@
 #include "game.h"
 
+int tickcount = 0;
+
 bool lineCircleIntersection(Point start, Point end, Point circle, float radius, Point& intersection) {
     float dx = end.x - start.x;
     float dy = end.y - start.y;
@@ -308,6 +310,7 @@ void DrawTexturePoly(Texture2D texture, Vector2 center, Vector2 *points, Vector2
 }
 
 void update() {        
+    // if (gamestate.pause) return;
     // std::cout << "Update" << std::endl;
     Vector2 move = {0};
     if (IsKeyDown(KEY_A)) {
@@ -344,6 +347,17 @@ void update() {
         // std::cout << (*it)->type << std::endl;
         (*it)->update();
     }
+    tickcount++;
+    tickcount = tickcount%(20*TICK);
+
+    // std::cout << "u1" << std::endl;
+    // for (auto &x: gamestate.currentLevel.MapPoints) {
+    //     for (auto &y: x.connections) {
+    //         std::cout << y << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
+    // std::cout << "u2" << std::endl;
 }
 
 
@@ -351,6 +365,15 @@ void draw() {
     ClearBackground({0,0,0,255});
     DrawRectangleV(projectToCamera({0,0}), {gamestate.currentLevel.MapXf, gamestate.currentLevel.MapYf}, {25,25,25,255});
     if (gamestate.currentLevel.player) gamestate.currentLevel.player->draw();
+    // std::cout << "d1" << std::endl;
+    // for (auto &x: gamestate.currentLevel.MapPoints) {
+    //     std::cout << x.x << " " << x.y << std::endl;
+    //     std::cout << "\t";
+    //     for (auto &y: x.connections) {
+    //         std::cout << y << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
     
     for (auto it=gamestate.currentLevel.objects.begin(); it!=gamestate.currentLevel.objects.end(); it++) {
         if (!(*it)->active || (*it)==gamestate.currentLevel.player) continue;
@@ -358,7 +381,21 @@ void draw() {
             (*it)->draw();
         }
     }
+    char buffer[32];
+    for (int i=0; i<(int)gamestate.currentLevel.MapPoints.size(); i++) {
+        // DrawCircleV(projectToCamera({40, 40}), 4, {255,0,0,255});
+        auto curr = gamestate.currentLevel.MapPoints[i];
+        DrawCircleV(projectToCamera(curr), 4, {0, 255, 0, 255});
+        for (auto it2 = curr.connections.begin(); it2 != curr.connections.end(); it2++) {
+            // std::cout << *it2 << std::endl;
+            DrawLineV(projectToCamera(curr), projectToCamera(gamestate.currentLevel.MapPoints[*it2]), {0, 200, 100, 250});
+        }
+        snprintf(buffer, 32, "%d", i);
+        DrawText(buffer, projectToCamera(curr).x+5, projectToCamera(curr).y+5, 25, {0, 150, 200, 250});
+    }
+
     if (gamestate.pause) {
         DrawText("PAUSED", gamestate.WinX - 6*20 - 5, 0, 30, GREEN);
     }
+    // std::cout << "d3" << std::endl;
 }
