@@ -385,20 +385,17 @@ void Player::update()  {
     angleRad = atan2f(direction.y, direction.x);
     // angleRad = 0;
     angle = angleRad*180/PI;
-    
     Object* collision;
     position.x += move.x;
     if ((collision= collideCircle(this, position, hitCircleSize, move))) {
         if (collision->gentype == OBTACLE) move.x *= 1.1;
         position.x -= move.x;
     }
-    
     position.y += move.y;
     if ((collision= collideCircle(this, position, hitCircleSize, move))) {
         if (collision->gentype == OBTACLE) move.y *= 1.1;
         position.y -= move.y;
     }
-
     p1 = {position.x + size * cosf(angleRad - dirSizeAngle), position.y + size * sinf(angleRad - dirSizeAngle)};
     p2 = {position.x + size * cosf(angleRad + dirSizeAngle), position.y + size * sinf(angleRad + dirSizeAngle)};
     p3 = {position.x + size * cosf(PI + angleRad + dirSizeAngle), position.y + size * sinf(PI + angleRad + dirSizeAngle)};
@@ -424,7 +421,10 @@ Enemy::Enemy(Point pos, Vector2 size): inters(Nray) {
     this->size = sl;
     type = ENEMY;
 }
-Enemy::~Enemy() = default;
+Enemy::~Enemy() {
+    // decltype(inters)().swap(inters);
+    // decltype(selfway)().swap(selfway);
+};
 void Enemy::drawView(unsigned char alfa) {
     Color color = {viewColor.r, viewColor.g, viewColor.b, alfa};
     for (int i=0; i<Nray; i++) {
@@ -528,6 +528,7 @@ void Enemy::update() {
         }
         
         target = gamestate.currentLevel.MapPoints[currentway.top()];
+        // std::cout << currentway.top() << std::endl;
 
         if (distance(target, position) < hitCircleSize*2/5 && !currentway.empty()) {
             currentway.pop();
@@ -547,7 +548,8 @@ void Enemy::update() {
         
         float anglediffRad = angleRad-targetangleRad;
         
-        angleRad -= (anglediffRad)/8;
+        // angleRad -= (anglediffRad)/8;
+        angleRad = targetangleRad;
         // if (absf(anglediffRad) < PI) {
         // } else {
         //     angleRad += (anglediffRad)/10;

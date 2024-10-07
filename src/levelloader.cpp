@@ -1,57 +1,47 @@
 #include "levelloader.h"
 
-namespace ObjectExamples {
-// THESE EXAMPLES ARE ONLY TO GET VPTR TO VTABLE
-Wall WallExample;
-Door DoorExample;
-Mirror MirrorExample;
-Enemy EnemyExample;
-Player PlayerExample;
-TextSegment TextSegmentExample;
-}
-
 void InitializeObject(Object* obj) {
     switch (obj->type) {
     case WALL: {
-        *(size_t*)obj = *(size_t*)&ObjectExamples::WallExample;
+        *(size_t*)obj = *(size_t*)& MacroExample(Wall);
         // nothing special, just values
     }
     break;
     case TEXTSEGMENT: {
-        *(size_t*)obj = *(size_t*)&ObjectExamples::TextSegmentExample;
+        *(size_t*)obj = *(size_t*)& MacroExample(TextSegment);
         // nothing special, just values
     }
     break;
     case DOOR: {
-        *(size_t*)obj = *(size_t*)&ObjectExamples::DoorExample;
+        *(size_t*)obj = *(size_t*)& MacroExample(Door);
         // nothing special, just values
     }
     break;
     case MIRROR: {
-        *(size_t*)obj = *(size_t*)&ObjectExamples::MirrorExample;
+        *(size_t*)obj = *(size_t*)& MacroExample(Mirror);
         // nothing special, just values
     }
     break;
     case PLAYER: {
-        *(size_t*)obj = *(size_t*)&ObjectExamples::PlayerExample;
+        *(size_t*)obj = *(size_t*)& MacroExample(Player);
         Player *p = (Player*)obj;
-        p->inters = *(new(&(p->inters)) std::vector<IntersectInfo, MemManager::Allocator<IntersectInfo> >(p->Nray));
+        p->inters = *(new(&(p->inters)) std::vector<IntersectInfo>(p->Nray));
         for (int i=0; i<p->Nray; i++) {
-            p->inters[i].points = *(new(&p->inters[i].points) std::vector<Point, MemManager::Allocator<Point> >);
+            p->inters[i].points = *(new(&p->inters[i].points) std::vector<Point>);
         }
-        p->intersBack = *(new(&(p->intersBack)) std::vector<IntersectInfo, MemManager::Allocator<IntersectInfo> >(p->Nrayback));
+        p->intersBack = *(new(&(p->intersBack)) std::vector<IntersectInfo>(p->Nrayback));
         for (int i=0; i<p->Nrayback; i++) {
-            p->intersBack[i].points = *(new(&p->intersBack[i].points) std::vector<Point, MemManager::Allocator<Point> >);
+            p->intersBack[i].points = *(new(&p->intersBack[i].points) std::vector<Point>);
         }
         // gamestate.Gplayer = p;
     }
     break;
     case ENEMY: {
-        *(size_t*)obj = *(size_t*)&ObjectExamples::EnemyExample;
+        *(size_t*)obj = *(size_t*)& MacroExample(Enemy);
         Enemy *e = (Enemy*)obj;
-        e->inters = *(new(&(e->inters)) std::vector<IntersectInfo, MemManager::Allocator<IntersectInfo> >(e->Nray));
+        e->inters = *(new(&(e->inters)) std::vector<IntersectInfo>(e->Nray));
         for (int i=0; i<e->Nray; i++) {
-            e->inters[i].points = *(new(&e->inters[i].points) std::vector<Point, MemManager::Allocator<Point> >);
+            e->inters[i].points = *(new(&e->inters[i].points) std::vector<Point>);
         }
     }
     break;
@@ -103,9 +93,11 @@ void SaveLevel(Level& level, std::string filename) {
 }
 
 void UnloadLevel(Level& level) {
-    level.destroy();
+    level.clear();
 }
 
 void ReloadLevel() {
+    // std::cout << "before" << std::endl;
     gamestate.currentLevel = gamestate.levelReference;
+    // std::cout << "after" << std::endl;
 }

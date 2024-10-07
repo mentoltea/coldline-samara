@@ -17,6 +17,26 @@ size_t ObjectSize(Object* obj) {
     }
 }
 
+#define CopyCaseDereferenceCast(Tenum, T, TO, FROM) case Tenum:\
+    *(size_t*)TO = *(size_t*)& MacroExample(T);\
+    *(T*)(TO) = *(T*)(FROM);
+
+void CopyObject(Object* to, Object* from) {
+    switch (from->type){
+    CopyCaseDereferenceCast(WALL, Wall, to, from); break;
+    CopyCaseDereferenceCast(TEXTSEGMENT, TextSegment, to, from); break;
+    CopyCaseDereferenceCast(MIRROR, Mirror, to, from); break;
+    CopyCaseDereferenceCast(DOOR, Door, to, from); break;
+    CopyCaseDereferenceCast(PLAYER, Player, to, from); break;
+    CopyCaseDereferenceCast(ENEMY, Enemy, to, from); break;
+    
+    default:
+        fprintf(stderr, "COPY ERROR : unknown type.\n");
+        assert(0 && "UNKNOWN SIZE");
+        break;
+    }
+}
+
 
 Level::Level() = default;
 
@@ -28,7 +48,8 @@ Level::Level(const Level& other) {
     cheats = other.cheats;
     for (auto it = other.objects.cbegin(); it != other.objects.end(); it++) {
         Object* temp = (Object*)MemManager::memloc(ObjectSize(*it));
-        memcpy((void*)temp, *it, ObjectSize(*it));
+        // memcpy((void*)temp, *it, ObjectSize(*it));
+        CopyObject(temp, *it);
         objects.push_back(temp);
         if (temp->type == PLAYER) player = (Player*) temp;
     }
@@ -39,38 +60,46 @@ Level::~Level() {
 }
 
 Level& Level::operator=(const Level& other) {
-    clear();
-    MapX = other.MapX;
-    MapY = other.MapY;
-    MapXf = other.MapXf;
-    MapYf = other.MapYf;
-    cheats = other.cheats;
-    for (auto it = other.objects.cbegin(); it != other.objects.end(); it++) {
-        Object* temp = (Object*)MemManager::memloc(ObjectSize(*it));
-        memcpy((void*)temp, *it, ObjectSize(*it));
-        objects.push_back(temp);
-        if (temp->type == PLAYER) player = (Player*) temp;
+    if (this != &other) {
+        clear();
+        MapX = other.MapX;
+        MapY = other.MapY;
+        MapXf = other.MapXf;
+        MapYf = other.MapYf;
+        cheats = other.cheats;
+        // std::cout << "for start" << std::endl;
+        for (auto it = other.objects.cbegin(); it != other.objects.end(); it++) {
+            Object* temp = (Object*)MemManager::memloc(ObjectSize(*it));
+            // memcpy((void*)temp, *it, ObjectSize(*it));
+            CopyObject(temp, *it);
+            objects.push_back(temp);
+            if (temp->type == PLAYER) player = (Player*) temp;
+        }
+        // std::cout << "for end" << std::endl;
+        MapPoints = other.MapPoints;
     }
-    MapPoints = other.MapPoints;
     return *this;
 }
-Level& Level::operator=(Level&& other) {
-    clear();
-    MapX = other.MapX;
-    MapY = other.MapY;
-    MapXf = other.MapXf;
-    MapYf = other.MapYf;
-    cheats = other.cheats;
-    objects = other.objects;
-    player = other.player;
-    other.objects.clear();
-    MapPoints = other.MapPoints;
-    return *this;
-}
+// Level& Level::operator=(Level&& other) {
+//     if (this != &other) {
+//         clear();
+//         MapX = other.MapX;
+//         MapY = other.MapY;
+//         MapXf = other.MapXf;
+//         MapYf = other.MapYf;
+//         cheats = other.cheats;
+//         objects = other.objects;
+//         player = other.player;
+//         other.objects.clear();
+//         MapPoints = other.MapPoints;
+//     }
+//     return *this;
+// }
 
 void Level::clear() {
     for (auto it=objects.begin(); it!=objects.end(); it++) {
         MemManager::memfree(*it);
+        // DELETE(Object, *it);
     }
     objects.clear();
     MapPoints.clear();
@@ -105,11 +134,11 @@ std::tuple<Point, int, float> Level::nearPoint(const Point& p) const {
 }
 
 
-std::stack<int, std::deque<int, MemManager::Allocator<int> > > Level::way(int fromIdx, int toIdx) const {
+std::stack<int > Level::way(int fromIdx, int toIdx) const {
     // std::cout << "in0\n";
 
-    std::queue<int, std::deque<int, MemManager::Allocator<int> > > Q;
-    std::vector<int, MemManager::Allocator<int> > visited(MapPoints.size(), -1);
+    std::queue<int> Q;
+    std::vector<int> visited(MapPoints.size(), -1);
     Q.push(fromIdx);
     visited[fromIdx] = 0;
     int curr;
@@ -131,7 +160,7 @@ std::stack<int, std::deque<int, MemManager::Allocator<int> > > Level::way(int fr
         }
     }
     // std::cout << "in2\n";
-    std::stack<int, std::deque<int, MemManager::Allocator<int> > > S;
+    std::stack<int> S;
     if (curr != toIdx) {
         S.push(fromIdx);
         return S;

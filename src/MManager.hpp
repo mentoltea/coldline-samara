@@ -18,6 +18,7 @@ public:
     }
     template <class U>
     Allocator(const Allocator<U>& other) {
+        // std::cout << "Allocator copy" << std::endl;
     };
 
     ~Allocator() = default;

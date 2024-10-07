@@ -41,7 +41,9 @@ float distSquare(const Point& p1, const Point& p2);
 float constraintBetween(float value, float low, float hight);
 
 #define NEW(T) new(MemManager::memloc(sizeof(T)))
+
 // #define NEW(T, ...) new(MemManager::memloc(sizeof(T))) T(__VA_ARGS__)
+
 #define DELETE(T, O) (O)->~T(); MemManager::memfree((O));
 
 
@@ -84,9 +86,11 @@ class Enemy; // final
 //     max(sizeof(Enemy), 1)))))
 
 size_t ObjectSize(Object* obj);
+// @note DOES NOT ALLOCATE MEMORY, ONLY COPING
+void CopyObject(Object* to, Object* from);
 
 typedef struct IntersectInfo {
-    std::vector<Point, MemManager::Allocator<Point> > points;
+    std::vector<Point > points;
     float distance;
     Object* ptr;
 } IntersectInfo;
@@ -99,15 +103,15 @@ typedef struct CheatFlags {
 } CheatFlags;
 
 struct ConnectedPoint: public Point {
-    std::vector<int, MemManager::Allocator<int> > connections; // indexes in MapPoints
+    std::vector<int > connections; // indexes in MapPoints
 };
 
 struct Level {
     int MapX, MapY;
     float MapXf, MapYf;
-    std::vector<ConnectedPoint, MemManager::Allocator<ConnectedPoint> > MapPoints;
+    std::vector<ConnectedPoint> MapPoints;
     CheatFlags cheats = {0};
-    std::list<Object*, MemManager::Allocator<Object*> > objects;
+    std::list<Object*> objects;
     Player* player = NULL;
 
     Level();
@@ -115,13 +119,13 @@ struct Level {
     ~Level();
 
     Level& operator=(const Level& other);
-    Level& operator=(Level&& other);
+    Level& operator=(Level&& other) = delete;
 
     void clear();
     void destroy();
 
     std::tuple<Point, int, float> nearPoint(const Point& p) const; // Point, index, distance
-    std::stack<int, std::deque<int, MemManager::Allocator<int> > > way(int fromIdx, int toIdx) const; // Next point on a way
+    std::stack<int> way(int fromIdx, int toIdx) const; // Next point on a way
 };
 
 

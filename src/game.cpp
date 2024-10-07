@@ -1,5 +1,16 @@
 #include "game.h"
 
+namespace ObjectExamples {
+// THESE EXAMPLES ARE ONLY TO GET VPTR TO VTABLE
+Wall ExampleWall;
+Door ExampleDoor;
+Mirror ExampleMirror;
+Enemy ExampleEnemy;
+Player ExamplePlayer;
+TextSegment ExampleTextSegment;
+}
+
+
 int tickcount = 0;
 
 bool lineCircleIntersection(Point start, Point end, Point circle, float radius, Point& intersection) {
@@ -330,7 +341,6 @@ void update() {
         move.y *= 1.5;
     }
     
-
     Point mouse = GetMousePosition();
     float koef = 1.2;
     if (gamestate.currentLevel.player) {
@@ -342,11 +352,13 @@ void update() {
         gamestate.camera.x += move.x;
         gamestate.camera.y += move.y;
     }
+    // std::cout << "before" << std::endl;
     for (auto it=gamestate.currentLevel.objects.begin(); it!=gamestate.currentLevel.objects.end(); it++) {
         if (!(*it)->active || (*it)==gamestate.currentLevel.player) continue;
         // std::cout << (*it)->type << std::endl;
         (*it)->update();
     }
+    // std::cout << "after" << std::endl;
     tickcount++;
     tickcount = tickcount%(20*TICK);
 

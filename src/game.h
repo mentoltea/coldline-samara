@@ -164,8 +164,8 @@ public:
     float dirSizeAngle;
     float viewAround = 50;
     float viewLength = 800;
-    std::vector<IntersectInfo, MemManager::Allocator<IntersectInfo> > inters;
-    std::vector<IntersectInfo, MemManager::Allocator<IntersectInfo> > intersBack;
+    std::vector<IntersectInfo> inters;
+    std::vector<IntersectInfo> intersBack;
     Color viewColor = {110,110,110,180};
     Color viewAroundColor = {110,110,110,100};
     float hview = 30;
@@ -176,6 +176,7 @@ public:
     Texture *selfTexture = NULL;
 
     Player() {}
+    // Player(const Player& other) = default;
     Player(Point pos, Vector2 size);
     ~Player() override;
 
@@ -198,7 +199,7 @@ public:
     float dirSizeAngle;
     float viewAround = 30;
     float viewLength = 650;
-    std::vector<IntersectInfo, MemManager::Allocator<IntersectInfo> > inters;
+    std::vector<IntersectInfo> inters; // constant
     Color viewColor = {110,50,50,180};
     Color selfColor = {150, 150, 50, 250};
     float hview = 30;
@@ -207,11 +208,11 @@ public:
     size_t maxlen;
 
     Point target;
-    std::vector<int, MemManager::Allocator<int> > selfway;
-    std::stack<int, std::deque<int, MemManager::Allocator<int> > > currentway;
+    std::vector<int> selfway; // constant
+    std::stack<int> currentway;
     int selfwayidx = 0;
     std::tuple<Point, int, float> near;
-
+    
     Enemy() {}
     Enemy(Point pos, Vector2 size);
     ~Enemy() override;
@@ -226,5 +227,15 @@ public:
 };
 
 
+namespace ObjectExamples {
+// THESE EXAMPLES ARE ONLY TO GET VPTR TO VTABLE
+extern Wall ExampleWall;
+extern Door ExampleDoor;
+extern Mirror ExampleMirror;
+extern Enemy ExampleEnemy;
+extern Player ExamplePlayer;
+extern TextSegment ExampleTextSegment;
+}
+#define MacroExample(T) ObjectExamples::Example##T 
 
 #endif
