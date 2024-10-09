@@ -403,6 +403,7 @@ void Player::update()  {
 }
 bool Player::intersects(const Point& p)  {
     // return CheckCollisionPointPoly(p, (Vector2*)&body, 4);
+    if (gamestate.currentLevel.cheats.invisible) return false;
     return CheckCollisionPointTriangle(p, p1, p2, p3) || CheckCollisionPointTriangle(p, p3, p2, p4);
 }
 void Player::raycallback(Object* obj, float dist)  {
@@ -411,9 +412,96 @@ void Player::collidecallback(Entity* obj, const Point& point, const Vector2& dir
 }
 
 
+void EnemyBehaviour::update(Enemy* self) {
+    if (self->see_player || warned) {
+        // std::cout << "see player" << std::endl;
+        if (!see_player_way_updated && !warned) {
+            near = gamestate.currentLevel.nearPoint(self->position);
+            auto playernear = gamestate.currentLevel.nearPoint(gamestate.currentLevel.player->position);
+            if (std::get<1>(near) == std::get<1>(playernear)) {
+                while (!currentway.empty()) {
+                    currentway.pop();
+                }
+                self->target = gamestate.currentLevel.player->position;
+            }
+            else {
+                currentway = gamestate.currentLevel.way(std::get<1>(near), std::get<1>(playernear));
+            }
+            see_player_way_updated = true;
+            warned = true;
+            lost = false;
+            tick_warned = 1;
+            self->chase_target = true;
+        } 
+        if (!currentway.empty()) {
+            self->target = gamestate.currentLevel.MapPoints[currentway.top()]; 
+    
+            if (distance(self->target, self->position) < self->hitCircleSize*2/5 && !currentway.empty()) {
+                currentway.pop();
+                if (currentway.empty()) {
+                    self->target = gamestate.currentLevel.player->position;
+                }
+            }
+        } else {
+            // self->target = gamestate.currentLevel.player->position;
+            if (self->see_player) {
+                self->chase_target = true;
+                self->target = gamestate.currentLevel.player->position;
+                lost = false;
+            }
+            else {
+                if (distance(self->target, self->position) < self->hitCircleSize*7/5) {
+                    if (!lost) {
+                        lost = true;
+                        tick_lost = 1;
+                        self->chase_target = false;
+                    }
+                    else {
+                        tick_lost++;
+                        if (tick_lost%(3*TICK)==0) {
+                            warned = false;
+                        }
+                    }    
+                }
+            }
+        }
 
+        tick_warned++;
+        if (tick_warned%(5*TICK) == 0 && !self->see_player) warned=false; 
+    } 
+    else if (selfway.size() > 0) {
+        see_player_way_updated=false;
 
-Enemy::Enemy(Point pos, Vector2 size): inters(Nray) {
+        if (currentway.empty()) {
+            near = gamestate.currentLevel.nearPoint(self->position);
+            currentway = gamestate.currentLevel.way(std::get<1>(near), selfway.at(selfwayidx));
+            selfwayidx = (selfwayidx+1)%selfway.size();
+        }
+        
+        self->target = gamestate.currentLevel.MapPoints[currentway.top()];
+        self->chase_target = true;
+        // std::cout << currentway.top() << std::endl;
+
+        if (distance(self->target, self->position) < self->hitCircleSize*2/5 && !currentway.empty()) {
+            currentway.pop();
+            if (currentway.empty()) {
+                near = gamestate.currentLevel.nearPoint(self->position);
+                currentway = gamestate.currentLevel.way(std::get<1>(near), selfway.at(selfwayidx));
+                selfwayidx = (selfwayidx+1)%selfway.size();
+                // currentway.pop();
+                self->target = gamestate.currentLevel.MapPoints[currentway.top()];
+                // if (!currentway.empty()) self->target = gamestate.currentLevel.MapPoints[currentway.top()];
+                // else self->chase_target=false;
+            }
+        }
+    }
+    else {
+        see_player_way_updated=false;
+        self->chase_target = false;
+    }
+}
+
+Enemy::Enemy(Point pos, Vector2 size, std::vector<int> way): inters(Nray), behaviour(way) {
     position = pos;
     float sl = sqrtf(size.x*size.x + size.y*size.y);
     hitCircleSize = sl*0.95;
@@ -499,6 +587,7 @@ void Enemy::update() {
     float a = angle + hview;
     maxlen = 0;
     int found_player = -1;
+    see_player = false;
     for (int i=0; i<Nray; i++) {
         a -= delta;
         raycastLimitedReflections(inters[i], position, a, 2, this, this, viewLength);
@@ -510,9 +599,7 @@ void Enemy::update() {
     if (found_player != -1) {
         selfColor = {200, 50, 50, 250};
         viewColor = {170,50,50,180};
-        // direction = {gamestate.currentLevel.player->position.x - position.x, gamestate.currentLevel.player->position.y - position.y};
-        // move.x += direction.x;
-        // move.y += direction.y;
+        see_player = true;
     } else {
         selfColor = {150, 150, 50, 250};
         viewColor = {110,110,90,180};
@@ -520,41 +607,25 @@ void Enemy::update() {
 
     // std::cout << "1" << std::endl;
     
-    if (selfway.size() > 0) {
-        if (currentway.empty()) {
-            near = gamestate.currentLevel.nearPoint(position);
-            currentway = gamestate.currentLevel.way(std::get<1>(near), selfway.at(selfwayidx));
-            selfwayidx = (selfwayidx+1)%selfway.size();
-        }
-        
-        target = gamestate.currentLevel.MapPoints[currentway.top()];
-        // std::cout << currentway.top() << std::endl;
-
-        if (distance(target, position) < hitCircleSize*2/5 && !currentway.empty()) {
-            currentway.pop();
-            if (currentway.empty()) {
-                near = gamestate.currentLevel.nearPoint(position);
-                currentway = gamestate.currentLevel.way(std::get<1>(near), selfway.at(selfwayidx));
-                selfwayidx = (selfwayidx+1)%selfway.size();
-                currentway.pop();
-                target = gamestate.currentLevel.MapPoints[currentway.top()];
-            }
-        }
-
-
-        // std::cout << "3" << std::endl;
+    behaviour.update(this);
+    if (chase_target) {
         Vector2 targetdirection = {target.x - position.x, target.y - position.y};
         float targetangleRad = atan2f(targetdirection.y, targetdirection.x);
         
         float anglediffRad = angleRad-targetangleRad;
-        
-        // angleRad -= (anglediffRad)/8;
-        angleRad = targetangleRad;
-        // if (absf(anglediffRad) < PI) {
-        // } else {
-        //     angleRad += (anglediffRad)/10;
+        // while (anglediffRad >= 2*PI) {
+        //     anglediffRad -= PI;
+        // }
+        // while (anglediffRad < -2*PI)
+        // {
+        //     anglediffRad += PI;
         // }
         
+        
+        
+        // angleRad -= anglediffRad/5;
+        angleRad = targetangleRad;
+
         direction = {cosf(angleRad), sinf(angleRad)};
         move.x += direction.x * (cosf(anglediffRad) + 0.1f);
         move.y += direction.y * (cosf(anglediffRad) + 0.1f);

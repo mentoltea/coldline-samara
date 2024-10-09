@@ -183,5 +183,14 @@ std::stack<int > Level::way(int fromIdx, int toIdx) const {
         revcurr = minidx;
     }
     // std::cout << "in4\n";
+
+    auto copy = S;
+    // std::cout << "-----" << std::endl;
+    // while (!copy.empty()) {
+    //     std::cout << copy.top() << " ";
+    //     copy.pop();
+    // }
+    // std::cout << std::endl;
+    
     return S;
 }

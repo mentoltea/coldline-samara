@@ -147,9 +147,8 @@ int main(int argc, char** argv) {
     // gamestate.levelReference.objects.push_back(w);
 
 
-    Enemy *en = NEW(Enemy) Enemy({200, 600}, {10, 20});
+    Enemy *en = NEW(Enemy) Enemy({200, 600}, {10, 20}, {1,2,5,6});
     en->direction = {-1, 0};
-    en->selfway = {1, 2, 5, };
     gamestate.levelReference.objects.push_back(en);
 
     // en = NEW(Enemy) Enemy({600, 400}, {10, 20});
@@ -157,14 +156,14 @@ int main(int argc, char** argv) {
     // en->selfway = {6, 1, 3};
     // gamestate.levelReference.objects.push_back(en);
 
-    Door *dr = NEW(Door) Door(-360, 360, 0, {200,200}, {30, 3}, {30,3});
-    gamestate.levelReference.objects.push_back(dr);
+    // Door *dr = NEW(Door) Door(-360, 360, 0, {200,200}, {30, 3}, {30,3});
+    // gamestate.levelReference.objects.push_back(dr);
 
 
     // gamestate.levelReference = LoadLevel("text.level");
     // ReloadLevel();
     // ReloadLevel();
-    
+    gamestate.levelReference.cheats.invisible = true;
     ReloadLevel();
     // gamestate.currentLevel = gamestate.levelReference;
             
@@ -205,6 +204,9 @@ int main(int argc, char** argv) {
             ReloadLevel();
         }
         
+        if (IsKeyPressed(KEY_I)) {
+            gamestate.currentLevel.cheats.invisible = !gamestate.currentLevel.cheats.invisible;
+        }
 
         BeginDrawing();
         if (!gamestate.pause) update();

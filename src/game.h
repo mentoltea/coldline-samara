@@ -189,6 +189,24 @@ public:
     void collidecallback(Entity* obj, const Point& point, const Vector2& direction) override;
 };
 
+class EnemyBehaviour {
+public:
+    std::vector<int> selfway; // constant
+    std::stack<int> currentway;
+    int selfwayidx = 0;
+    std::tuple<Point, int, float> near;
+
+    bool see_player_way_updated = false;
+    bool warned = false;
+    int tick_warned;
+    bool lost;
+    int tick_lost;
+
+    EnemyBehaviour() {}    
+    EnemyBehaviour(std::vector<int> way): selfway(way) {};
+
+    void update(Enemy* self);
+};
 
 class Enemy : public Entity {
 public:
@@ -197,6 +215,7 @@ public:
     Point dp1, dp2, dp3, dp4;
     float angle, angleRad;
     float dirSizeAngle;
+
     float viewAround = 30;
     float viewLength = 650;
     std::vector<IntersectInfo> inters; // constant
@@ -208,13 +227,12 @@ public:
     size_t maxlen;
 
     Point target;
-    std::vector<int> selfway; // constant
-    std::stack<int> currentway;
-    int selfwayidx = 0;
-    std::tuple<Point, int, float> near;
-    
+    bool chase_target=true;
+    bool see_player;
+    EnemyBehaviour behaviour;
+
     Enemy() {}
-    Enemy(Point pos, Vector2 size);
+    Enemy(Point pos, Vector2 size, std::vector<int> way);
     ~Enemy() override;
 
     void drawA(unsigned char alfa);
@@ -225,6 +243,7 @@ public:
     void raycallback(Object* obj, float dist) override;
     void collidecallback(Entity* obj, const Point& point, const Vector2& direction) override;
 };
+
 
 
 namespace ObjectExamples {

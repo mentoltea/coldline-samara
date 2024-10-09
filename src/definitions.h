@@ -96,10 +96,7 @@ typedef struct IntersectInfo {
 } IntersectInfo;
 
 typedef struct CheatFlags {
-    bool HideAndSeek = false; // See enemies hitboxes
-    bool BigBrother = false; // See everything brightly
-    bool InfinityIsNotLimit = false; // Unlimit your vision length
-    bool ShowFPS = true;
+    bool invisible=false;
 } CheatFlags;
 
 struct ConnectedPoint: public Point {

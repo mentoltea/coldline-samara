@@ -360,7 +360,7 @@ void update() {
     }
     // std::cout << "after" << std::endl;
     tickcount++;
-    tickcount = tickcount%(20*TICK);
+    tickcount = tickcount%(120*TICK);
 
     // std::cout << "u1" << std::endl;
     // for (auto &x: gamestate.currentLevel.MapPoints) {
