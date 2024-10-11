@@ -35,6 +35,7 @@ extern "C" {
 typedef Vector2 Point;
 
 float absf(float x);
+int signf(float x);
 size_t max(size_t, size_t);
 float distance(const Point& p1, const Point& p2);
 float distSquare(const Point& p1, const Point& p2);

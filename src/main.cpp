@@ -110,12 +110,12 @@ int main(int argc, char** argv) {
 
     Wall *w;
 
-    w = NEW(Wall) Wall({ 
-        {gamestate.levelReference.MapXf, 0}, 
-        {0, 0},
-        {gamestate.levelReference.MapXf, 10}, 
-        {0, 10} });
-    gamestate.levelReference.objects.push_back(w);
+    // w = NEW(Wall) Wall({ 
+    //     {gamestate.levelReference.MapXf, 0}, 
+    //     {0, 0},
+    //     {gamestate.levelReference.MapXf, 10}, 
+    //     {0, 10} });
+    // gamestate.levelReference.objects.push_back(w);
 
     w = NEW(Wall) Wall({ 
         {gamestate.levelReference.MapXf, gamestate.levelReference.MapYf-10}, 
@@ -139,15 +139,8 @@ int main(int argc, char** argv) {
         {gamestate.levelReference.MapXf-10, gamestate.levelReference.MapYf} });
     gamestate.levelReference.objects.push_back(w);
 
-    // w = NEW(Wall) Wall({ 
-    //     {gamestate.levelReference.MapXf/2, 0}, 
-    //     {gamestate.levelReference.MapXf/2-10, 0},
-    //     {gamestate.levelReference.MapXf, gamestate.levelReference.MapYf/5}, 
-    //     {gamestate.levelReference.MapXf-10, gamestate.levelReference.MapYf/5} });
-    // gamestate.levelReference.objects.push_back(w);
 
-
-    Enemy *en = NEW(Enemy) Enemy({200, 600}, {10, 20}, {1,2,5,6});
+    Enemy *en = NEW(Enemy) Enemy({200, 600}, {10, 20}, { 4, 1, 0, 2});
     en->direction = {-1, 0};
     gamestate.levelReference.objects.push_back(en);
 

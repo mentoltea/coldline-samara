@@ -5,6 +5,12 @@ float absf(float x) {
     return x;
 }
 
+int signf(float x) {
+    if (x<0) return -1;
+    if (x>0) return 1;
+    return 0;
+}
+
 size_t max(size_t s1, size_t s2) {
     if (s1>s2) return s1;
     return s2;

@@ -479,7 +479,7 @@ void EnemyBehaviour::update(Enemy* self) {
         }
         
         self->target = gamestate.currentLevel.MapPoints[currentway.top()];
-        self->chase_target = true;
+        
         // std::cout << currentway.top() << std::endl;
 
         if (distance(self->target, self->position) < self->hitCircleSize*2/5 && !currentway.empty()) {
@@ -488,11 +488,14 @@ void EnemyBehaviour::update(Enemy* self) {
                 near = gamestate.currentLevel.nearPoint(self->position);
                 currentway = gamestate.currentLevel.way(std::get<1>(near), selfway.at(selfwayidx));
                 selfwayidx = (selfwayidx+1)%selfway.size();
-                // currentway.pop();
-                self->target = gamestate.currentLevel.MapPoints[currentway.top()];
-                // if (!currentway.empty()) self->target = gamestate.currentLevel.MapPoints[currentway.top()];
-                // else self->chase_target=false;
+                currentway.pop();
+                if (currentway.empty()) {self->chase_target = false;}
+                else {self->target = gamestate.currentLevel.MapPoints[currentway.top()];}
+            } else {
+                self->chase_target = true;
             }
+        } else {
+            self->chase_target = true;
         }
     }
     else {
@@ -596,40 +599,57 @@ void Enemy::update() {
             found_player = i;
         }
     }
-    if (found_player != -1) {
+    if (found_player != -1) see_player = true;
+    
+    behaviour.update(this);
+    if (see_player) {
         selfColor = {200, 50, 50, 250};
         viewColor = {170,50,50,180};
-        see_player = true;
-    } else {
+    }
+    else if (behaviour.warned) {
         selfColor = {150, 150, 50, 250};
         viewColor = {110,110,90,180};
+    } else {
+        selfColor = {130, 140, 90, 250};
+        viewColor = {100,110,90,180};
     }
 
     // std::cout << "1" << std::endl;
     
-    behaviour.update(this);
     if (chase_target) {
         Vector2 targetdirection = {target.x - position.x, target.y - position.y};
         float targetangleRad = atan2f(targetdirection.y, targetdirection.x);
         
-        float anglediffRad = angleRad-targetangleRad;
-        // while (anglediffRad >= 2*PI) {
-        //     anglediffRad -= PI;
-        // }
-        // while (anglediffRad < -2*PI)
+        
+        float anglediffRad = targetangleRad - angleRad;
+        
+        // anglediffRad = constraintBetween(anglediffRad, -PI, PI);
+        
+        while (absf(anglediffRad) > PI) {
+            int anglesign = signf(anglediffRad);
+            anglediffRad = 2*PI - absf(anglediffRad);
+            anglediffRad *= -anglesign;
+        }
+        // while (anglediffRad>2*PI)
         // {
-        //     anglediffRad += PI;
+        //     anglediffRad-=PI;
+        // }
+        // while (anglediffRad<-2*PI)
+        // {
+        //     anglediffRad+=PI;
         // }
         
+
         
-        
-        // angleRad -= anglediffRad/5;
-        angleRad = targetangleRad;
+        angleRad += anglediffRad/8;
+        // angleRad = targetangleRad;
 
         direction = {cosf(angleRad), sinf(angleRad)};
         move.x += direction.x * (cosf(anglediffRad) + 0.1f);
         move.y += direction.y * (cosf(anglediffRad) + 0.1f);
-        angleRad = constraintBetween(angleRad, -PI, PI);
+        angleRad = constraintBetween(angleRad, -2*PI, 2*PI);
+
+        // std::cout << angleRad << std::endl;
     }
 
     float dl = sqrtf(direction.x*direction.x + direction.y*direction.y);
