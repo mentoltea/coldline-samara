@@ -1,5 +1,19 @@
 #include "game.h"
 
+Vector2 operator+(const Vector2& v1, const Vector2& v2) {
+    return (Vector2){.x = v1.x + v2.x, .y = v1.y + v2.y};
+}
+Vector2 operator-(const Vector2& v1, const Vector2& v2) {
+    return (Vector2){.x = v1.x - v2.x, .y = v1.y - v2.y};
+}
+
+Vector2 operator*(const Vector2 v, float k) {
+    return (Vector2){.x = v.x*k, .y = v.y*k};
+}
+Vector2 operator*(float k, const Vector2 v) {
+    return (Vector2){.x = v.x*k, .y = v.y*k};
+}
+
 float absf(float x) {
     if (x<0) return -x;
     return x;
@@ -9,6 +23,10 @@ int signf(float x) {
     if (x<0) return -1;
     if (x>0) return 1;
     return 0;
+}
+
+float randf() {
+    return (float) rand() / (float) RAND_MAX;
 }
 
 size_t max(size_t s1, size_t s2) {

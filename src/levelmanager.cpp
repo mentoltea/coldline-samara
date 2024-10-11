@@ -9,6 +9,7 @@ size_t ObjectSize(Object* obj) {
     case PLAYER: return sizeof(Player);
     case ENEMY: return sizeof(Enemy);
     case TEXTSEGMENT: return sizeof(TextSegment);
+    case PISTOL: return sizeof(Pistol);
     
     default:
         fprintf(stderr, "ERROR : Cannot figure out the size of object.\n");
@@ -29,7 +30,8 @@ void CopyObject(Object* to, Object* from) {
     CopyCaseDereferenceCast(DOOR, Door, to, from); break;
     CopyCaseDereferenceCast(PLAYER, Player, to, from); break;
     CopyCaseDereferenceCast(ENEMY, Enemy, to, from); break;
-    
+    CopyCaseDereferenceCast(PISTOL, Pistol, to, from); break;
+
     default:
         fprintf(stderr, "COPY ERROR : unknown type.\n");
         assert(0 && "UNKNOWN SIZE");
@@ -102,6 +104,11 @@ void Level::clear() {
         // DELETE(Object, *it);
     }
     objects.clear();
+    for (auto it=projects.begin(); it!=projects.end(); it++) {
+        DELETE(Projectile, (*it));
+        // DELETE(Object, *it);
+    }
+    projects.clear();
     MapPoints.clear();
     player = NULL;
 }
@@ -111,6 +118,11 @@ void Level::destroy() {
         DELETE(Object, *it);
     }
     objects.clear();
+    for (auto it=projects.begin(); it!=projects.end(); it++) {
+        DELETE(Projectile, (*it));
+        // DELETE(Object, *it);
+    }
+    projects.clear();
     MapPoints.clear();
     player = NULL;
 }

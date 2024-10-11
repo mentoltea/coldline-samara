@@ -32,10 +32,17 @@ extern "C" {
 }
 }
 
+Vector2 operator+(const Vector2& v1, const Vector2& v2);
+Vector2 operator-(const Vector2& v1, const Vector2& v2);
+
+Vector2 operator*(const Vector2 v, float k);
+Vector2 operator*(float k, const Vector2 v);
+
 typedef Vector2 Point;
 
 float absf(float x);
 int signf(float x);
+float randf();
 size_t max(size_t, size_t);
 float distance(const Point& p1, const Point& p2);
 float distSquare(const Point& p1, const Point& p2);
@@ -64,21 +71,30 @@ typedef enum ObjType {
     ENTITY, // General
     PLAYER,
     ENEMY,
+    PROJECTILE, // General
+    BULLET,
+
 
     ITEM, // General
-
-    PROJECTILE, // General
+    PISTOL,
 } ObjType;
 
 class Object;
+
 class Obtacle;
 class Wall; // final
 class TextSegment; //final
 class Mirror; // final
 class Door; // final
+
 class Entity;
 class Player; // final
 class Enemy; // final
+class Projectile;
+class Bullet; // final
+
+class Item;
+class Pistol; //final
 // #define MAX_OBJECT_SIZE 
 //     max(sizeof(Wall), 
 //     max(sizeof(Mirror), 
@@ -109,7 +125,8 @@ struct Level {
     float MapXf, MapYf;
     std::vector<ConnectedPoint> MapPoints;
     CheatFlags cheats = {0};
-    std::list<Object*> objects;
+    std::vector<Object*> objects;
+    std::list<Projectile*> projects;
     Player* player = NULL;
 
     Level();

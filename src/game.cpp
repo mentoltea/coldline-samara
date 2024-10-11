@@ -8,6 +8,7 @@ Mirror ExampleMirror;
 Enemy ExampleEnemy;
 Player ExamplePlayer;
 TextSegment ExampleTextSegment;
+Pistol ExamplePistol;
 }
 
 
@@ -46,6 +47,27 @@ bool lineCircleIntersection(Point start, Point end, Point circle, float radius, 
     return false;
 }
 
+std::tuple<Item*, int, float> nearestItem(const Point& p) {
+    Item* obj = NULL;
+    int minidx = -1;
+    float mindist = INFINITY;
+    int idx = -1;
+    for (auto it=gamestate.currentLevel.objects.begin(); it!=gamestate.currentLevel.objects.end(); it++) {
+        idx++;
+        if (!(*it)->active || (*it)->gentype!=ITEM) continue;
+        Item* cur = (Item*) (*it);
+        if (!cur->onFloor) continue;
+        float dx = p.x - cur->position.x;
+        float dy = p.y - cur->position.y;
+        float dist = dx*dx + dy*dy;
+        if (dist < mindist) {
+            mindist = dist;
+            obj = cur;
+            minidx = idx;
+        }
+    }
+    return {obj, minidx, sqrtf(mindist)};
+}
 
 Object* collide(Entity *obj, const Point& p, const Vector2& direction) {
     for (auto it=gamestate.currentLevel.objects.begin(); it!=gamestate.currentLevel.objects.end(); it++) {
@@ -98,6 +120,7 @@ void raycastLimitedReflections(IntersectInfo& result,Point start, float angle, f
         intobj = intersect(start, ignore);
         if (intobj) {
             intobj->raycallback(origin, result.distance);
+            // if (intobj->opaque) continue;
             if (intobj->reflects && reflections < gamestate.MAX_REFLECTIONS) {
                 Vector2 r = reflect({dx, dy}, intobj->normal);
                 dx = r.x; dy = r.y;
@@ -152,6 +175,7 @@ void raycastLimited(IntersectInfo& result, Point start, float angle, float step,
         intobj = intersect(start, ignore);
         if (intobj) {
             intobj->raycallback(origin, result.distance);
+            // if (intobj->opaque) continue;
             result.points.push_back(start);
             break;
         }
@@ -196,6 +220,7 @@ void raycast(IntersectInfo& result, Point start, float angle, float step, Object
         intobj = intersect(start, ignore);
         if (intobj) {
             intobj->raycallback(origin, result.distance);
+            // if (intobj->opaque) continue;
             if (intobj->reflects && reflections < gamestate.MAX_REFLECTIONS) {
                 Vector2 r = reflect({dx, dy}, intobj->normal);
                 dx = r.x; dy = r.y;
@@ -247,6 +272,7 @@ void raycast(IntersectInfo& result, Point start, Vector2 direct, Object* ignore,
         intobj = intersect(start, ignore);
         if (intobj) {
             intobj->raycallback(origin, result.distance);
+            // if (intobj->opaque) continue;
             if (intobj->reflects && reflections < gamestate.MAX_REFLECTIONS) {
                 direct = reflect(direct, intobj->normal);
                 // direct.x *= 3/2;
@@ -321,8 +347,6 @@ void DrawTexturePoly(Texture2D texture, Vector2 center, Vector2 *points, Vector2
 }
 
 void update() {        
-    // if (gamestate.pause) return;
-    // std::cout << "Update" << std::endl;
     Vector2 move = {0};
     if (IsKeyDown(KEY_A)) {
         move.x -= 4;
@@ -340,60 +364,72 @@ void update() {
         move.x *= 1.5;
         move.y *= 1.5;
     }
-    
+    // std::cout << gamestate.currentLevel.projects.size() << std::endl;
+    for (auto it=gamestate.currentLevel.projects.begin(); it!=gamestate.currentLevel.projects.end(); it++) {
+        if ((*it)->finished) {
+            // std::cout << "delete" << std::endl;
+            DELETE(Projectile, (*it));
+            gamestate.currentLevel.projects.erase(it);
+            continue;
+        }
+        if ((*it)->active) {
+            (*it)->update();
+            // std::cout << "update" << std::endl;
+        }
+    }
+
     Point mouse = GetMousePosition();
     float koef = 1.2;
     if (gamestate.currentLevel.player) {
         gamestate.camera.x = (koef*(gamestate.currentLevel.player->position.x) + gamestate.camera.x + mouse.x)/(1+koef) - (gamestate.WinXf)/2;
         gamestate.camera.y = (koef*(gamestate.currentLevel.player->position.y) + gamestate.camera.y + mouse.y)/(1+koef) - (gamestate.WinYf)/2;
         gamestate.currentLevel.player->move = move;
+        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
+            gamestate.currentLevel.player->pickItem();
+        }
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+            gamestate.currentLevel.player->use_item = true;
+        }
         gamestate.currentLevel.player->update();
     } else {
         gamestate.camera.x += move.x;
         gamestate.camera.y += move.y;
     }
-    // std::cout << "before" << std::endl;
+
     for (auto it=gamestate.currentLevel.objects.begin(); it!=gamestate.currentLevel.objects.end(); it++) {
         if (!(*it)->active || (*it)==gamestate.currentLevel.player) continue;
-        // std::cout << (*it)->type << std::endl;
         (*it)->update();
     }
-    // std::cout << "after" << std::endl;
+
     tickcount++;
     tickcount = tickcount%(120*TICK);
 
-    // std::cout << "u1" << std::endl;
-    // for (auto &x: gamestate.currentLevel.MapPoints) {
-    //     for (auto &y: x.connections) {
-    //         std::cout << y << " ";
-    //     }
-    //     std::cout << std::endl;
-    // }
-    // std::cout << "u2" << std::endl;
+
 }
 
 
 void draw() {
+    char buffer[32];
     ClearBackground({0,0,0,255});
     DrawRectangleV(projectToCamera({0,0}), {gamestate.currentLevel.MapXf, gamestate.currentLevel.MapYf}, {25,25,25,255});
-    if (gamestate.currentLevel.player) gamestate.currentLevel.player->draw();
-    // std::cout << "d1" << std::endl;
-    // for (auto &x: gamestate.currentLevel.MapPoints) {
-    //     std::cout << x.x << " " << x.y << std::endl;
-    //     std::cout << "\t";
-    //     for (auto &y: x.connections) {
-    //         std::cout << y << " ";
-    //     }
-    //     std::cout << std::endl;
-    // }
+    if (gamestate.currentLevel.player) {
+        gamestate.currentLevel.player->draw();
+    }
+
+    for (auto it=gamestate.currentLevel.projects.begin(); it!=gamestate.currentLevel.projects.end(); it++) {
+        if (!(*it)->finished && (*it)->visible) (*it)->draw();
+    }
     
     for (auto it=gamestate.currentLevel.objects.begin(); it!=gamestate.currentLevel.objects.end(); it++) {
-        if (!(*it)->active || (*it)==gamestate.currentLevel.player) continue;
+        if ((*it)==gamestate.currentLevel.player) continue;
         if ((*it)->visible) {
             (*it)->draw();
         }
     }
-    char buffer[32];
+
+
+
+    // Draw bot path graph
     for (int i=0; i<(int)gamestate.currentLevel.MapPoints.size(); i++) {
         // DrawCircleV(projectToCamera({40, 40}), 4, {255,0,0,255});
         auto curr = gamestate.currentLevel.MapPoints[i];
@@ -404,6 +440,24 @@ void draw() {
         }
         snprintf(buffer, 32, "%d", i);
         DrawText(buffer, projectToCamera(curr).x+5, projectToCamera(curr).y+5, 25, {0, 150, 200, 250});
+    }
+
+    if (gamestate.currentLevel.player && gamestate.currentLevel.player->selfitem!=-1) {
+        Item* git = (Item*) gamestate.currentLevel.objects[gamestate.currentLevel.player->selfitem];
+        switch (git->type) {
+        case PISTOL: {
+            Pistol* it = (Pistol*) git;
+            snprintf(buffer, 32, "%d/%d", it->rounds, it->extrarounds);
+            DrawText(buffer, gamestate.WinX - 6*20 - 5, gamestate.WinY-40, 30, GREEN);
+            float a = ((float)it->delay_tick)/TICK/it->delay;
+            float linesize = 120;
+            DrawLine(gamestate.WinX - 40 - linesize, gamestate.WinY-60, gamestate.WinX - 40 - linesize*a, gamestate.WinY-60, GREEN); 
+            break;
+        }
+        
+        default:
+            break;
+        }
     }
 
     if (gamestate.pause) {

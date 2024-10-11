@@ -144,6 +144,9 @@ int main(int argc, char** argv) {
     en->direction = {-1, 0};
     gamestate.levelReference.objects.push_back(en);
 
+    Pistol* pis = NEW(Pistol) Pistol({600, 200}, {{10,-5}, {-10,-5}, {10,5}, {-10,5}}, true);
+    gamestate.levelReference.objects.push_back(pis);
+
     // en = NEW(Enemy) Enemy({600, 400}, {10, 20});
     // en->direction = {-1, 0};
     // en->selfway = {6, 1, 3};

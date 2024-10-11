@@ -19,6 +19,8 @@ Vector2 reflect(const Vector2& v, const Vector2& normal);
 Object* collide(Entity *obj, const Point& p, const Vector2& direction);
 Object* collideCircle(Entity *obj, const Point& circle, float radius, const Vector2& direction);
 
+std::tuple<Item*, int, float> nearestItem(const Point& p);
+
 bool lineCircleIntersection(Point start, Point end, Point circle, float radius, Point& intersection);
 
 Point projectToCamera(const Point& p);
@@ -54,6 +56,51 @@ public:
     virtual bool intersectsCircle(const Point& circle, float radius, Point& intersection) = 0;
     virtual void raycallback(Object* obj, float dist) = 0;
     virtual void collidecallback(Entity* obj, const Point& point, const Vector2& direction) = 0;
+    virtual void projectilecallback(Projectile* proj) = 0;
+};
+
+
+class Item : public Object {
+public:
+    Point position;
+    bool onFloor;
+    // bool isHolded;
+    
+    Item();
+
+    virtual bool usable() = 0;
+    virtual void use(Entity* user) = 0;
+
+    bool intersectsCircle(const Point& circle, float radius, Point& intersection) {return false;};
+    void collidecallback(Entity* obj, const Point& point, const Vector2& direction) {};
+    void projectilecallback(Projectile* proj) {};
+    void raycallback(Object* obj, float dist) override;
+};
+
+class Pistol: public Item {
+public:
+    int rounds = 7;
+    int maxrounds = 7;
+    int extrarounds = 35;
+
+    int delay_tick;
+    float delay = 0.5;
+    bool reloading = false;
+    int reloading_tick;
+
+    Poly body; // relative to position
+
+    Color selfcolor = {80, 140, 190, 250};
+    
+    Pistol() {};
+    Pistol(Point position, Poly body, bool onFloor);
+    ~Pistol() override;
+    void drawA(unsigned char a);
+    void draw() override;
+    bool usable() override;
+    void use(Entity* user) override; 
+    void update() override;
+    bool intersects(const Point&) override;
 };
 
 class Entity : public Object {
@@ -63,15 +110,47 @@ public:
     Point position;
     Point drawPosition;
     float hitCircleSize;
+    bool alive = true;
+    int selfitem = -1; // index in level objects
 
     Entity();
     bool intersectsCircle(const Point& circle, float radius, Point& intersection) override;
+    virtual void pickItem();
+    virtual void dropItem();
 };
+
+class Projectile: public Entity {
+public:
+    bool finished = false;
+    Projectile();
+    
+    virtual void onDestroy() = 0;
+};
+
+class Bullet: public Projectile {
+public:
+    Color selfcolor = {250, 150, 50, 250};
+
+    Bullet(Point position, Vector2 direction, float radius);
+    ~Bullet() override;
+    void drawA(unsigned char alfa);
+    void draw() override;
+    void update() override;
+    bool intersects(const Point&) override;
+    bool intersectsCircle(const Point& circle, float radius, Point& intersection) override;
+    void raycallback(Object* obj, float dist) override;
+    void collidecallback(Entity* obj, const Point& point, const Vector2& direction) override;
+    void projectilecallback(Projectile* proj) override;
+    void onDestroy() override;
+};
+
+
 
 class Obtacle: public Object {
 public:
     Obtacle();
     void collidecallback(Entity* obj, const Point& point, const Vector2& direction) override;
+    void projectilecallback(Projectile* proj) override;
 };
 
 class Mirror: public Obtacle {
@@ -89,6 +168,7 @@ public:
     bool intersects(const Point& p) override;
     void raycallback(Object* obj, float dist) override;
     bool intersectsCircle(const Point& circle, float radius, Point& intersection) override;
+    void projectilecallback(Projectile* proj) override;
 };
 
 class Wall: public Obtacle {
@@ -106,6 +186,7 @@ public:
     bool intersects(const Point& p) override;
     void raycallback(Object* obj, float dist) override;
     bool intersectsCircle(const Point& circle, float radius, Point& intersection) override;
+    void projectilecallback(Projectile* proj) override;
 };
 
 class TextSegment: public Wall {
@@ -174,6 +255,7 @@ public:
     float delta = 2*hview/Nray;
     float deltaback = (360-2*hview+5)/Nrayback;
     Texture *selfTexture = NULL;
+    bool use_item=false;
 
     Player() {}
     // Player(const Player& other) = default;
@@ -187,6 +269,7 @@ public:
     bool intersects(const Point& p) override;
     void raycallback(Object* obj, float dist) override;
     void collidecallback(Entity* obj, const Point& point, const Vector2& direction) override;
+    void projectilecallback(Projectile* proj) override;
 };
 
 class EnemyBehaviour {
@@ -242,6 +325,7 @@ public:
     bool intersects(const Point& p) override;
     void raycallback(Object* obj, float dist) override;
     void collidecallback(Entity* obj, const Point& point, const Vector2& direction) override;
+    void projectilecallback(Projectile* proj) override;
 };
 
 
@@ -254,6 +338,7 @@ extern Mirror ExampleMirror;
 extern Enemy ExampleEnemy;
 extern Player ExamplePlayer;
 extern TextSegment ExampleTextSegment;
+extern Pistol ExamplePistol;
 }
 #define MacroExample(T) ObjectExamples::Example##T 
 

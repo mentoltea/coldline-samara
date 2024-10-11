@@ -1,5 +1,97 @@
 #include "game.h"
 
+Item::Item() {
+    active = true;
+    collidable = false;
+    visible = true;
+    opaque = true;
+    reflects = false;
+    gentype = ITEM;
+}
+
+void Item::raycallback(Object* obj, float dist) {
+    // std::cout << "cal " << std::endl;
+    if (obj->type==PLAYER) raycount++;
+}
+
+Pistol::Pistol(Point position, Poly body, bool onFloor) {
+    this->position = position;
+    this->onFloor = onFloor;
+    this->body = body;
+    visible = onFloor;
+    type = PISTOL;
+}
+Pistol::~Pistol() = default;
+void Pistol::drawA(unsigned char alfa) {
+    selfcolor.a = alfa;
+    // std::cout << (int)alfa << std::endl;
+    Point p1 = projectToCamera( position + body.p1 ); 
+    Point p2 = projectToCamera( position + body.p2 );
+    Point p3 = projectToCamera( position + body.p3 );
+    Point p4 = projectToCamera( position + body.p4 );
+
+    DrawTriangle(p1, p2, p3, selfcolor );
+    DrawTriangle(p3, p2, p4, selfcolor );
+    // DrawCircleV(p1, 3, {255,255,255,255});
+    // DrawCircleV(p2, 3, selfcolor);
+}
+void Pistol::draw() {
+    if (onFloor) {
+        // std::cout << "draw" << std::endl;
+        // int max = 255;
+        // int base = 60;
+        // float rate = 20;
+        // int a = base + rate*(float)raycount/(float)(Player::Nray + Player::Nrayback/2) * (max-base);
+        drawA((unsigned char) (200));
+    }
+    raycount = 0;
+}
+void Pistol::update() {
+    if (reloading) {
+        if (reloading_tick > (TICK)) {
+            int transferrounds = maxrounds-rounds < extrarounds ? maxrounds-rounds : extrarounds;
+            extrarounds -= transferrounds;
+            rounds += transferrounds;
+
+            reloading = false;
+        }
+        reloading_tick++;
+    }
+    if (delay_tick>0) delay_tick--;
+}
+bool Pistol::usable() {
+    return (rounds + extrarounds > 0);
+}
+void Pistol::use(Entity* user) {
+    if (!usable()) return;
+    if (rounds>0) {
+        if (delay_tick<=0) {
+            Point startpoint = user->position;
+            float bulletrad = 3;
+            startpoint.x += user->direction.x *(user->hitCircleSize+bulletrad+1);
+            startpoint.y += user->direction.y *(user->hitCircleSize+bulletrad+1);
+
+            Projectile* newobj = NEW(Bullet) Bullet(startpoint, 50*user->direction, bulletrad);
+            gamestate.currentLevel.projects.push_front(newobj);
+
+            rounds--;
+            delay_tick = TICK*delay;
+        }
+    } else if (!reloading) {
+        reloading = true;
+        reloading_tick = 0;
+    }
+}
+
+bool Pistol::intersects(const Point& p) {
+    return CheckCollisionPointTriangle(p, position + body.p1, position + body.p2, position + body.p3) 
+    || CheckCollisionPointTriangle(p, position + body.p3, position + body.p2, position + body.p4);
+}
+
+// void Pistol::raycallback(Object* obj, float dist) {
+//     if (obj->type==PLAYER) raycount++;
+// }
+
 Entity::Entity() {
     active = true;
     collidable = true;
@@ -22,6 +114,114 @@ bool Entity::intersectsCircle(const Point& circle, float radius, Point& intersec
     return true;
 }
 
+void Entity::pickItem() {
+    auto itemnear = nearestItem(position);
+    dropItem();
+    if (std::get<0>(itemnear)) {
+        if (std::get<2>(itemnear) < 2*hitCircleSize) {
+            (std::get<0>(itemnear))->onFloor = false;
+            (std::get<0>(itemnear))->visible = false;
+            selfitem = std::get<1>(itemnear);
+        }
+    }
+}
+
+void Entity::dropItem() {
+    if (selfitem==-1) return;
+    Item* item = (Item*)gamestate.currentLevel.objects[selfitem];
+    float dx = hitCircleSize*(2*randf()-1);
+    float dy = hitCircleSize*(2*randf()-1);
+    
+    item->position = position + (Vector2){dx, dy};
+    item->onFloor = true;
+    item->visible = true;
+
+    selfitem = -1;
+}
+
+Projectile::Projectile() {
+    active = true;
+    collidable = true;
+    visible = true;
+    opaque = false;
+    reflects = false;
+    gentype = PROJECTILE;
+    finished = false;
+}
+
+Bullet::Bullet(Point position, Vector2 direction, float radius) {
+    this->position = position;
+    this->direction = direction;
+    this->hitCircleSize = radius;
+    type = BULLET;
+}
+Bullet::~Bullet() = default;
+void Bullet::drawA(unsigned char alfa) {
+    selfcolor.a = alfa;
+    drawPosition = projectToCamera(position);
+    DrawCircleV(drawPosition, hitCircleSize, selfcolor);
+}
+void Bullet::draw() {
+    // std::cout << "draw" << std::endl;
+    drawA(180);
+    raycount = 0;
+}
+void Bullet::update() {
+    Object* collision;
+    float totalx = 0;
+    float totaly = 0;
+
+    while (totalx < absf(direction.x) || totaly < absf(direction.y)) {
+        position.x += direction.x/10;
+        position.y += direction.y/10;
+        totalx += absf(direction.x/10);
+        totaly += absf(direction.y/10);
+
+        collision = collideCircle(this, position, hitCircleSize, direction);
+        if (collision) {
+            collision->projectilecallback(this);
+            active = false;
+            visible = false;
+            onDestroy();
+            break;
+        }
+    }
+}
+bool Bullet::intersects(const Point& p) {
+    float dx = p.x - position.x;
+    float dy = p.y - position.y;
+    if (dx*dx + dy*dy < hitCircleSize*hitCircleSize) return true;
+    return false;
+}
+bool Bullet::intersectsCircle(const Point& circle, float radius, Point& intersection) {
+    float dx = position.x - circle.x;
+    float dy = position.y - circle.y;
+    float sumrad = radius + hitCircleSize;
+    float diffrad = radius - hitCircleSize;
+    diffrad = diffrad<0? -diffrad : diffrad;
+
+    if (dx*dx + dy*dy > sumrad*sumrad) return false;
+    if (dx*dx + dy*dy < diffrad) return false;
+    
+    return true;
+}
+void Bullet::raycallback(Object* obj, float dist) {
+    if (obj->type==PLAYER) raycount++;
+}
+void Bullet::collidecallback(Entity* obj, const Point& point, const Vector2& direction) {
+    obj->projectilecallback(this);
+    active = false;
+    visible = false;
+    onDestroy();
+}
+void Bullet::projectilecallback(Projectile* proj) {
+    // Two bullets met
+    onDestroy();
+}
+void Bullet::onDestroy() {
+    // BOOM
+}
+
 
 
 Obtacle::Obtacle() {
@@ -31,7 +231,8 @@ Obtacle::Obtacle() {
     gentype = OBTACLE;
 }
 void Obtacle::collidecallback(Entity* obj, const Point& point, const Vector2& direction) {}
-
+void Obtacle::projectilecallback(Projectile* proj) {
+}
 
 
 
@@ -77,7 +278,11 @@ bool Mirror::intersectsCircle(const Point& circle, float radius, Point& intersec
         || lineCircleIntersection(body.p4, body.p3, circle, radius, intersection)
         || lineCircleIntersection(body.p3, body.p1, circle, radius, intersection);
 }
-
+void Mirror::projectilecallback(Projectile* proj) {
+    active = false;
+    collidable = false;
+    visible = false;
+}
 
 
 Wall::Wall(Poly b) {
@@ -119,7 +324,9 @@ bool Wall::intersectsCircle(const Point& circle, float radius, Point& intersecti
         || lineCircleIntersection(body.p4, body.p3, circle, radius, intersection)
         || lineCircleIntersection(body.p3, body.p1, circle, radius, intersection);
 }
+void Wall::projectilecallback(Projectile* proj) {
 
+}
 
 TextSegment::TextSegment(Poly b, std::string text, int fontsize): Wall(b) {
     snprintf(this->text, 64, text.c_str());
@@ -243,8 +450,6 @@ void Door::collidecallback(Entity* obj, const Point& point, const Vector2& direc
     // obj->position.x -= direction.x/3 + 1;
     // obj->position.y -= direction.y/3 + 1;
 }
-
-
 
 
 Player::Player(Point pos, Vector2 size): inters(Nray), intersBack(Nrayback) {
@@ -377,6 +582,7 @@ void Player::draw()  {
     // DrawCircleLinesV(drawPosition, 2, {50, 50, 250, 250});
 }
 void Player::update()  {
+    if (!alive) return;
     Vector2 mouse = GetMousePosition();
     direction = {mouse.x - drawPosition.x, mouse.y - drawPosition.y};
     float dl = sqrtf(direction.x*direction.x + direction.y*direction.y);
@@ -400,6 +606,12 @@ void Player::update()  {
     p2 = {position.x + size * cosf(angleRad + dirSizeAngle), position.y + size * sinf(angleRad + dirSizeAngle)};
     p3 = {position.x + size * cosf(PI + angleRad + dirSizeAngle), position.y + size * sinf(PI + angleRad + dirSizeAngle)};
     p4 = {position.x + size * cosf(PI + angleRad - dirSizeAngle), position.y + size * sinf(PI + angleRad - dirSizeAngle)};
+    
+    if (use_item && selfitem!=-1) {
+        Item* item = (Item*)gamestate.currentLevel.objects[selfitem];
+        item->use(this);
+    }
+    use_item = false;
 }
 bool Player::intersects(const Point& p)  {
     // return CheckCollisionPointPoly(p, (Vector2*)&body, 4);
@@ -410,7 +622,9 @@ void Player::raycallback(Object* obj, float dist)  {
 }
 void Player::collidecallback(Entity* obj, const Point& point, const Vector2& direction)  {
 }
-
+void Player::projectilecallback(Projectile* proj) {
+    alive = false;
+}
 
 void EnemyBehaviour::update(Enemy* self) {
     if (self->see_player || warned) {
@@ -571,8 +785,11 @@ void Enemy::drawA(unsigned char alfa)  {
     dp2 = {drawPosition.x + size * cosf(angleRad + dirSizeAngle), drawPosition.y + size * sinf(angleRad + dirSizeAngle)};
     dp3 = {drawPosition.x + size * cosf(PI + angleRad + dirSizeAngle), drawPosition.y + size * sinf(PI + angleRad + dirSizeAngle)};
     dp4 = {drawPosition.x + size * cosf(PI + angleRad - dirSizeAngle), drawPosition.y + size * sinf(PI + angleRad - dirSizeAngle)};
-    selfColor.a = alfa;
-    drawView(alfa/3);
+    
+    if (alive) {
+        selfColor.a = alfa;
+        drawView(alfa/3); 
+    }
     DrawTriangle(dp2, dp1,  dp3, selfColor);
     DrawTriangle(dp3, dp4, dp2,  selfColor);
     DrawLine(drawPosition.x, drawPosition.y, drawPosition.x+size*direction.x, drawPosition.y+size*direction.y, selfColor);
@@ -587,6 +804,13 @@ void Enemy::draw()  {
     raycount = 0;
 }
 void Enemy::update() {
+    if (!alive) {
+        selfColor = GRAY;
+        collidable = false;
+        opaque = true;
+        return;
+    }
+    
     float a = angle + hview;
     maxlen = 0;
     int found_player = -1;
@@ -651,7 +875,7 @@ void Enemy::update() {
 
         // std::cout << angleRad << std::endl;
     }
-
+    
     float dl = sqrtf(direction.x*direction.x + direction.y*direction.y);
     if (dl>0) {
         direction.x /= dl; direction.y /= dl;
@@ -692,6 +916,12 @@ void Enemy::raycallback(Object* obj, float dist)  {
     if (obj->type == PLAYER) raycount++;
 }
 void Enemy::collidecallback(Entity* obj, const Point& point, const Vector2& direction)  {
-    move.x += direction.x/2;
-    move.y += direction.y/2;
+    Vector2 dir = direction;
+    if (obj->gentype == PROJECTILE) dir = dir * 0.1;
+    move.x += dir.x/2;
+    move.y += dir.y/2;
+}
+
+void Enemy::projectilecallback(Projectile* proj) {
+    alive = false;
 }
