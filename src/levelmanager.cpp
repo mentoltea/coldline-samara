@@ -10,6 +10,7 @@ size_t ObjectSize(Object* obj) {
     case ENEMY: return sizeof(Enemy);
     case TEXTSEGMENT: return sizeof(TextSegment);
     case PISTOL: return sizeof(Pistol);
+    case RIFLE: return sizeof(Rifle);
     
     default:
         fprintf(stderr, "ERROR : Cannot figure out the size of object.\n");
@@ -31,6 +32,7 @@ void CopyObject(Object* to, Object* from) {
     CopyCaseDereferenceCast(PLAYER, Player, to, from); break;
     CopyCaseDereferenceCast(ENEMY, Enemy, to, from); break;
     CopyCaseDereferenceCast(PISTOL, Pistol, to, from); break;
+    CopyCaseDereferenceCast(RIFLE, Rifle, to, from); break;
 
     default:
         fprintf(stderr, "COPY ERROR : unknown type.\n");

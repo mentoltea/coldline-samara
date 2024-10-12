@@ -73,3 +73,15 @@ GameState gamestate = {
     .pause = false ,
     .camera = {0,0},
 };
+
+namespace ObjectExamples {
+// THESE EXAMPLES ARE ONLY TO GET VPTR TO VTABLE
+Wall ExampleWall;
+Door ExampleDoor;
+Mirror ExampleMirror;
+Enemy ExampleEnemy;
+Player ExamplePlayer;
+TextSegment ExampleTextSegment;
+Pistol ExamplePistol;
+Rifle ExampleRifle;
+}

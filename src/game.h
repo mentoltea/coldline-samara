@@ -62,6 +62,7 @@ public:
 
 class Item : public Object {
 public:
+    ObjType subgentype;
     Point position;
     bool onFloor;
     // bool isHolded;
@@ -77,11 +78,12 @@ public:
     void raycallback(Object* obj, float dist) override;
 };
 
-class Pistol: public Item {
+class Firearm: public Item {
 public:
     int rounds = 7;
     int maxrounds = 7;
     int extrarounds = 35;
+    float bulletsize = 3;
 
     int delay_tick;
     float delay = 0.5;
@@ -92,9 +94,9 @@ public:
 
     Color selfcolor = {80, 140, 190, 250};
     
-    Pistol() {};
-    Pistol(Point position, Poly body, bool onFloor);
-    ~Pistol() override;
+    Firearm() {};
+    Firearm(Point position, Poly body, bool onFloor);
+    ~Firearm() override;
     void drawA(unsigned char a);
     void draw() override;
     bool usable() override;
@@ -102,6 +104,21 @@ public:
     void update() override;
     bool intersects(const Point&) override;
 };
+
+class Pistol: public Firearm {
+public:
+    Pistol() {};
+    Pistol(Point position, Poly body, bool onFloor);
+    ~Pistol() override;
+};
+
+class Rifle: public Firearm {
+public:
+    Rifle() {};
+    Rifle(Point position, Poly body, bool onFloor);
+    ~Rifle() override;
+};
+
 
 class Entity : public Object {
 public:
@@ -339,6 +356,7 @@ extern Enemy ExampleEnemy;
 extern Player ExamplePlayer;
 extern TextSegment ExampleTextSegment;
 extern Pistol ExamplePistol;
+extern Rifle ExampleRifle;
 }
 #define MacroExample(T) ObjectExamples::Example##T 
 

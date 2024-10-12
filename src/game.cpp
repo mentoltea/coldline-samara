@@ -1,17 +1,5 @@
 #include "game.h"
 
-namespace ObjectExamples {
-// THESE EXAMPLES ARE ONLY TO GET VPTR TO VTABLE
-Wall ExampleWall;
-Door ExampleDoor;
-Mirror ExampleMirror;
-Enemy ExampleEnemy;
-Player ExamplePlayer;
-TextSegment ExampleTextSegment;
-Pistol ExamplePistol;
-}
-
-
 int tickcount = 0;
 
 bool lineCircleIntersection(Point start, Point end, Point circle, float radius, Point& intersection) {
@@ -444,14 +432,17 @@ void draw() {
 
     if (gamestate.currentLevel.player && gamestate.currentLevel.player->selfitem!=-1) {
         Item* git = (Item*) gamestate.currentLevel.objects[gamestate.currentLevel.player->selfitem];
-        switch (git->type) {
-        case PISTOL: {
-            Pistol* it = (Pistol*) git;
+        switch (git->subgentype) {
+        case FIREARM: {
+            Firearm* it = (Firearm*) git;
             snprintf(buffer, 32, "%d/%d", it->rounds, it->extrarounds);
             DrawText(buffer, gamestate.WinX - 6*20 - 5, gamestate.WinY-40, 30, GREEN);
             float a = ((float)it->delay_tick)/TICK/it->delay;
             float linesize = 120;
             DrawLine(gamestate.WinX - 40 - linesize, gamestate.WinY-60, gamestate.WinX - 40 - linesize*a, gamestate.WinY-60, GREEN); 
+            if (it->reloading) {
+                DrawText("RELOADING", gamestate.WinX - 180, gamestate.WinY-100, 30, GREEN);
+            }
             break;
         }
         

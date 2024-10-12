@@ -76,7 +76,9 @@ typedef enum ObjType {
 
 
     ITEM, // General
+    FIREARM,
     PISTOL,
+    RIFLE,
 } ObjType;
 
 class Object;
@@ -94,7 +96,10 @@ class Projectile;
 class Bullet; // final
 
 class Item;
-class Pistol; //final
+class Firearm;
+class Pistol; // final
+class Rifle; // final
+
 // #define MAX_OBJECT_SIZE 
 //     max(sizeof(Wall), 
 //     max(sizeof(Mirror), 

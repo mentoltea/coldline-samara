@@ -14,15 +14,15 @@ void Item::raycallback(Object* obj, float dist) {
     if (obj->type==PLAYER) raycount++;
 }
 
-Pistol::Pistol(Point position, Poly body, bool onFloor) {
+Firearm::Firearm(Point position, Poly body, bool onFloor) {
     this->position = position;
     this->onFloor = onFloor;
     this->body = body;
     visible = onFloor;
-    type = PISTOL;
+    subgentype = FIREARM;
 }
-Pistol::~Pistol() = default;
-void Pistol::drawA(unsigned char alfa) {
+Firearm::~Firearm() = default;
+void Firearm::drawA(unsigned char alfa) {
     selfcolor.a = alfa;
     // std::cout << (int)alfa << std::endl;
     Point p1 = projectToCamera( position + body.p1 ); 
@@ -35,7 +35,7 @@ void Pistol::drawA(unsigned char alfa) {
     // DrawCircleV(p1, 3, {255,255,255,255});
     // DrawCircleV(p2, 3, selfcolor);
 }
-void Pistol::draw() {
+void Firearm::draw() {
     if (onFloor) {
         // std::cout << "draw" << std::endl;
         // int max = 255;
@@ -46,7 +46,11 @@ void Pistol::draw() {
     }
     raycount = 0;
 }
-void Pistol::update() {
+void Firearm::update() {
+    if (onFloor) {
+        reloading_tick = 0;
+        return;
+    }
     if (reloading) {
         if (reloading_tick > (TICK)) {
             int transferrounds = maxrounds-rounds < extrarounds ? maxrounds-rounds : extrarounds;
@@ -59,19 +63,18 @@ void Pistol::update() {
     }
     if (delay_tick>0) delay_tick--;
 }
-bool Pistol::usable() {
+bool Firearm::usable() {
     return (rounds + extrarounds > 0);
 }
-void Pistol::use(Entity* user) {
+void Firearm::use(Entity* user) {
     if (!usable()) return;
     if (rounds>0) {
         if (delay_tick<=0) {
             Point startpoint = user->position;
-            float bulletrad = 3;
-            startpoint.x += user->direction.x *(user->hitCircleSize+bulletrad+1);
-            startpoint.y += user->direction.y *(user->hitCircleSize+bulletrad+1);
+            startpoint.x += user->direction.x *(user->hitCircleSize+bulletsize+1);
+            startpoint.y += user->direction.y *(user->hitCircleSize+bulletsize+1);
 
-            Projectile* newobj = NEW(Bullet) Bullet(startpoint, 50*user->direction, bulletrad);
+            Projectile* newobj = NEW(Bullet) Bullet(startpoint, 50*user->direction, bulletsize);
             gamestate.currentLevel.projects.push_front(newobj);
 
             rounds--;
@@ -83,12 +86,34 @@ void Pistol::use(Entity* user) {
     }
 }
 
-bool Pistol::intersects(const Point& p) {
+bool Firearm::intersects(const Point& p) {
     return CheckCollisionPointTriangle(p, position + body.p1, position + body.p2, position + body.p3) 
     || CheckCollisionPointTriangle(p, position + body.p3, position + body.p2, position + body.p4);
 }
 
-// void Pistol::raycallback(Object* obj, float dist) {
+Pistol::Pistol(Point position, Poly body, bool onFloor): Firearm(position, body, onFloor) {
+    rounds = 7;
+    maxrounds = 7;
+    extrarounds = 35;
+    bulletsize = 3;
+    delay = 0.5;
+    type = PISTOL;
+    selfcolor = {80, 140, 190, 250};
+}
+Pistol::~Pistol() = default;
+
+Rifle::Rifle(Point position, Poly body, bool onFloor): Firearm(position, body, onFloor) {
+    rounds = 30;
+    maxrounds = 30;
+    extrarounds = 90;
+    bulletsize = 2;
+    delay = 0.01;
+    type = RIFLE;
+    selfcolor = {140, 100, 130, 250};
+}
+Rifle::~Rifle() = default;
+
+// void Firearm::raycallback(Object* obj, float dist) {
 //     if (obj->type==PLAYER) raycount++;
 // }
 

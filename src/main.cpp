@@ -144,7 +144,7 @@ int main(int argc, char** argv) {
     en->direction = {-1, 0};
     gamestate.levelReference.objects.push_back(en);
 
-    Pistol* pis = NEW(Pistol) Pistol({600, 200}, {{10,-5}, {-10,-5}, {10,5}, {-10,5}}, true);
+    Rifle* pis = NEW(Rifle) Rifle({600, 200}, {{10,-5}, {-10,-5}, {10,5}, {-10,5}}, true);
     gamestate.levelReference.objects.push_back(pis);
 
     // en = NEW(Enemy) Enemy({600, 400}, {10, 20});
@@ -232,5 +232,6 @@ int main(int argc, char** argv) {
     MemManager::page_info(0);
     MemManager::destroy_pages();
 
+    std::cout << "Finished succesfully" << std::endl;
     return 0;
 }
