@@ -144,8 +144,14 @@ int main(int argc, char** argv) {
     en->direction = {-1, 0};
     gamestate.levelReference.objects.push_back(en);
 
-    Rifle* pis = NEW(Rifle) Rifle({600, 200}, {{10,-5}, {-10,-5}, {10,5}, {-10,5}}, true);
+    Pistol* pis = NEW(Pistol) Pistol({600, 200}, {{10,-5}, {-10,-5}, {10,5}, {-10,5}}, false);
     gamestate.levelReference.objects.push_back(pis);
+    pis->extrarounds = 0;
+    {int idx = gamestate.levelReference.objects.size()-1;
+    en->selfitem = idx;}
+
+    Shotgun* rif = NEW(Shotgun) Shotgun({600, 200}, {{10,-5}, {-10,-5}, {10,5}, {-10,5}}, true);
+    gamestate.levelReference.objects.push_back(rif);
 
     // en = NEW(Enemy) Enemy({600, 400}, {10, 20});
     // en->direction = {-1, 0};

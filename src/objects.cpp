@@ -71,10 +71,14 @@ void Firearm::use(Entity* user) {
     if (rounds>0) {
         if (delay_tick<=0) {
             Point startpoint = user->position;
-            startpoint.x += user->direction.x *(user->hitCircleSize+bulletsize+1);
-            startpoint.y += user->direction.y *(user->hitCircleSize+bulletsize+1);
+            float angle = atan2(user->direction.y, user->direction.x);
+            angle += maxdeclining * (2*randf() - 1) * PI / 180;
+            Vector2 direction = {cosf(angle), sinf(angle)};
 
-            Projectile* newobj = NEW(Bullet) Bullet(startpoint, 50*user->direction, bulletsize);
+            startpoint.x += direction.x *(user->hitCircleSize+bulletsize+1);
+            startpoint.y += direction.y *(user->hitCircleSize+bulletsize+1);
+
+            Projectile* newobj = NEW(Bullet) Bullet(startpoint, 50*direction, bulletsize);
             gamestate.currentLevel.projects.push_front(newobj);
 
             rounds--;
@@ -97,6 +101,8 @@ Pistol::Pistol(Point position, Poly body, bool onFloor): Firearm(position, body,
     extrarounds = 35;
     bulletsize = 3;
     delay = 0.5;
+    maxdeclining = 4;
+    usageDistance = 480;
     type = PISTOL;
     selfcolor = {80, 140, 190, 250};
 }
@@ -107,15 +113,55 @@ Rifle::Rifle(Point position, Poly body, bool onFloor): Firearm(position, body, o
     maxrounds = 30;
     extrarounds = 90;
     bulletsize = 2;
-    delay = 0.01;
+    delay = 0.1;
+    maxdeclining = 3;
+    usageDistance = 630;
     type = RIFLE;
     selfcolor = {140, 100, 130, 250};
 }
 Rifle::~Rifle() = default;
 
-// void Firearm::raycallback(Object* obj, float dist) {
-//     if (obj->type==PLAYER) raycount++;
-// }
+Shotgun::Shotgun(Point position, Poly body, bool onFloor): Firearm(position, body, onFloor) {
+    rounds = 1;
+    maxrounds = 1;
+    extrarounds = 5;
+    bulletsize = 3;
+    delay = 1;
+    maxdeclining = 8;
+    usageDistance = 400;
+    type = SHOTGUN;
+    selfcolor = {150, 150, 20, 250};
+}
+Shotgun::~Shotgun() = default;
+
+void Shotgun::use(Entity* user) {
+    if (!usable()) return;
+    if (rounds>0) {
+        if (delay_tick<=0) {
+            Point userpoint = user->position;
+            float anglebetweenrad = anglebetween*PI/180;
+            float angle = atan2(user->direction.y, user->direction.x);
+            for (int i=0; i<bulletcount; i++) {
+                Point startpoint = userpoint;
+
+                float curangle = angle + anglebetweenrad*((float)i-(float)(bulletcount-1)/2);
+                curangle += maxdeclining * (2*randf() - 1) * PI / 180;
+                Vector2 direction = {cosf(curangle), sinf(curangle)};
+
+                startpoint.x += direction.x *(user->hitCircleSize+bulletsize+1);
+                startpoint.y += direction.y *(user->hitCircleSize+bulletsize+1);
+
+                Projectile* newobj = NEW(Bullet) Bullet(startpoint, 50*direction, bulletsize);
+                gamestate.currentLevel.projects.push_front(newobj);
+            }
+            rounds--;
+            delay_tick = TICK*delay;
+        }
+    } else if (!reloading) {
+        reloading = true;
+        reloading_tick = 0;
+    }
+}
 
 Entity::Entity() {
     active = true;
@@ -185,10 +231,11 @@ void Bullet::drawA(unsigned char alfa) {
     selfcolor.a = alfa;
     drawPosition = projectToCamera(position);
     DrawCircleV(drawPosition, hitCircleSize, selfcolor);
+    DrawLineEx(drawPosition - direction*0.2, drawPosition + direction*0.2, hitCircleSize, selfcolor);
 }
 void Bullet::draw() {
     // std::cout << "draw" << std::endl;
-    drawA(180);
+    drawA(255);
     raycount = 0;
 }
 void Bullet::update() {
@@ -607,7 +654,12 @@ void Player::draw()  {
     // DrawCircleLinesV(drawPosition, 2, {50, 50, 250, 250});
 }
 void Player::update()  {
-    if (!alive) return;
+    if (!alive) {
+        // selfColor = GRAY;
+        collidable = false;
+        opaque = true;
+        return;
+    }
     Vector2 mouse = GetMousePosition();
     direction = {mouse.x - drawPosition.x, mouse.y - drawPosition.y};
     float dl = sqrtf(direction.x*direction.x + direction.y*direction.y);
@@ -653,8 +705,22 @@ void Player::projectilecallback(Projectile* proj) {
 
 void EnemyBehaviour::update(Enemy* self) {
     if (self->see_player || warned) {
-        // std::cout << "see player" << std::endl;
+        if (self->see_player && self->selfitem!=-1) {
+            Item* itm = (Item*) gamestate.currentLevel.objects[self->selfitem];
+            if (itm->usageDistance > distance(self->position, gamestate.currentLevel.player->position)) {
+                self->use_item = true;
+                self->target = gamestate.currentLevel.player->position;
+                self->chase_target = false;
+                self->turn_target = true;
+                tick_warned = 1;
+                return;
+            } else {
+                self->chase_target = true;
+                self->turn_target = true;
+            }
+        }
         if (!see_player_way_updated && !warned) {
+
             near = gamestate.currentLevel.nearPoint(self->position);
             auto playernear = gamestate.currentLevel.nearPoint(gamestate.currentLevel.player->position);
             if (std::get<1>(near) == std::get<1>(playernear)) {
@@ -671,7 +737,8 @@ void EnemyBehaviour::update(Enemy* self) {
             lost = false;
             tick_warned = 1;
             self->chase_target = true;
-        } 
+            self->turn_target = true;
+        }
         if (!currentway.empty()) {
             self->target = gamestate.currentLevel.MapPoints[currentway.top()]; 
     
@@ -682,9 +749,9 @@ void EnemyBehaviour::update(Enemy* self) {
                 }
             }
         } else {
-            // self->target = gamestate.currentLevel.player->position;
             if (self->see_player) {
                 self->chase_target = true;
+                self->turn_target = true;
                 self->target = gamestate.currentLevel.player->position;
                 lost = false;
             }
@@ -694,10 +761,11 @@ void EnemyBehaviour::update(Enemy* self) {
                         lost = true;
                         tick_lost = 1;
                         self->chase_target = false;
+                        self->turn_target = false;
                     }
                     else {
                         tick_lost++;
-                        if (tick_lost%(3*TICK)==0) {
+                        if (tick_lost>3*TICK) {
                             warned = false;
                         }
                     }    
@@ -706,11 +774,10 @@ void EnemyBehaviour::update(Enemy* self) {
         }
 
         tick_warned++;
-        if (tick_warned%(5*TICK) == 0 && !self->see_player) warned=false; 
+        if (tick_warned > 5*TICK && !self->see_player) warned=false; 
     } 
     else if (selfway.size() > 0) {
         see_player_way_updated=false;
-
         if (currentway.empty()) {
             near = gamestate.currentLevel.nearPoint(self->position);
             currentway = gamestate.currentLevel.way(std::get<1>(near), selfway.at(selfwayidx));
@@ -728,18 +795,21 @@ void EnemyBehaviour::update(Enemy* self) {
                 currentway = gamestate.currentLevel.way(std::get<1>(near), selfway.at(selfwayidx));
                 selfwayidx = (selfwayidx+1)%selfway.size();
                 currentway.pop();
-                if (currentway.empty()) {self->chase_target = false;}
+                if (currentway.empty()) {self->chase_target = false;self->turn_target = false;}
                 else {self->target = gamestate.currentLevel.MapPoints[currentway.top()];}
             } else {
                 self->chase_target = true;
+                self->turn_target = true;
             }
         } else {
             self->chase_target = true;
+            self->turn_target = true;
         }
     }
     else {
         see_player_way_updated=false;
         self->chase_target = false;
+        self->turn_target = false;
     }
 }
 
@@ -844,11 +914,12 @@ void Enemy::update() {
         a -= delta;
         raycastLimitedReflections(inters[i], position, a, 2, this, this, viewLength);
         maxlen = inters[i].points.size() > maxlen ? inters[i].points.size() : maxlen;
-        if (inters[i].ptr && inters[i].ptr->type==PLAYER) {
-            found_player = i;
+        if (inters[i].ptr) {
+            if (inters[i].ptr->type==PLAYER) found_player = i;
         }
     }
     if (found_player != -1) see_player = true;
+
     
     behaviour.update(this);
     if (see_player) {
@@ -865,7 +936,7 @@ void Enemy::update() {
 
     // std::cout << "1" << std::endl;
     
-    if (chase_target) {
+    if (turn_target) {
         Vector2 targetdirection = {target.x - position.x, target.y - position.y};
         float targetangleRad = atan2f(targetdirection.y, targetdirection.x);
         
@@ -879,25 +950,17 @@ void Enemy::update() {
             anglediffRad = 2*PI - absf(anglediffRad);
             anglediffRad *= -anglesign;
         }
-        // while (anglediffRad>2*PI)
-        // {
-        //     anglediffRad-=PI;
-        // }
-        // while (anglediffRad<-2*PI)
-        // {
-        //     anglediffRad+=PI;
-        // }
-        
 
-        
         angleRad += anglediffRad/8;
         // angleRad = targetangleRad;
 
         direction = {cosf(angleRad), sinf(angleRad)};
-        move.x += direction.x * (cosf(anglediffRad) + 0.1f);
-        move.y += direction.y * (cosf(anglediffRad) + 0.1f);
         angleRad = constraintBetween(angleRad, -2*PI, 2*PI);
 
+        if (chase_target) {
+            move.x += direction.x * (cosf(anglediffRad) + 0.1f);
+            move.y += direction.y * (cosf(anglediffRad) + 0.1f);
+        }
         // std::cout << angleRad << std::endl;
     }
     
@@ -931,8 +994,18 @@ void Enemy::update() {
     p3 = {position.x + size * cosf(PI + angleRad + dirSizeAngle), position.y + size * sinf(PI + angleRad + dirSizeAngle)};
     p4 = {position.x + size * cosf(PI + angleRad - dirSizeAngle), position.y + size * sinf(PI + angleRad - dirSizeAngle)};
 
+    if (selfitem!=-1) {
+        Item* itm = (Item*) gamestate.currentLevel.objects[selfitem];
+        if (!itm->usable()) {
+            dropItem();
+            selfitem=-1;
+        } else if (use_item) {
+            itm->use(this);
+            use_item = false;
+        }
+    }
+
     move = {0,0};
-    // std::cout << "4" << std::endl;
 }
 bool Enemy::intersects(const Point& p)  {
     return CheckCollisionPointTriangle(p, p1, p2, p3) || CheckCollisionPointTriangle(p, p3, p2, p4);
@@ -949,4 +1022,5 @@ void Enemy::collidecallback(Entity* obj, const Point& point, const Vector2& dire
 
 void Enemy::projectilecallback(Projectile* proj) {
     alive = false;
+    dropItem();
 }

@@ -79,6 +79,7 @@ typedef enum ObjType {
     FIREARM,
     PISTOL,
     RIFLE,
+    SHOTGUN,
 } ObjType;
 
 class Object;
@@ -99,6 +100,7 @@ class Item;
 class Firearm;
 class Pistol; // final
 class Rifle; // final
+class Shotgun; // final
 
 // #define MAX_OBJECT_SIZE 
 //     max(sizeof(Wall), 
@@ -157,6 +159,7 @@ typedef struct GameState {
     int MAX_REFLECTIONS;
     Level currentLevel;
     Level levelReference;
+    bool levelComplete;
     bool pause;
     Point camera;
 } GameState;

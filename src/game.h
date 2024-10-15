@@ -65,6 +65,7 @@ public:
     ObjType subgentype;
     Point position;
     bool onFloor;
+    float usageDistance = 0;
     // bool isHolded;
     
     Item();
@@ -84,6 +85,7 @@ public:
     int maxrounds = 7;
     int extrarounds = 35;
     float bulletsize = 3;
+    float maxdeclining = 0; // in degrees
 
     int delay_tick;
     float delay = 0.5;
@@ -119,6 +121,18 @@ public:
     ~Rifle() override;
 };
 
+class Shotgun: public Firearm {
+public:
+    int bulletcount = 7;
+    float anglebetween = 7; // in degrees
+
+    Shotgun() {};
+    Shotgun(Point position, Poly body, bool onFloor);
+    ~Shotgun() override;
+
+    void use(Entity* user) override; 
+};
+
 
 class Entity : public Object {
 public:
@@ -146,7 +160,7 @@ public:
 
 class Bullet: public Projectile {
 public:
-    Color selfcolor = {250, 150, 50, 250};
+    Color selfcolor = {230, 180, 50, 250};
 
     Bullet(Point position, Vector2 direction, float radius);
     ~Bullet() override;
@@ -297,6 +311,7 @@ public:
     std::tuple<Point, int, float> near;
 
     bool see_player_way_updated = false;
+    bool see_item_way_updated = false;
     bool warned = false;
     int tick_warned;
     bool lost;
@@ -328,7 +343,9 @@ public:
 
     Point target;
     bool chase_target=true;
+    bool turn_target=true;
     bool see_player;
+    bool use_item;
     EnemyBehaviour behaviour;
 
     Enemy() {}
@@ -357,6 +374,7 @@ extern Player ExamplePlayer;
 extern TextSegment ExampleTextSegment;
 extern Pistol ExamplePistol;
 extern Rifle ExampleRifle;
+extern Shotgun ExampleShotgun;
 }
 #define MacroExample(T) ObjectExamples::Example##T 
 

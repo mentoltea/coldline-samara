@@ -99,5 +99,6 @@ void UnloadLevel(Level& level) {
 void ReloadLevel() {
     // std::cout << "before" << std::endl;
     gamestate.currentLevel = gamestate.levelReference;
+    gamestate.levelComplete = false;
     // std::cout << "after" << std::endl;
 }

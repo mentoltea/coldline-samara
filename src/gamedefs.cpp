@@ -70,6 +70,7 @@ GameState gamestate = {
     // .MapYf = (float)gamestate.MapY ,
     .MAX_REFLECTIONS = 20 ,
     // .Gplayer = NULL ,
+    .levelComplete = false,
     .pause = false ,
     .camera = {0,0},
 };
@@ -84,4 +85,5 @@ Player ExamplePlayer;
 TextSegment ExampleTextSegment;
 Pistol ExamplePistol;
 Rifle ExampleRifle;
+Shotgun ExampleShotgun;
 }

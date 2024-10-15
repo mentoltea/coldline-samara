@@ -384,10 +384,15 @@ void update() {
         gamestate.camera.y += move.y;
     }
 
+    int enemies = 0;
     for (auto it=gamestate.currentLevel.objects.begin(); it!=gamestate.currentLevel.objects.end(); it++) {
         if (!(*it)->active || (*it)==gamestate.currentLevel.player) continue;
         (*it)->update();
+        if ((*it)->type == ENEMY) {
+            if (((Enemy*)(*it))->alive) enemies++;
+        }
     }
+    if (enemies==0) gamestate.levelComplete = true;
 
     tickcount++;
     tickcount = tickcount%(120*TICK);
@@ -450,7 +455,12 @@ void draw() {
             break;
         }
     }
-
+    if (gamestate.currentLevel.player && !gamestate.currentLevel.player->alive) {
+        DrawText("RESTART - R", gamestate.WinXf/2 - 6*50, gamestate.WinYf/2 - 20, 80, GREEN);
+    } else if (gamestate.levelComplete) {
+        DrawText("LEVEL COMPLETED", gamestate.WinXf/2 - 7*50, gamestate.WinYf/2 - 40, 80, GREEN);
+        DrawText("NEXT LEVEL - N", gamestate.WinXf/2 - 6*50, gamestate.WinYf/2 + 20, 80, GREEN);
+    }
     if (gamestate.pause) {
         DrawText("PAUSED", gamestate.WinX - 6*20 - 5, 0, 30, GREEN);
     }
