@@ -3,7 +3,6 @@
 
 #include "definitions.h"
 
-
 Object* intersect(const Point& p, Object* ignore);
 void raycast(IntersectInfo& result,Point start, float angle, float step, Object* ignore, Object* origin);
 // raycast with direction
@@ -28,8 +27,6 @@ Point projectToMap(const Point& p);
 
 void DrawTexturePoly(Texture2D texture, Vector2 center, Vector2 *points, Vector2 *texcoords, int pointCount, Color tint);
 
-extern int TICK;
-extern int tickcount;
 void draw();
 void update();
 

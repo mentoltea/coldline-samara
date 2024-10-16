@@ -14,6 +14,10 @@ Vector2 operator*(float k, const Vector2 v) {
     return (Vector2){.x = v.x*k, .y = v.y*k};
 }
 
+Vector2 operator/(const Vector2 v, float k) {
+    return (Vector2){.x = v.x/k, .y = v.y/k};
+}
+
 float absf(float x) {
     if (x<0) return -x;
     return x;
@@ -87,3 +91,5 @@ Pistol ExamplePistol;
 Rifle ExampleRifle;
 Shotgun ExampleShotgun;
 }
+
+int tickcount = 0;

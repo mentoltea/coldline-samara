@@ -1,5 +1,6 @@
 #include "definitions.h"
 #include "game.h"
+#include "effects.h"
 
 size_t ObjectSize(Object* obj) {
     switch (obj->type) {
@@ -113,6 +114,10 @@ void Level::clear() {
         // DELETE(Object, *it);
     }
     projects.clear();
+    for (auto it=effects.begin(); it!=effects.end(); it++) {
+        DELETE(Effect, (*it));
+    }
+    effects.clear();
     MapPoints.clear();
     player = NULL;
 }
@@ -127,6 +132,10 @@ void Level::destroy() {
         // DELETE(Object, *it);
     }
     projects.clear();
+    for (auto it=effects.begin(); it!=effects.end(); it++) {
+        DELETE(Effect, (*it));
+    }
+    effects.clear();
     MapPoints.clear();
     player = NULL;
 }

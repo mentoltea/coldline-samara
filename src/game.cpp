@@ -1,6 +1,5 @@
 #include "game.h"
-
-int tickcount = 0;
+#include "effects.h"
 
 bool lineCircleIntersection(Point start, Point end, Point circle, float radius, Point& intersection) {
     float dx = end.x - start.x;
@@ -394,10 +393,17 @@ void update() {
     }
     if (enemies==0) gamestate.levelComplete = true;
 
+    for (auto it = gamestate.currentLevel.effects.begin(); it != gamestate.currentLevel.effects.end(); it++) {
+        if ((*it)->finished()) {
+            DELETE(Effect, (*it));
+            gamestate.currentLevel.effects.erase(it);
+            continue;
+        }
+        (*it)->update();
+    }
+
     tickcount++;
     tickcount = tickcount%(120*TICK);
-
-
 }
 
 
@@ -418,6 +424,10 @@ void draw() {
         if ((*it)->visible) {
             (*it)->draw();
         }
+    }
+
+    for (auto it = gamestate.currentLevel.effects.begin(); it != gamestate.currentLevel.effects.end(); it++) {
+        (*it)->draw();
     }
 
 

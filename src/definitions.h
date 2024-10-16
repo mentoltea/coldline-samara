@@ -38,6 +38,9 @@ Vector2 operator-(const Vector2& v1, const Vector2& v2);
 Vector2 operator*(const Vector2 v, float k);
 Vector2 operator*(float k, const Vector2 v);
 
+
+Vector2 operator/(const Vector2 v, float k);
+
 typedef Vector2 Point;
 
 float absf(float x);
@@ -102,6 +105,10 @@ class Pistol; // final
 class Rifle; // final
 class Shotgun; // final
 
+
+class Effect;
+
+
 // #define MAX_OBJECT_SIZE 
 //     max(sizeof(Wall), 
 //     max(sizeof(Mirror), 
@@ -134,6 +141,7 @@ struct Level {
     CheatFlags cheats = {0};
     std::vector<Object*> objects;
     std::list<Projectile*> projects;
+    std::list<Effect*> effects;
     Player* player = NULL;
 
     Level();
@@ -165,6 +173,10 @@ typedef struct GameState {
 } GameState;
 
 extern GameState gamestate;
+
+extern int TICK;
+extern int tickcount;
+
 
 namespace TextureManager {
 typedef enum Tid {

@@ -1,4 +1,5 @@
 #include "game.h"
+#include "effects.h"
 
 Item::Item() {
     active = true;
@@ -354,6 +355,13 @@ void Mirror::projectilecallback(Projectile* proj) {
     active = false;
     collidable = false;
     visible = false;
+    
+    float l = sqrtf(proj->direction.x*proj->direction.x + proj->direction.y*proj->direction.y);
+    Vector2 dir = normal*l/2 + proj->direction;
+    dir = dir * 25;
+
+    Effect* ef = NEW(Effect_Glassbreak) Effect_Glassbreak(proj->position, dir, 8);
+    gamestate.currentLevel.effects.push_front(ef);
 }
 
 

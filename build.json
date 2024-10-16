@@ -45,6 +45,7 @@
             "dependencies" : [
                 "src/definitions.h",
                 "src/game.h",
+                "src/effects.h",
                 "src/MManager.hpp"
             ]    
         },
@@ -62,8 +63,18 @@
             "dependencies" : [
                 "src/game.h",
                 "src/definitions.h",
+                "src/effects.h",
                 "src/MManager.hpp",
                 "src/texturemanager.h"
+            ]    
+        },
+        {
+            "name" : "effects",
+            "dependencies" : [
+                "src/game.h",
+                "src/effects.h",
+                "src/definitions.h",
+                "src/MManager.hpp"
             ]    
         },
         {
@@ -79,6 +90,7 @@
             "dependencies" : [
                 "src/game.h",
                 "src/definitions.h",
+                "src/effects.h",
                 "src/MManager.hpp",
                 "src/texturemanager.h"
             ]    

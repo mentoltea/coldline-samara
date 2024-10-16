@@ -158,8 +158,8 @@ int main(int argc, char** argv) {
     // en->selfway = {6, 1, 3};
     // gamestate.levelReference.objects.push_back(en);
 
-    // Door *dr = NEW(Door) Door(-360, 360, 0, {200,200}, {30, 3}, {30,3});
-    // gamestate.levelReference.objects.push_back(dr);
+    Mirror *dr = NEW(Mirror) Mirror({{500, 700}, {495, 700}, {550, 750}, {545, 750}, }, {-1, 1});
+    gamestate.levelReference.objects.push_back(dr);
 
 
     // gamestate.levelReference = LoadLevel("text.level");
