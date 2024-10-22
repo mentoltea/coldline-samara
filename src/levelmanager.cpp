@@ -7,9 +7,9 @@ size_t ObjectSize(Object* obj) {
     case WALL: return sizeof(Wall);
     case MIRROR: return sizeof(Mirror);
     case DOOR: return sizeof(Door);
+    case TEXTSEGMENT: return sizeof(TextSegment);
     case PLAYER: return sizeof(Player);
     case ENEMY: return sizeof(Enemy);
-    case TEXTSEGMENT: return sizeof(TextSegment);
     case PISTOL: return sizeof(Pistol);
     case RIFLE: return sizeof(Rifle);
     case SHOTGUN: return sizeof(Shotgun);
@@ -87,21 +87,30 @@ Level& Level::operator=(const Level& other) {
     }
     return *this;
 }
-// Level& Level::operator=(Level&& other) {
-//     if (this != &other) {
-//         clear();
-//         MapX = other.MapX;
-//         MapY = other.MapY;
-//         MapXf = other.MapXf;
-//         MapYf = other.MapYf;
-//         cheats = other.cheats;
-//         objects = other.objects;
-//         player = other.player;
-//         other.objects.clear();
-//         MapPoints = other.MapPoints;
-//     }
-//     return *this;
-// }
+
+Level& Level::operator=(Level&& other) {
+    if (this != &other) {
+        clear();
+        MapX = other.MapX;
+        MapY = other.MapY;
+        MapXf = other.MapXf;
+        MapYf = other.MapYf;
+        cheats = other.cheats;
+
+        MapPoints = other.MapPoints;
+        other.MapPoints.clear();
+        objects = other.objects;
+        other.objects.clear();
+
+        projects = other.projects;
+        other.projects.clear();
+        effects = other.effects;
+        other.effects.clear();
+        
+        player = other.player;
+    }
+    return *this;
+}
 
 void Level::clear() {
     for (auto it=objects.begin(); it!=objects.end(); it++) {

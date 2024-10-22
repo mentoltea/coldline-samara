@@ -109,12 +109,11 @@ class Shotgun; // final
 class Effect;
 
 
-// #define MAX_OBJECT_SIZE 
-//     max(sizeof(Wall), 
-//     max(sizeof(Mirror), 
-//     max(sizeof(Door), 
-//     max(sizeof(Player),
-//     max(sizeof(Enemy), 1)))))
+// #define MAX_OBJECT_SIZE
+//     max(sizeof(Wall), max(sizeof(TextSegment), max(sizeof(Mirror), max(sizeof(Door),
+//     max(sizeof(Player), max(sizeof(Enemy),
+//     max(sizeof(Pistol), max(sizeof(Rifle), max(sizeof(Shotgun),
+//     1)))))))))
 
 size_t ObjectSize(Object* obj);
 // @note DOES NOT ALLOCATE MEMORY, ONLY COPING
@@ -135,11 +134,16 @@ struct ConnectedPoint: public Point {
 };
 
 struct Level {
+    // Save&read as bytes
     int MapX, MapY;
     float MapXf, MapYf;
-    std::vector<ConnectedPoint> MapPoints;
     CheatFlags cheats = {0};
+
+    // Save&read specially
+    std::vector<ConnectedPoint> MapPoints;
     std::vector<Object*> objects;
+    
+    // Do not save or read
     std::list<Projectile*> projects;
     std::list<Effect*> effects;
     Player* player = NULL;
@@ -149,7 +153,7 @@ struct Level {
     ~Level();
 
     Level& operator=(const Level& other);
-    Level& operator=(Level&& other) = delete;
+    Level& operator=(Level&& other);
 
     void clear();
     void destroy();

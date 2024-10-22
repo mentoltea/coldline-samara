@@ -366,9 +366,9 @@ namespace ObjectExamples {
 extern Wall ExampleWall;
 extern Door ExampleDoor;
 extern Mirror ExampleMirror;
-extern Enemy ExampleEnemy;
-extern Player ExamplePlayer;
 extern TextSegment ExampleTextSegment;
+extern Player ExamplePlayer;
+extern Enemy ExampleEnemy;
 extern Pistol ExamplePistol;
 extern Rifle ExampleRifle;
 extern Shotgun ExampleShotgun;
