@@ -135,10 +135,12 @@ class Entity : public Object {
 public:
     Vector2 direction = {0,0};
     Vector2 move = {0,0};
+    float speed = 1;
     Point position;
     Point drawPosition;
     float hitCircleSize;
     bool alive = true;
+    int hp = 3;
     int selfitem = -1; // index in level objects
 
     Entity();
@@ -153,6 +155,24 @@ public:
     Projectile();
     
     virtual void onDestroy() = 0;
+};
+
+class Punch: public Projectile {
+public:
+    Entity* ignore = NULL;
+    int tick = 0;
+    int tickdurancy = 0;
+
+    Punch(Point position, float radius, int tickdur, Entity* ignore);
+    ~Punch() override;
+    void draw() override;
+    void update() override;
+    bool intersects(const Point&) override;
+    bool intersectsCircle(const Point& circle, float radius, Point& intersection) override;
+    void raycallback(Object* obj, float dist) override;
+    void collidecallback(Entity* obj, const Point& point, const Vector2& direction) override;
+    void projectilecallback(Projectile* proj) override;
+    void onDestroy() override;
 };
 
 class Bullet: public Projectile {
@@ -285,6 +305,13 @@ public:
     Texture *selfTexture = NULL;
     bool use_item=false;
 
+    bool punching = false;
+    bool punched = false;
+    int punchtick = 0;
+    float punchdurance = 0.2;
+    float punchcooldown = 0.2;
+    float punchsizeProcent = 0.75;
+
     Player() {}
     // Player(const Player& other) = default;
     Player(Point pos, Vector2 size);
@@ -344,6 +371,17 @@ public:
     bool see_player;
     bool use_item;
     EnemyBehaviour behaviour;
+
+    bool punching = false;
+    bool punched = false;
+    int punchtick = 0;
+    float punchdurance = 0.3;
+    float punchcooldown = 0.1;
+    float punchsizeProcent = 0.65;
+
+    bool shocked = false;
+    int shocktick = 0;
+    float shockdurancy = 0.8;
 
     Enemy() {}
     Enemy(Point pos, Vector2 size, std::vector<int> way);

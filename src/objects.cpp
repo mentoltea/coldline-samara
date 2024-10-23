@@ -221,6 +221,74 @@ Projectile::Projectile() {
     finished = false;
 }
 
+Punch::Punch(Point position, float radius, int tickdur, Entity* ignore) {
+    this->position = position;
+    this->direction = {0,0};
+    this->hitCircleSize = radius;
+
+    this->tickdurancy = tickdur;
+    this->ignore = ignore;
+}
+Punch::~Punch() = default;
+void Punch::draw() {
+    unsigned char t = (1-(float)tick/(float)tickdurancy)*50;
+    drawPosition = projectToCamera(position);
+    DrawCircleV(drawPosition, hitCircleSize, {5, 5, 40, t});
+}
+void Punch::update() {
+    Object* collision = collideCircle(ignore, position, hitCircleSize, direction);
+
+    if (collision) {
+        switch (collision->gentype) {
+            case ENTITY: {
+                Entity* en = (Entity*) collision;
+                en->hp -= 1;
+                if (en->hp<=0) {
+                    en->projectilecallback(this);
+                }
+                en->position = en->position - (position - en->position)*2/3;
+                if (en->type==ENEMY) {
+                    ((Enemy*)en)->shocked = true;
+                    ((Enemy*)en)->shocktick = 0;
+                }
+            } break;
+            
+            default:
+                break;
+        }
+        active = false;
+        visible = false;
+        onDestroy();
+    }
+
+    tick++;
+    if (tick>tickdurancy) finished = true;
+}
+bool Punch::intersects(const Point& p) {
+    float dx = p.x - position.x;
+    float dy = p.y - position.y;
+    if (dx*dx + dy*dy < hitCircleSize*hitCircleSize) return true;
+    return false;
+}
+bool Punch::intersectsCircle(const Point& circle, float radius, Point& intersection) {
+    float dx = position.x - circle.x;
+    float dy = position.y - circle.y;
+    float sumrad = radius + hitCircleSize;
+    float diffrad = radius - hitCircleSize;
+    diffrad = diffrad<0? -diffrad : diffrad;
+
+    if (dx*dx + dy*dy > sumrad*sumrad) return false;
+    
+    return true;
+}
+void Punch::raycallback(Object* obj, float dist) {}
+void Punch::collidecallback(Entity* obj, const Point& point, const Vector2& direction) {}
+void Punch::projectilecallback(Projectile* proj) {}
+void Punch::onDestroy() {
+    finished = true;
+}
+
+
 Bullet::Bullet(Point position, Vector2 direction, float radius) {
     this->position = position;
     this->direction = direction;
@@ -292,7 +360,7 @@ void Bullet::projectilecallback(Projectile* proj) {
     onDestroy();
 }
 void Bullet::onDestroy() {
-    // BOOM
+    finished = true;
 }
 
 
@@ -540,6 +608,9 @@ Player::Player(Point pos, Vector2 size): inters(Nray), intersBack(Nrayback) {
     dirSizeAngle = acosf(size.x/sl);
     this->size = sl;
     type = PLAYER;
+    
+    speed = 1.15;
+    hp = 1;
 
     selfTexture = TM::GetT(TM::Tid::TPlayer);
     if(selfTexture) this->size = sqrtf((float)selfTexture->width*(float)selfTexture->width + (float)selfTexture->height*(float)selfTexture->height);
@@ -632,6 +703,19 @@ void Player::draw()  {
         dp4 = {drawPosition.x + size * cosf(PI + angleRad - dirSizeAngle), drawPosition.y + size * sinf(PI + angleRad - dirSizeAngle)};
         DrawTriangle(dp2, dp1,  dp3, {100, 100, 200, 250});
         DrawTriangle(dp3, dp4, dp2,  {100, 100, 200, 250});
+        if (punching) {
+            Point pp1 = (dp1+dp3)/2;
+            Point pp2 = pp1 - (dp3-dp1);
+            Point pp3 = drawPosition - (dp3-dp1); 
+            Point pp4 = drawPosition;
+
+            // DrawCircleV(pp1, 1, {255,0,0,255});
+            // DrawCircleV(pp2, 1, {255,0,0,255});
+            // DrawCircleV(pp3, 1, {255,0,0,255});
+            // DrawCircleV(pp4, 1, {255,0,0,255});
+            DrawTriangle(pp2, pp1, pp3, {100, 100, 200, 160});
+            DrawTriangle(pp4, pp3, pp1, {100, 100, 200, 160});
+        }
     }
     else {
         float k = 3;
@@ -677,26 +761,53 @@ void Player::update()  {
     // angleRad = 0;
     angle = angleRad*180/PI;
     Object* collision;
-    position.x += move.x;
+    position.x += move.x*speed;
     if ((collision= collideCircle(this, position, hitCircleSize, move))) {
         if (collision->gentype == OBTACLE) move.x *= 1.1;
-        position.x -= move.x;
+        position.x -= move.x*speed;
     }
-    position.y += move.y;
+    position.y += move.y*speed;
     if ((collision= collideCircle(this, position, hitCircleSize, move))) {
         if (collision->gentype == OBTACLE) move.y *= 1.1;
-        position.y -= move.y;
+        position.y -= move.y*speed;
     }
     p1 = {position.x + size * cosf(angleRad - dirSizeAngle), position.y + size * sinf(angleRad - dirSizeAngle)};
     p2 = {position.x + size * cosf(angleRad + dirSizeAngle), position.y + size * sinf(angleRad + dirSizeAngle)};
     p3 = {position.x + size * cosf(PI + angleRad + dirSizeAngle), position.y + size * sinf(PI + angleRad + dirSizeAngle)};
     p4 = {position.x + size * cosf(PI + angleRad - dirSizeAngle), position.y + size * sinf(PI + angleRad - dirSizeAngle)};
     
-    if (use_item && selfitem!=-1) {
-        Item* item = (Item*)gamestate.currentLevel.objects[selfitem];
-        item->use(this);
+    if (use_item) {
+        if (selfitem != -1) {
+            Item* item = (Item*)gamestate.currentLevel.objects[selfitem];
+            item->use(this);
+        }
+        else {
+            if (!punching && punchtick > punchcooldown*TICK) {
+                punching=true;
+                punched=false;
+                punchtick=0;
+            }
+        }
+        use_item = false;
     }
-    use_item = false;
+
+    if (punching) {
+        if (!punched) {
+            Punch* p = NEW(Punch) Punch(position+direction*hitCircleSize, 
+                punchsizeProcent*hitCircleSize,
+                punchdurance*TICK,
+                this);
+            gamestate.currentLevel.projects.push_front(p);
+            punched = true;
+        }
+        punchtick++;
+        if (punchtick > TICK*punchdurance) {
+            punching = false;
+            punchtick=0;
+        }
+    }
+    if (!punching && punchtick <= punchcooldown*TICK) punchtick++;
+
 }
 bool Player::intersects(const Point& p)  {
     // return CheckCollisionPointPoly(p, (Vector2*)&body, 4);
@@ -762,6 +873,18 @@ void EnemyBehaviour::update(Enemy* self) {
                 self->turn_target = true;
                 self->target = gamestate.currentLevel.player->position;
                 lost = false;
+                // if (self->selfitem!=-1) {
+                //     Item* itm = (Item*) gamestate.currentLevel.objects[self->selfitem];
+                //     if (itm->usageDistance > distance(self->target, self->position)) {
+                //         self->use_item = true;
+                //     }
+                // }
+                // else 
+                if (!self->punching && distance(self->target, self->position + self->direction*self->hitCircleSize) <
+                    (gamestate.currentLevel.player->hitCircleSize + self->hitCircleSize*self->punchsizeProcent)*1.5 ) {
+                    self->use_item = true;
+                    // std::cout << "here" << std::endl;
+                }
             }
             else {
                 if (distance(self->target, self->position) < self->hitCircleSize*7/5) {
@@ -827,6 +950,7 @@ Enemy::Enemy(Point pos, Vector2 size, std::vector<int> way): inters(Nray), behav
     hitCircleSize = sl*0.95;
     dirSizeAngle = acosf(size.x/sl);
     this->size = sl;
+    hp = 3;
     type = ENEMY;
 }
 Enemy::~Enemy() {
@@ -896,7 +1020,20 @@ void Enemy::drawA(unsigned char alfa)  {
     DrawTriangle(dp2, dp1,  dp3, selfColor);
     DrawTriangle(dp3, dp4, dp2,  selfColor);
     DrawLine(drawPosition.x, drawPosition.y, drawPosition.x+size*direction.x, drawPosition.y+size*direction.y, selfColor);
-    DrawCircleLinesV(drawPosition, hitCircleSize, {255, 50, 50, 250});
+    // DrawCircleLinesV(drawPosition, hitCircleSize, {255, 50, 50, 250});
+    if (punching) {
+        Point pp1 = (dp1+dp3)/2;
+        Point pp2 = pp1 - (dp3-dp1);
+        Point pp3 = drawPosition - (dp3-dp1); 
+        Point pp4 = drawPosition;
+
+        // DrawCircleV(pp1, 1, {255,0,0,255});
+        // DrawCircleV(pp2, 1, {255,0,0,255});
+        // DrawCircleV(pp3, 1, {255,0,0,255});
+        // DrawCircleV(pp4, 1, {255,0,0,255});
+        DrawTriangle(pp2, pp1, pp3, selfColor);
+        DrawTriangle(pp4, pp3, pp1, selfColor);
+    }
 }
 void Enemy::draw()  {
     int max = 255;
@@ -911,6 +1048,18 @@ void Enemy::update() {
         selfColor = GRAY;
         collidable = false;
         opaque = true;
+        return;
+    }
+
+    if (shocked) {
+        if (shocktick > shockdurancy*TICK) {
+            shocked = false;
+            shocktick = 0;
+        }
+        dropItem();
+        shocktick++;
+        selfColor = {70,70,70, 200};
+        viewColor = {50,50,50, 150};
         return;
     }
     
@@ -984,17 +1133,17 @@ void Enemy::update() {
     
     
     Object* collision;
-    position.x += move.x;
+    position.x += move.x * speed;
     if ((collision= collideCircle(this, position, hitCircleSize, move))) {
         if (collision->gentype == OBTACLE) move.x *= 1.1; 
-        position.x -= move.x;
+        position.x -= move.x * speed;
     }
     
-    position.y += move.y;
+    position.y += move.y * speed;
 
     if ((collision= collideCircle(this, position, hitCircleSize, move))) {
         if (collision->gentype == OBTACLE) move.y *= 1.1;
-        position.y -= move.y;
+        position.y -= move.y * speed;
     }
 
     p1 = {position.x + size * cosf(angleRad - dirSizeAngle), position.y + size * sinf(angleRad - dirSizeAngle)};
@@ -1011,7 +1160,35 @@ void Enemy::update() {
             itm->use(this);
             use_item = false;
         }
+    } else {
+        if (use_item) {
+            if (!punching && punchtick > punchcooldown*TICK) {
+                punching=true;
+                punched=false;
+                punchtick=0;
+            }
+        }
+        use_item = false;
     }
+
+    if (punching) {
+        if (!punched) {
+            Punch* p = NEW(Punch) Punch(position+direction*hitCircleSize, 
+                punchsizeProcent*hitCircleSize,
+                punchdurance*TICK,
+                this);
+            gamestate.currentLevel.projects.push_front(p);
+            punched = true;
+        }
+        punchtick++;
+        if (punchtick > TICK*punchdurance) {
+            punching = false;
+            punchtick=0;
+        }
+    }
+    if (!punching && punchtick <= punchcooldown*TICK) punchtick++;
+
+
 
     move = {0,0};
 }
