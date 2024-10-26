@@ -185,6 +185,9 @@ extern int tickcount;
 namespace TextureManager {
 typedef enum Tid {
     TPlayer,
+    TPistol,
+    TRifle,
+    TShotgun
 } Tid;
 }
 

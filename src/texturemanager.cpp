@@ -10,6 +10,7 @@ namespace TextureManager {
 std::unordered_map<int, Texture> THolder;
 
 void LoadT(const char* filename, int id, bool force) {
+    if (!FileExists(filename)) return;
     if (!force && THolder.count(id) != 0) return;
     Texture T = LoadTexture(filename);
     THolder.insert({id, T});
@@ -27,6 +28,7 @@ Texture *GetT(int id) {
 Texture *GetOrLoadT(const char* filename, int id) {
     auto it = THolder.find(id);
     if (it == THolder.end()) {
+        if (!FileExists(filename)) return &(THolder.begin()->second);
         LoadT(filename, id, true);
         return GetT(id);
     }

@@ -31,10 +31,18 @@ void Firearm::drawA(unsigned char alfa) {
     Point p3 = projectToCamera( position + body.p3 );
     Point p4 = projectToCamera( position + body.p4 );
 
-    DrawTriangle(p1, p2, p3, selfcolor );
-    DrawTriangle(p3, p2, p4, selfcolor );
-    // DrawCircleV(p1, 3, {255,255,255,255});
-    // DrawCircleV(p2, 3, selfcolor);
+    if (selftexture) {
+        DrawTexturePro(*selftexture, 
+            {.x=0, .y=0, .width=(float)selftexture->width, .height=(float)selftexture->height},
+            {.x=p2.x, .y=p2.y, .width=(p1-p2).x, .height=(p4-p2).y},
+            {.x=0, .y=0},
+            0,
+            RAYWHITE);
+    }
+    else {
+        DrawTriangle(p1, p2, p3, selfcolor );
+        DrawTriangle(p3, p2, p4, selfcolor );
+    }
 }
 void Firearm::draw() {
     if (onFloor) {
@@ -106,6 +114,7 @@ Pistol::Pistol(Point position, Poly body, bool onFloor): Firearm(position, body,
     usageDistance = 480;
     type = PISTOL;
     selfcolor = {80, 140, 190, 250};
+    selftexture = TM::GetT(TM::TPistol);
 }
 Pistol::~Pistol() = default;
 
@@ -119,6 +128,7 @@ Rifle::Rifle(Point position, Poly body, bool onFloor): Firearm(position, body, o
     usageDistance = 630;
     type = RIFLE;
     selfcolor = {140, 100, 130, 250};
+    selftexture = TM::GetT(TM::TRifle);
 }
 Rifle::~Rifle() = default;
 
@@ -132,6 +142,7 @@ Shotgun::Shotgun(Point position, Poly body, bool onFloor): Firearm(position, bod
     usageDistance = 400;
     type = SHOTGUN;
     selfcolor = {150, 150, 20, 250};
+    selftexture = TM::GetT(TM::TShotgun);
 }
 Shotgun::~Shotgun() = default;
 

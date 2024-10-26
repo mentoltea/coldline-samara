@@ -89,6 +89,8 @@ public:
     bool reloading = false;
     int reloading_tick;
 
+    Texture* selftexture = NULL;
+
     Poly body; // relative to position
 
     Color selfcolor = {80, 140, 190, 250};

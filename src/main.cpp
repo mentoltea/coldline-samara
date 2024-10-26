@@ -54,6 +54,11 @@ int main(int argc, char** argv) {
     if (gamestate.fullscreen) ToggleFullscreen();
     SetExitKey(KEY_F4);
     SetTargetFPS(TICK);
+
+
+    TM::LoadT("assets/pistol.png", TM::TPistol);
+    TM::LoadT("assets/rifle.png", TM::TRifle);
+    TM::LoadT("assets/shotgun.png", TM::TShotgun);
     
     gamestate.levelReference.MapX = 1000;
     gamestate.levelReference.MapY = 800;
@@ -150,7 +155,7 @@ int main(int argc, char** argv) {
     {int idx = gamestate.levelReference.objects.size()-1;
     en->selfitem = idx;}
 
-    Shotgun* rif = NEW(Shotgun) Shotgun({600, 200}, {{10,-5}, {-10,-5}, {10,5}, {-10,5}}, true);
+    Shotgun* rif = NEW(Shotgun) Shotgun({600, 200}, {(Vector2){30,-15}, (Vector2){-30,-15}, (Vector2){30,15}, (Vector2){-30,15}}, true);
     gamestate.levelReference.objects.push_back(rif);
 
     // en = NEW(Enemy) Enemy({600, 400}, {10, 20});
