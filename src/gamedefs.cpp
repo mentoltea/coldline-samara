@@ -76,6 +76,7 @@ GameState gamestate = {
     // .Gplayer = NULL ,
     .levelComplete = false,
     .pause = false ,
+    .levelIdx = 0,
     .camera = {0,0},
 };
 

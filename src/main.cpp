@@ -7,6 +7,26 @@
 #include <raylib.h>
 #include <iostream>
 
+#include <filesystem>
+
+int TICK = 60;
+
+std::vector<std::string> GetFilesFromDirExt(const std::string &path, const std::string& extension) {
+    std::vector<std::string> result;
+    for (const auto& entry : std::filesystem::directory_iterator(path)) {
+        if (entry.path().has_extension() && entry.path().extension()==extension) result.push_back(entry.path().string());
+    }
+    return result;
+}
+
+std::vector<std::string> GetFilesFromDir(const std::string &path) {
+    std::vector<std::string> result;
+    for (const auto& entry : std::filesystem::directory_iterator(path)) {
+        if (entry.path().has_extension()) result.push_back(entry.path().string());
+    }
+    return result;
+}
+
 extern "C" {    
 
 void load_settings(FILE* fd) {
@@ -29,7 +49,8 @@ void load_settings(FILE* fd) {
 }
 }
 
-int TICK = 60;
+void default_level();
+
 using std::cout, std::endl;
 int main(int argc, char** argv) {
     FILE* file = fopen("settings.json", "r");
@@ -60,6 +81,99 @@ int main(int argc, char** argv) {
     TM::LoadT("assets/rifle.png", TM::TRifle);
     TM::LoadT("assets/shotgun.png", TM::TShotgun);
     
+    gamestate.fileLevels = GetFilesFromDirExt("./levels/", ".lvl");
+
+    if (gamestate.fileLevels.empty()) {
+        std::cout << "Levels not found, loading default" << std::endl;
+        default_level();
+    }
+    else {
+        gamestate.levelIdx = 0;
+        do {
+            gamestate.levelReference = LoadLevel( gamestate.fileLevels[gamestate.levelIdx] );
+            gamestate.levelIdx++;
+        } while (gamestate.levelReference.errorFlag && gamestate.levelIdx < gamestate.fileLevels.size());
+        if (gamestate.levelReference.errorFlag) {
+            gamestate.fileLevels.clear();
+            default_level();
+        }
+    }
+
+    ReloadLevel();
+            
+    // 2----1
+    // |    |
+    // 4----3
+
+    MemManager::page_info(0);
+
+
+    char buffer[64] = {0};
+    int buffer_idx = 0;
+
+    while (!WindowShouldClose()) {
+        if (IsWindowResized()) {
+            gamestate.WinX = GetScreenWidth();
+            gamestate.WinY = GetScreenHeight();
+            gamestate.WinXf = gamestate.WinX;
+            gamestate.WinYf = gamestate.WinY;
+        }
+
+        buffer[buffer_idx] = GetCharPressed();
+        if (buffer[buffer_idx] > 32) {
+            buffer_idx++;
+            // cout << buffer << endl;
+        }
+        if (buffer_idx>=63) {
+            memcpy(buffer, buffer+32, 31);
+            buffer_idx = buffer_idx%63;
+        }
+
+        if (IsKeyPressed(KEY_ESCAPE)) gamestate.pause = !gamestate.pause;
+        if (IsKeyPressed(KEY_F11)) {
+            gamestate.fullscreen = !gamestate.fullscreen;
+            ToggleFullscreen();
+        }
+        if (IsKeyPressed(KEY_R) && !gamestate.pause) {
+            ReloadLevel();
+        }
+        
+        if (IsKeyPressed(KEY_I)) {
+            gamestate.currentLevel.cheats.invisible = !gamestate.currentLevel.cheats.invisible;
+        }
+
+        BeginDrawing();
+        if (!gamestate.pause) update();
+        draw();
+        DrawFPS(0,0);
+        EndDrawing();
+    }
+    CloseWindow();
+    MemManager::page_info(0);
+
+    // SaveLevel(gamestate.levelReference, "levels/l1.lvl");
+
+    gamestate.currentLevel.clear();
+    UnloadLevel(gamestate.levelReference);
+    gamestate.levelReference.~Level();
+    gamestate.currentLevel.~Level();
+
+    TextureManager::UnloadT();
+    
+    MemManager::page_info(0);
+    MemManager::destroy_pages();
+
+    std::cout << "Finished succesfully" << std::endl;
+    return 0;
+}
+
+
+
+
+
+
+void default_level() {
+    gamestate.levelReference.clear();
     gamestate.levelReference.MapX = 1000;
     gamestate.levelReference.MapY = 800;
     gamestate.levelReference.MapXf = gamestate.levelReference.MapX;
@@ -173,72 +287,4 @@ int main(int argc, char** argv) {
     gamestate.levelReference.cheats.invisible = true;
 
     // gamestate.levelReference = LoadLevel("levels/l1.lvl");
-
-    ReloadLevel();
-    // gamestate.currentLevel = gamestate.levelReference;
-            
-    // 2----1
-    // |    |
-    // 4----3
-
-    MemManager::page_info(0);
-
-
-    char buffer[64] = {0};
-    int buffer_idx = 0;
-
-    while (!WindowShouldClose()) {
-        if (IsWindowResized()) {
-            gamestate.WinX = GetScreenWidth();
-            gamestate.WinY = GetScreenHeight();
-            gamestate.WinXf = gamestate.WinX;
-            gamestate.WinYf = gamestate.WinY;
-        }
-
-        buffer[buffer_idx] = GetCharPressed();
-        if (buffer[buffer_idx] > 32) {
-            buffer_idx++;
-            // cout << buffer << endl;
-        }
-        if (buffer_idx>=63) {
-            memcpy(buffer, buffer+32, 31);
-            buffer_idx = buffer_idx%63;
-        }
-
-        if (IsKeyPressed(KEY_ESCAPE)) gamestate.pause = !gamestate.pause;
-        if (IsKeyPressed(KEY_F11)) {
-            gamestate.fullscreen = !gamestate.fullscreen;
-            ToggleFullscreen();
-        }
-        if (IsKeyPressed(KEY_R) && !gamestate.pause) {
-            ReloadLevel();
-        }
-        
-        if (IsKeyPressed(KEY_I)) {
-            gamestate.currentLevel.cheats.invisible = !gamestate.currentLevel.cheats.invisible;
-        }
-
-        BeginDrawing();
-        if (!gamestate.pause) update();
-        draw();
-        DrawFPS(0,0);
-        EndDrawing();
-    }
-    CloseWindow();
-    MemManager::page_info(0);
-
-    // SaveLevel(gamestate.levelReference, "levels/l1.lvl");
-
-    gamestate.currentLevel.clear();
-    UnloadLevel(gamestate.levelReference);
-    gamestate.levelReference.~Level();
-    gamestate.currentLevel.~Level();
-
-    TextureManager::UnloadT();
-    
-    MemManager::page_info(0);
-    MemManager::destroy_pages();
-
-    std::cout << "Finished succesfully" << std::endl;
-    return 0;
 }

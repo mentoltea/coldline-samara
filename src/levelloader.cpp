@@ -9,7 +9,7 @@
 #define VTABLECASECAST(Tenum, T, TO) case Tenum:\
     *(size_t*)TO = *(size_t*)& MacroExample(T);
 
-void InitializeObject(Object* obj) {
+bool InitializeObject(Object* obj) {
     switch (obj->type) {
     VTABLECASECAST(WALL, Wall, obj) {} break;
     VTABLECASECAST(MIRROR, Mirror, obj) {} break;
@@ -46,13 +46,14 @@ void InitializeObject(Object* obj) {
     VTABLECASECAST(SHOTGUN, Shotgun, obj) {} break;
 
     default:
-        fprintf(stderr, "ERROR [READ]: Cannot figure out how to initialize the object %d.\n", obj->type);
-        assert(0 && "CANNOT INITIALIZE OBJECT");
-        break;
+        std::cerr << "ERROR [READ]: Cannot figure out how to initialize the object " << obj->type << std::endl;
+        return false;
     }
+
+    return true;
 }
 
-void FinishLoadObject(std::ifstream &fd, Object* obj) {
+bool FinishLoadObject(std::ifstream &fd, Object* obj) {
     switch (obj->gentype) {
     case OBTACLE:
         break;
@@ -83,8 +84,11 @@ void FinishLoadObject(std::ifstream &fd, Object* obj) {
     
     
     default:
-        assert(0&&"Unknown object cant be read");
+        std::cerr << "Unknown object cant be read" << std::endl;
+        return false;
     }
+
+    return true;
 }
 
 Level LoadLevel(std::string filename) {
@@ -128,10 +132,27 @@ Level LoadLevel(std::string filename) {
         FD_AUTOREAD(fd, objs);
         Object* obj = (Object*)MemManager::memloc(objs);
         FD_READ(fd, obj, objs);
-        assert(objs == ObjectSize(obj) && "Level of incompatible version");
 
-        InitializeObject(obj);
-        FinishLoadObject(fd, obj);
+        if (objs != ObjectSize(obj)) {
+            std::cerr << "Level of incomtatible version" << std::endl;
+            level.errorFlag = true;
+            fd.close();
+            MemManager::memfree(obj);
+            return level;
+        }
+
+        if (!InitializeObject(obj)) {
+            level.errorFlag = true;
+            fd.close();
+            MemManager::memfree(obj);
+            return level;
+        }
+        if (!FinishLoadObject(fd, obj)) {
+            level.errorFlag = true;
+            fd.close();
+            MemManager::memfree(obj);
+            return level;
+        }
 
         level.objects.push_back(obj);
     }
@@ -140,7 +161,7 @@ Level LoadLevel(std::string filename) {
     return level;
 }
 
-void SaveObject(std::ofstream &fd, Object* obj) {
+bool SaveObject(std::ofstream &fd, Object* obj) {
     size_t objs = ObjectSize(obj);
     FD_AUTOWRITE(fd, objs);
     FD_WRITE(fd, obj, objs);
@@ -174,12 +195,15 @@ void SaveObject(std::ofstream &fd, Object* obj) {
     
     
     default:
-        assert(0&&"Unknown object cant be saved");
+        std::cerr << "Unknown object cant be saved" << std::endl;
+        return false;
     }
+
+    return true;
 }
 
 
-void SaveLevel(Level& level, std::string filename) {
+bool SaveLevel(Level& level, std::string filename) {
     std::ofstream fd(filename, std::ios::binary);
     
     // Byte-to-byte
@@ -212,10 +236,15 @@ void SaveLevel(Level& level, std::string filename) {
     FD_AUTOWRITE(fd, OB_size);
     for (size_t i=0; i<OB_size; i++) {
         Object* current = level.objects[i];
-        SaveObject(fd, current);
+        if (!SaveObject(fd, current)) {
+            fd.close();
+            return false;
+        }
     }
 
     fd.close();
+
+    return true;
 }
 
 void UnloadLevel(Level& level) {

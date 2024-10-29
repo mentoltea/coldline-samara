@@ -134,6 +134,9 @@ struct ConnectedPoint: public Point {
 };
 
 struct Level {
+    // if level loaded badly
+    bool errorFlag = false;
+
     // Save&read as bytes
     int MapX, MapY;
     float MapXf, MapYf;
@@ -173,6 +176,8 @@ typedef struct GameState {
     Level levelReference;
     bool levelComplete;
     bool pause;
+    std::vector<std::string> fileLevels;
+    size_t levelIdx;
     Point camera;
 } GameState;
 

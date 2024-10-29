@@ -48,6 +48,7 @@ void CopyObject(Object* to, Object* from) {
 Level::Level() = default;
 
 Level::Level(const Level& other) {
+    errorFlag = other.errorFlag;
     MapX = other.MapX;
     MapY = other.MapY;
     MapXf = other.MapXf;
@@ -69,6 +70,7 @@ Level::~Level() {
 Level& Level::operator=(const Level& other) {
     if (this != &other) {
         clear();
+        errorFlag = other.errorFlag;
         MapX = other.MapX;
         MapY = other.MapY;
         MapXf = other.MapXf;
@@ -91,6 +93,7 @@ Level& Level::operator=(const Level& other) {
 Level& Level::operator=(Level&& other) {
     if (this != &other) {
         clear();
+        errorFlag = other.errorFlag;
         MapX = other.MapX;
         MapY = other.MapY;
         MapXf = other.MapXf;

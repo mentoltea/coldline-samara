@@ -4,15 +4,15 @@
 #include "game.h"
 #include "fstream"
 
-void InitializeObject(Object* obj);
+bool InitializeObject(Object* obj);
 
-void FinishLoadObject(std::ifstream &fd, Object* obj);
+bool FinishLoadObject(std::ifstream &fd, Object* obj);
 
 Level LoadLevel(std::string filename);
 
-void SaveObject(std::ofstream &fd, Object* obj);
+bool SaveObject(std::ofstream &fd, Object* obj);
 
-void SaveLevel(Level& level, std::string filename);
+bool SaveLevel(Level& level, std::string filename);
 
 void UnloadLevel(Level& level);
 
