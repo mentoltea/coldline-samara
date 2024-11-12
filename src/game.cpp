@@ -92,13 +92,20 @@ Object* intersect(const Point& p, Object* ignore) {
     return NULL;
 }
 
-void raycastLimitedReflections(IntersectInfo& result,Point start, float angle, float step, Object* ignore, Object* origin, float limit) {
+void raycastLimitedReflections(IntersectInfo& result,Point start, float angle, float initialstep, Object* ignore, Object* origin, float limit) {
     result.distance = 0;
     result.points.clear();
     result.ptr = NULL;
+    float step = initialstep;
+    int stepcount = 1;
+    int stepchangecount = 80;
 
-    float dx = cosf(angle/180 * PI)*step;
-    float dy = sinf(angle/180 * PI)*step;
+    float initial_dx = cosf(angle/180 * PI)*step;
+    float initial_dy = sinf(angle/180 * PI)*step;
+
+    float dx = initial_dx;
+    float dy = initial_dy;
+
     Object* intobj = NULL;
     int reflections = 0;
     
@@ -110,21 +117,31 @@ void raycastLimitedReflections(IntersectInfo& result,Point start, float angle, f
             // if (intobj->opaque) continue;
             if (intobj->reflects && reflections < gamestate.MAX_REFLECTIONS) {
                 Vector2 r = reflect({dx, dy}, intobj->normal);
-                dx = r.x; dy = r.y;
+                initial_dx = r.x; initial_dy = r.y;
                 ignore = intobj;
                 intobj = NULL;
                 result.points.push_back(start);
                 start.x += 2*dx;
                 start.y += 2*dy;
                 reflections++;
+                dx = initial_dx;
+                dy = initial_dy;
+                step = initialstep;
+                stepcount = 1;
             } else break;
         }
         start.x += dx;
         start.y += dy;
         result.distance += step;
+        stepcount++;
         if (result.distance >= limit) {
             result.points.push_back(start);
             break;
+        }
+        if (stepcount%stepchangecount == 0) {
+            step = (1 + (float)stepcount/(float)stepchangecount/2.f)*initialstep;
+            dx = (1 + (float)stepcount/(float)stepchangecount/2.f)*initial_dx;
+            dy = (1 + (float)stepcount/(float)stepchangecount/2.f)*initial_dy;
         }
 
         if (start.x >= gamestate.currentLevel.MapXf) {
@@ -364,7 +381,7 @@ void update() {
             // std::cout << "update" << std::endl;
         }
     }
-
+    
     Point mouse = GetMousePosition();
     float koef = 1.2;
     if (gamestate.currentLevel.player) {
@@ -377,12 +394,14 @@ void update() {
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
             gamestate.currentLevel.player->use_item = true;
         }
+        // std::cout << "player" << std::endl;
         gamestate.currentLevel.player->update();
     } else {
         gamestate.camera.x += move.x;
         gamestate.camera.y += move.y;
     }
 
+    // std::cout << "objects" << std::endl;
     int enemies = 0;
     for (auto it=gamestate.currentLevel.objects.begin(); it!=gamestate.currentLevel.objects.end(); it++) {
         if (!(*it)->active || (*it)==gamestate.currentLevel.player) continue;
@@ -467,10 +486,11 @@ void draw() {
     }
     if (gamestate.currentLevel.player && !gamestate.currentLevel.player->alive) {
         DrawText("RESTART - R", gamestate.WinXf/2 - 6*50, gamestate.WinYf/2 - 20, 80, GREEN);
-    } else if (gamestate.levelComplete) {
-        DrawText("LEVEL COMPLETED", gamestate.WinXf/2 - 7*50, gamestate.WinYf/2 - 40, 80, GREEN);
-        DrawText("NEXT LEVEL - N", gamestate.WinXf/2 - 6*50, gamestate.WinYf/2 + 20, 80, GREEN);
-    }
+    } 
+    // else if (gamestate.levelComplete) {
+    //     DrawText("LEVEL COMPLETED", gamestate.WinXf/2 - 7*50, gamestate.WinYf/2 - 40, 80, GREEN);
+    //     DrawText("NEXT LEVEL - N", gamestate.WinXf/2 - 6*50, gamestate.WinYf/2 + 20, 80, GREEN);
+    // }
     if (gamestate.pause) {
         DrawText("PAUSED", gamestate.WinX - 6*20 - 5, 0, 30, GREEN);
     }

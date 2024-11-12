@@ -398,6 +398,26 @@ Mirror::Mirror(Poly b, Vector2 n) {
     body = b;
 }
 
+Mirror::Mirror(Point start, Point end, float halfwidth) {
+    opaque = false;
+    type = MIRROR;
+    reflects = true;
+
+    Vector2 n = {end.y - start.y, start.x - end.x};
+    float nl = sqrtf(n.x*n.x + n.y*n.y);
+    normal = {n.x/nl, n.y/nl};
+    
+    // 2 -- 1
+    // |    |
+    // 4 -- 3
+    if (start.y > end.y) {
+        Point temp = end;
+        end = start;
+        start = temp;
+    } 
+    body = {Point({start.x + halfwidth, start.y}), Point({start.x - halfwidth, start.y + halfwidth}), Point({end.x+halfwidth, end.y}), Point({end.x - halfwidth, end.y + halfwidth})};
+}
+
 Mirror::~Mirror() = default;
 
 void Mirror::drawA(unsigned char alfa) {
@@ -451,6 +471,23 @@ Wall::Wall(Poly b) {
 
     body = b;
 }
+Wall::Wall(Point start, Point end, float halfwidth) {
+    opaque = false;
+    reflects = false;
+    type = WALL;
+
+    if (start.y > end.y) {
+        Point temp = end;
+        end = start;
+        start = temp;
+    } 
+    // body = {start, Point({start.x - halfwidth, start.y + halfwidth}), end, Point({end.x - halfwidth, end.y + halfwidth})};
+    body = {Point({start.x + halfwidth, start.y}), 
+    Point({start.x - halfwidth, start.y + halfwidth}), 
+    Point({end.x + halfwidth, end.y}), 
+    Point({end.x - halfwidth, end.y + halfwidth})};
+}
+
 Wall::~Wall() = default;
 
 void Wall::drawA(unsigned char alfa) {
@@ -529,6 +566,28 @@ Door::Door(float minangle, float maxangle, float angle, Point origin, Vector2 hi
     this->drawsize = sl;
     this->posoriginsize = this->hitboxsize/2;
 }
+Door::Door(float minangle, float maxangle, float angle, Point origin, Point start, Point end, float halfwidth) {
+    opaque = false;
+    reflects = false;
+    type = DOOR;
+
+    this->maxangle = maxangle;
+    this->minangle = minangle;
+    this->angle = angle;
+    this->origin = origin;
+
+    Vector2 hitboxsize = Point({end.x+halfwidth, end.y + halfwidth}) - (end + start)/2;
+    float hl = sqrtf(hitboxsize.x*hitboxsize.x + hitboxsize.y*hitboxsize.y);
+    this->hitboxsize = hl;
+    this->hitSizeAngle = acos(hitboxsize.x/hl);
+    
+    Vector2 drawsize = hitboxsize;
+    float sl = sqrtf(drawsize.x*drawsize.x + drawsize.y*drawsize.y);
+    dirSizeAngle = acosf(drawsize.x/sl);
+    this->drawsize = sl;
+    this->posoriginsize = this->hitboxsize/2;
+}
+
 Door::~Door() = default;
 
 void Door::drawA(unsigned char alfa) {
@@ -551,6 +610,7 @@ void Door::drawA(unsigned char alfa) {
     
     DrawTriangle(drawBody.p3, drawBody.p2, drawBody.p1, {240,20,50,alfa} );
     DrawTriangle(drawBody.p2, drawBody.p3, drawBody.p4, {240,20,50,alfa} );
+    // DrawLineV(drawBody.p1, drawBody.p4, RED);
 }
 void Door::draw()  {
     int max = 255;
@@ -573,6 +633,8 @@ void Door::update() {
     if (angle>maxangle || angle < minangle) {
         angle -= anglevel;
         anglevel *= -koef;
+        if (angle > maxangle) angle-=0.5;
+        else angle+=0.5;
     }
     anglerad = PI*angle/180;
 
@@ -625,6 +687,9 @@ Player::Player(Point pos, Vector2 size): inters(Nray), intersBack(Nrayback) {
 
     selfTexture = TM::GetT(TM::Tid::TPlayer);
     if(selfTexture) this->size = sqrtf((float)selfTexture->width*(float)selfTexture->width + (float)selfTexture->height*(float)selfTexture->height);
+
+    stepsize = logf(gamestate.WinXf*gamestate.WinXf + gamestate.WinYf*gamestate.WinYf)/5;
+    std::cout << stepsize << std::endl;
 }
 Player::~Player() = default;
 
@@ -645,7 +710,7 @@ void Player::drawView() {
     size_t maxlen = 0;
     for (int i=0; i<Nray; i++) {
         a -= delta;
-        raycastLimitedReflections(inters[i], position, a, 2, this, this, viewLength);
+        raycastLimitedReflections(inters[i], position, a, stepsize, this, this, viewLength);
         maxlen = inters[i].points.size() > maxlen ? inters[i].points.size() : maxlen;
         if (i>0) {
             DrawTriangle(drawPosition, projectToCamera(inters[i-1].points[0]), projectToCamera(inters[i].points[0]), viewColor);
@@ -835,20 +900,6 @@ void Player::projectilecallback(Projectile* proj) {
 
 void EnemyBehaviour::update(Enemy* self) {
     if (self->see_player || warned) {
-        if (self->see_player && self->selfitem!=-1) {
-            Item* itm = (Item*) gamestate.currentLevel.objects[self->selfitem];
-            if (itm->usageDistance > distance(self->position, gamestate.currentLevel.player->position)) {
-                self->use_item = true;
-                self->target = gamestate.currentLevel.player->position;
-                self->chase_target = false;
-                self->turn_target = true;
-                tick_warned = 1;
-                return;
-            } else {
-                self->chase_target = true;
-                self->turn_target = true;
-            }
-        }
         if (!see_player_way_updated && !warned) {
 
             near = gamestate.currentLevel.nearPoint(self->position);
@@ -869,13 +920,29 @@ void EnemyBehaviour::update(Enemy* self) {
             self->chase_target = true;
             self->turn_target = true;
         }
+        if (self->see_player && self->selfitem!=-1) {
+            Item* itm = (Item*) gamestate.currentLevel.objects[self->selfitem];
+            if (itm->usageDistance > distance(self->position, gamestate.currentLevel.player->position)) {
+                self->use_item = true;
+                self->target = gamestate.currentLevel.player->position;
+                self->chase_target = false;
+                self->turn_target = true;
+                tick_warned = 1;
+                return;
+            }   
+        }
+        self->chase_target = true;
+        self->turn_target = true;
         if (!currentway.empty()) {
             self->target = gamestate.currentLevel.MapPoints[currentway.top()]; 
     
-            if (distance(self->target, self->position) < self->hitCircleSize*2/5 && !currentway.empty()) {
+            if (distance(self->target, self->position) < self->hitCircleSize*2/5) {
                 currentway.pop();
                 if (currentway.empty()) {
-                    self->target = gamestate.currentLevel.player->position;
+                    near = gamestate.currentLevel.nearPoint(self->position);
+                    auto playernear = gamestate.currentLevel.nearPoint(gamestate.currentLevel.player->position);
+                    currentway = gamestate.currentLevel.way(std::get<1>(near), std::get<1>(playernear));
+                    currentway.pop();
                 }
             }
         } else {
@@ -931,6 +998,11 @@ void EnemyBehaviour::update(Enemy* self) {
         // std::cout << currentway.top() << std::endl;
 
         if (distance(self->target, self->position) < self->hitCircleSize*2/5 && !currentway.empty()) {
+            if (selfway.size() == 1) {
+                self->chase_target = false;
+                self->turn_target = false;
+                return;
+            }
             currentway.pop();
             if (currentway.empty()) {
                 near = gamestate.currentLevel.nearPoint(self->position);
@@ -963,6 +1035,9 @@ Enemy::Enemy(Point pos, Vector2 size, std::vector<int> way): inters(Nray), behav
     this->size = sl;
     hp = 3;
     type = ENEMY;
+    stepsize = logf(gamestate.WinXf*gamestate.WinXf + gamestate.WinYf*gamestate.WinYf)/5;
+    std::cout << stepsize << std::endl;
+    move={0,0};
 }
 Enemy::~Enemy() {
     // decltype(inters)().swap(inters);
@@ -1065,31 +1140,34 @@ void Enemy::update() {
     if (shocked) {
         if (shocktick > shockdurancy*TICK) {
             shocked = false;
-            shocktick = 0;
         }
         dropItem();
         shocktick++;
         selfColor = {70,70,70, 200};
         viewColor = {50,50,50, 150};
+        move = {0,0};
         return;
     }
     
     float a = angle + hview;
     maxlen = 0;
-    int found_player = -1;
+    int count_found_player = 0;
     see_player = false;
     for (int i=0; i<Nray; i++) {
         a -= delta;
-        raycastLimitedReflections(inters[i], position, a, 2, this, this, viewLength);
+        raycastLimitedReflections(inters[i], position, a, stepsize, this, this, viewLength);
         maxlen = inters[i].points.size() > maxlen ? inters[i].points.size() : maxlen;
         if (inters[i].ptr) {
-            if (inters[i].ptr->type==PLAYER) found_player = i;
+            if (inters[i].ptr->type==PLAYER) {
+                count_found_player++;
+            }
         }
     }
-    if (found_player != -1) see_player = true;
+    if (count_found_player > Nray*0.1) see_player = true;
 
     
-    behaviour.update(this);
+    if (see_player || (!behaviour.currentway.empty() && behaviour.selfway.size()!=0) || shocktick!=0) behaviour.update(this);
+    
     if (see_player) {
         selfColor = {200, 50, 50, 250};
         viewColor = {170,50,50,180};
@@ -1212,8 +1290,8 @@ void Enemy::raycallback(Object* obj, float dist)  {
 void Enemy::collidecallback(Entity* obj, const Point& point, const Vector2& direction)  {
     Vector2 dir = direction;
     if (obj->gentype == PROJECTILE) dir = dir * 0.1;
-    move.x += dir.x/2;
-    move.y += dir.y/2;
+    move.x += dir.x/6;
+    move.y += dir.y/6;
 }
 
 void Enemy::projectilecallback(Projectile* proj) {

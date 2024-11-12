@@ -38,7 +38,6 @@ Vector2 operator-(const Vector2& v1, const Vector2& v2);
 Vector2 operator*(const Vector2 v, float k);
 Vector2 operator*(float k, const Vector2 v);
 
-
 Vector2 operator/(const Vector2 v, float k);
 
 typedef Vector2 Point;
@@ -130,7 +129,11 @@ typedef struct CheatFlags {
 } CheatFlags;
 
 struct ConnectedPoint: public Point {
-    std::vector<int > connections; // indexes in MapPoints
+    std::vector<int > connections; // indexes in MapPoints 
+    // ConnectedPoint(float x, float y) {
+    //     this->x = x;
+    //     this->y = y;
+    // }
 };
 
 struct Level {

@@ -2,5 +2,5 @@
     "fullscreen" : 0,
     "WinX" : 1280,
     "WinY" : 720,
-    "MAX_REFLECTIONS" : 20
+    "MAX_REFLECTIONS" : 8
 }

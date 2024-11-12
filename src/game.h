@@ -210,6 +210,7 @@ public:
 
     Mirror() {};
     Mirror(Poly b, Vector2 n);
+    Mirror(Point start, Point end, float halfwidth);
     ~Mirror() override;
     
     void drawA(unsigned char alfa) ;
@@ -228,6 +229,7 @@ public:
 
     Wall() {}
     Wall(Poly b);
+    Wall(Point start, Point end, float halfwidth);
     ~Wall() override;
     
     void drawA(unsigned char alfa);
@@ -273,6 +275,7 @@ public:
 
     Door() {}
     Door(float minangle, float maxangle, float angle, Point origin, Vector2 hitboxsize, Vector2 drawsize);
+    Door(float minangle, float maxangle, float angle, Point origin, Point start, Point end, float halfwidth);
     ~Door() override;
     
     void drawA(unsigned char alfa) ;
@@ -299,9 +302,10 @@ public:
     std::vector<IntersectInfo> intersBack;
     Color viewColor = {110,110,110,180};
     Color viewAroundColor = {110,110,110,100};
+    float stepsize = 2;
     float hview = 30;
-    static const int Nray = 150;
-    static const int Nrayback = 80;
+    static const int Nray = 100;
+    static const int Nrayback = 60;
     float delta = 2*hview/Nray;
     float deltaback = (360-2*hview+5)/Nrayback;
     Texture *selfTexture = NULL;
@@ -363,13 +367,14 @@ public:
     Color viewColor = {110,50,50,180};
     Color selfColor = {150, 150, 50, 250};
     float hview = 30;
-    static const int Nray = 60;
+    static const int Nray = 50;
+    float stepsize = 2;
     float delta = 2*hview/Nray;
     size_t maxlen;
 
     Point target;
-    bool chase_target=true;
-    bool turn_target=true;
+    bool chase_target=false;
+    bool turn_target=false;
     bool see_player;
     bool use_item;
     EnemyBehaviour behaviour;
@@ -382,7 +387,7 @@ public:
     float punchsizeProcent = 0.65;
 
     bool shocked = false;
-    int shocktick = 0;
+    int shocktick = 1;
     float shockdurancy = 0.8;
 
     Enemy() {}
