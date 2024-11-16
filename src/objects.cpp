@@ -698,7 +698,9 @@ void Player::drawViewAround() {
     float a = angle - hview + 4;
     for (int i=0; i<Nrayback; i++) {
         a -= deltaback;
+        
         raycastLimited(intersBack[i], position, a, 1, this, this, viewAround);
+        
         if (i>0) {
             // DrawCircleV(inters[i].points[0], 1, {255,255,0,250});
             DrawTriangle( drawPosition , projectToCamera( intersBack[i-1].points[0] ), projectToCamera(intersBack[i].points[0]),  viewAroundColor);
@@ -1153,9 +1155,15 @@ void Enemy::update() {
     maxlen = 0;
     int count_found_player = 0;
     see_player = false;
+
+    bool temp = SAFE_DRAWING;
+    SAFE_DRAWING = false;
     for (int i=0; i<Nray; i++) {
         a -= delta;
+
         raycastLimitedReflections(inters[i], position, a, stepsize, this, this, viewLength);
+        
+
         maxlen = inters[i].points.size() > maxlen ? inters[i].points.size() : maxlen;
         if (inters[i].ptr) {
             if (inters[i].ptr->type==PLAYER) {
@@ -1163,6 +1171,7 @@ void Enemy::update() {
             }
         }
     }
+    SAFE_DRAWING = temp;
     if (count_found_player > Nray*0.1) see_player = true;
 
     

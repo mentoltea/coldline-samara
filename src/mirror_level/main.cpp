@@ -10,6 +10,9 @@
 #include <filesystem>
 
 int TICK = 60;
+double dt = 1/(double)TICK;
+int FPS = 60;
+
 
 std::vector<std::string> GetFilesFromDirExt(const std::string &path, const std::string& extension) {
     std::vector<std::string> result;
@@ -51,9 +54,10 @@ void load_settings(FILE* fd) {
 
 void default_level();
 
+
+
 using std::cout, std::endl;
 int main(int argc, char** argv) {
-
     FILE* file = fopen("settings.json", "r");
     if (file) {
         load_settings(file);
@@ -75,15 +79,18 @@ int main(int argc, char** argv) {
 
     if (gamestate.fullscreen) ToggleFullscreen();
     SetExitKey(KEY_F4);
-    SetTargetFPS(TICK);
+    SetTargetFPS(FPS);
 
 
     TM::LoadT("assets/pistol.png", TM::TPistol);
     TM::LoadT("assets/rifle.png", TM::TRifle);
     TM::LoadT("assets/shotgun.png", TM::TShotgun);
     
-    
+    gamestate.fileLevels = GetFilesFromDirExt("./levels/", ".lvl");
+
     default_level();
+
+
     ReloadLevel();
             
     // 2----1
@@ -91,14 +98,43 @@ int main(int argc, char** argv) {
     // 4----3
 
     MemManager::page_info(0);
-    
 
+
+    char buffer[64] = {0};
+    int buffer_idx = 0;
+
+    std::thread updateThread([&]() { 
+        // SetTargetFPS(TICK);
+        // EnableEventWaiting();
+        SAFE_DRAWING = true;
+        do {
+            WaitTime(dt);
+            PollInputEvents();
+            if (!gamestate.pause) update();
+
+            // if (!SAFE_DRAWING) SAFE_DRAWING = true;
+            // draw();
+        } while (!STOP);
+    });
+
+    WaitTime(0.1);
     while (!WindowShouldClose()) {
+        
         if (IsWindowResized()) {
             gamestate.WinX = GetScreenWidth();
             gamestate.WinY = GetScreenHeight();
             gamestate.WinXf = gamestate.WinX;
             gamestate.WinYf = gamestate.WinY;
+        }
+
+        buffer[buffer_idx] = GetCharPressed();
+        if (buffer[buffer_idx] > 32) {
+            buffer_idx++;
+            // cout << buffer << endl;
+        }
+        if (buffer_idx>=63) {
+            memcpy(buffer, buffer+32, 31);
+            buffer_idx = buffer_idx%63;
         }
 
         if (IsKeyPressed(KEY_ESCAPE)) gamestate.pause = !gamestate.pause;
@@ -107,7 +143,13 @@ int main(int argc, char** argv) {
             ToggleFullscreen();
         }
         if (IsKeyPressed(KEY_R) && !gamestate.pause) {
-            ReloadLevel();
+            // SAFE_DRAWING = false;
+            // RELOAD = true;
+            // bool temp = gamestate.pause; 
+            gamestate.pause = true;
+            WaitTime(4*dt);
+            ReloadLevel(); 
+            gamestate.pause = false;
         }
         
         if (IsKeyPressed(KEY_I)) {
@@ -115,17 +157,21 @@ int main(int argc, char** argv) {
         }
 
         BeginDrawing();
-        if (!gamestate.pause) {
-            update();
+        // ClearBackground(BLACK);
+        // if (!gamestate.pause) update();
+        if (SAFE_DRAWING) {
+            draw();
         }
-        draw();
+
         DrawFPS(0,0);
         EndDrawing();
     }
+    STOP = true;
+    updateThread.join();
     CloseWindow();
     MemManager::page_info(0);
 
-    SaveLevel(gamestate.levelReference, "levels/mirrors.lvl");
+    // SaveLevel(gamestate.levelReference, "levels/l1.lvl");
 
     gamestate.currentLevel.clear();
     UnloadLevel(gamestate.levelReference);
@@ -140,6 +186,7 @@ int main(int argc, char** argv) {
     std::cout << "Finished succesfully" << std::endl;
     return 0;
 }
+
 
 
 #define ADD_OBJ(O) gamestate.levelReference.objects.push_back(O);

@@ -94,3 +94,7 @@ Shotgun ExampleShotgun;
 }
 
 int tickcount = 0;
+
+bool STOP = false;
+bool RELOAD = false;
+bool SAFE_DRAWING = false;

@@ -3,6 +3,11 @@
 
 #include "definitions.h"
 
+extern bool STOP;
+extern bool RELOAD;
+extern bool SAFE_DRAWING;
+
+
 Object* intersect(const Point& p, Object* ignore);
 void raycast(IntersectInfo& result,Point start, float angle, float step, Object* ignore, Object* origin);
 // raycast with direction
@@ -304,7 +309,7 @@ public:
     Color viewAroundColor = {110,110,110,100};
     float stepsize = 2;
     float hview = 30;
-    static const int Nray = 100;
+    static const int Nray = 150;
     static const int Nrayback = 60;
     float delta = 2*hview/Nray;
     float deltaback = (360-2*hview+5)/Nrayback;
@@ -368,7 +373,7 @@ public:
     Color selfColor = {150, 150, 50, 250};
     float hview = 30;
     static const int Nray = 50;
-    float stepsize = 2;
+    float stepsize = 5;
     float delta = 2*hview/Nray;
     size_t maxlen;
 

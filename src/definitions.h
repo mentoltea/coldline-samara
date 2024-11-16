@@ -14,6 +14,8 @@
 #include <assert.h>
 #include <stdint.h>
 #include <memory>
+#include <thread>
+#include <chrono>
 
 namespace Cstd {
 #include <string.h>
@@ -188,6 +190,8 @@ extern GameState gamestate;
 
 extern int TICK;
 extern int tickcount;
+extern int FPS;
+extern double dt;
 
 
 namespace TextureManager {

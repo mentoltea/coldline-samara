@@ -10,6 +10,9 @@
 #include <filesystem>
 
 int TICK = 60;
+double dt = 1/(double)TICK;
+int FPS = 60;
+
 
 std::vector<std::string> GetFilesFromDirExt(const std::string &path, const std::string& extension) {
     std::vector<std::string> result;
@@ -51,6 +54,8 @@ void load_settings(FILE* fd) {
 
 void default_level();
 
+
+
 using std::cout, std::endl;
 int main(int argc, char** argv) {
     FILE* file = fopen("settings.json", "r");
@@ -74,7 +79,7 @@ int main(int argc, char** argv) {
 
     if (gamestate.fullscreen) ToggleFullscreen();
     SetExitKey(KEY_F4);
-    SetTargetFPS(TICK);
+    SetTargetFPS(FPS);
 
 
     TM::LoadT("assets/pistol.png", TM::TPistol);
@@ -111,7 +116,23 @@ int main(int argc, char** argv) {
     char buffer[64] = {0};
     int buffer_idx = 0;
 
+    std::thread updateThread([&]() { 
+        // SetTargetFPS(TICK);
+        // EnableEventWaiting();
+        SAFE_DRAWING = true;
+        do {
+            WaitTime(dt);
+            PollInputEvents();
+            if (!gamestate.pause) update();
+
+            // if (!SAFE_DRAWING) SAFE_DRAWING = true;
+            // draw();
+        } while (!STOP);
+    });
+
+    WaitTime(0.1);
     while (!WindowShouldClose()) {
+        
         if (IsWindowResized()) {
             gamestate.WinX = GetScreenWidth();
             gamestate.WinY = GetScreenHeight();
@@ -135,7 +156,13 @@ int main(int argc, char** argv) {
             ToggleFullscreen();
         }
         if (IsKeyPressed(KEY_R) && !gamestate.pause) {
-            ReloadLevel();
+            // SAFE_DRAWING = false;
+            // RELOAD = true;
+            // bool temp = gamestate.pause; 
+            gamestate.pause = true;
+            WaitTime(4*dt);
+            ReloadLevel(); 
+            gamestate.pause = false;
         }
         
         if (IsKeyPressed(KEY_I)) {
@@ -143,11 +170,17 @@ int main(int argc, char** argv) {
         }
 
         BeginDrawing();
-        if (!gamestate.pause) update();
-        draw();
+        // ClearBackground(BLACK);
+        // if (!gamestate.pause) update();
+        if (SAFE_DRAWING) {
+            draw();
+        }
+
         DrawFPS(0,0);
         EndDrawing();
     }
+    STOP = true;
+    updateThread.join();
     CloseWindow();
     MemManager::page_info(0);
 

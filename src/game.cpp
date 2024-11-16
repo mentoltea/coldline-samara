@@ -98,7 +98,7 @@ void raycastLimitedReflections(IntersectInfo& result,Point start, float angle, f
     result.ptr = NULL;
     float step = initialstep;
     int stepcount = 1;
-    int stepchangecount = 80;
+    int stepchangecount = 200;
 
     float initial_dx = cosf(angle/180 * PI)*step;
     float initial_dy = sinf(angle/180 * PI)*step;
@@ -350,6 +350,7 @@ void DrawTexturePoly(Texture2D texture, Vector2 center, Vector2 *points, Vector2
     rlSetTexture(0);
 }
 
+int ticksFromPicking = 0;
 void update() {        
     Vector2 move = {0};
     if (IsKeyDown(KEY_A)) {
@@ -388,8 +389,12 @@ void update() {
         gamestate.camera.x = (koef*(gamestate.currentLevel.player->position.x) + gamestate.camera.x + mouse.x)/(1+koef) - (gamestate.WinXf)/2;
         gamestate.camera.y = (koef*(gamestate.currentLevel.player->position.y) + gamestate.camera.y + mouse.y)/(1+koef) - (gamestate.WinYf)/2;
         gamestate.currentLevel.player->move = move;
-        if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
-            gamestate.currentLevel.player->pickItem();
+        if (ticksFromPicking) ticksFromPicking--;
+        else {
+            if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
+                gamestate.currentLevel.player->pickItem();
+                ticksFromPicking = TICK/3;
+            }
         }
         if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
             gamestate.currentLevel.player->use_item = true;
@@ -427,6 +432,7 @@ void update() {
 
 
 void draw() {
+    // BeginDrawing();
     char buffer[32];
     ClearBackground({0,0,0,255});
     DrawRectangleV(projectToCamera({0,0}), {gamestate.currentLevel.MapXf, gamestate.currentLevel.MapYf}, {25,25,25,255});
@@ -495,4 +501,7 @@ void draw() {
         DrawText("PAUSED", gamestate.WinX - 6*20 - 5, 0, 30, GREEN);
     }
     // std::cout << "d3" << std::endl;
+
+    // EndDrawing();
+    // SwapScreenBuffer();
 }
