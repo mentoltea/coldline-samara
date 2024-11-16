@@ -375,6 +375,7 @@ public:
     static const int Nray = 50;
     float stepsize = 5;
     float delta = 2*hview/Nray;
+    bool intersUpdated = false;
     size_t maxlen;
 
     Point target;
@@ -394,6 +395,7 @@ public:
     bool shocked = false;
     int shocktick = 1;
     float shockdurancy = 0.8;
+
 
     Enemy() {}
     Enemy(Point pos, Vector2 size, std::vector<int> way);

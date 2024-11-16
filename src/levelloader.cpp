@@ -75,6 +75,7 @@ bool FinishLoadObject(std::ifstream &fd, Object* obj) {
                     FD_AUTOREAD(fd, curr);
                     en->behaviour.selfway.push_back(curr);
                 }
+                en->intersUpdated = false;
             }    break;
 
             default:

@@ -12,6 +12,8 @@
 int TICK = 60;
 double dt = 1/(double)TICK;
 int FPS = 60;
+double df = 1/(double)FPS;
+
 
 
 std::vector<std::string> GetFilesFromDirExt(const std::string &path, const std::string& extension) {
@@ -55,7 +57,7 @@ void load_settings(FILE* fd) {
 void default_level();
 
 
-
+double updateLatency = 0;
 using std::cout, std::endl;
 int main(int argc, char** argv) {
     FILE* file = fopen("settings.json", "r");
@@ -117,20 +119,26 @@ int main(int argc, char** argv) {
     int buffer_idx = 0;
 
     std::thread updateThread([&]() { 
-        // SetTargetFPS(TICK);
-        // EnableEventWaiting();
+        using namespace std::chrono;
         SAFE_DRAWING = true;
+        updateLatency = 0;
         do {
-            WaitTime(dt);
+            WaitTime(dt - updateLatency);
+            
+            time_point from = steady_clock::now();
             PollInputEvents();
             if (!gamestate.pause) update();
+            time_point to = steady_clock::now();
+            
+            updateLatency = (double)duration_cast<microseconds>(to-from).count() /1000000.f;
+            if (dt - updateLatency < 0) updateLatency = dt;
 
-            // if (!SAFE_DRAWING) SAFE_DRAWING = true;
-            // draw();
+            // cout << dt << "\t" << updateLatency << "\t"  << dt-updateLatency << endl;
         } while (!STOP);
     });
 
     WaitTime(0.1);
+    bool swapped = false;
     while (!WindowShouldClose()) {
         
         if (IsWindowResized()) {
@@ -174,9 +182,19 @@ int main(int argc, char** argv) {
         // if (!gamestate.pause) update();
         if (SAFE_DRAWING) {
             draw();
+            DrawFPS(0,0);
+            {
+                char b[64];
+                int tps = (double)(1.f/(dt+updateLatency));
+                snprintf(b, 64, "%d TPS", tps);
+                DrawText(b, 0, 30, 20, RED);
+            }
+            swapped = false;
+        } else if (!swapped) {
+            SwapScreenBuffer();
+            swapped = true;
         }
 
-        DrawFPS(0,0);
         EndDrawing();
     }
     STOP = true;

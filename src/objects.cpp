@@ -1039,6 +1039,7 @@ Enemy::Enemy(Point pos, Vector2 size, std::vector<int> way): inters(Nray), behav
     type = ENEMY;
     stepsize = logf(gamestate.WinXf*gamestate.WinXf + gamestate.WinYf*gamestate.WinYf)/5;
     std::cout << stepsize << std::endl;
+    intersUpdated = false;
     move={0,0};
 }
 Enemy::~Enemy() {
@@ -1156,22 +1157,28 @@ void Enemy::update() {
     int count_found_player = 0;
     see_player = false;
 
-    bool temp = SAFE_DRAWING;
-    SAFE_DRAWING = false;
-    for (int i=0; i<Nray; i++) {
-        a -= delta;
+    if (!intersUpdated || distance(position, gamestate.currentLevel.player->position) < gamestate.currentLevel.player->viewLength) {
 
-        raycastLimitedReflections(inters[i], position, a, stepsize, this, this, viewLength);
-        
+        bool temp = SAFE_DRAWING;
+        SAFE_DRAWING = false;
+        for (int i=0; i<Nray; i++) {
+            a -= delta;
 
-        maxlen = inters[i].points.size() > maxlen ? inters[i].points.size() : maxlen;
-        if (inters[i].ptr) {
-            if (inters[i].ptr->type==PLAYER) {
-                count_found_player++;
+            raycastLimitedReflections(inters[i], position, a, stepsize, this, this, viewLength);
+            
+
+            maxlen = inters[i].points.size() > maxlen ? inters[i].points.size() : maxlen;
+            if (inters[i].ptr) {
+                if (inters[i].ptr->type==PLAYER) {
+                    count_found_player++;
+                }
             }
         }
+        SAFE_DRAWING = temp;
+
+        intersUpdated = true;
     }
-    SAFE_DRAWING = temp;
+
     if (count_found_player > Nray*0.1) see_player = true;
 
     

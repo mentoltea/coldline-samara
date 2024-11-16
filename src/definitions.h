@@ -147,6 +147,8 @@ struct Level {
     float MapXf, MapYf;
     CheatFlags cheats = {0};
 
+    float maxDrawingDistance = INFINITY;
+
     // Save&read specially
     std::vector<ConnectedPoint> MapPoints;
     std::vector<Object*> objects;

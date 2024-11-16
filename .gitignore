@@ -1,6 +1,7 @@
 .vscode/*
 bin/*
 bin-static/*
+binlevels/*
 *.zip
 a.exe
 */test.cpp

@@ -12,6 +12,7 @@
 int TICK = 60;
 double dt = 1/(double)TICK;
 int FPS = 60;
+double df = 1/(double)FPS;
 
 
 std::vector<std::string> GetFilesFromDirExt(const std::string &path, const std::string& extension) {
@@ -55,6 +56,7 @@ void load_settings(FILE* fd) {
 void default_level();
 
 
+double updateLatency = 0;
 
 using std::cout, std::endl;
 int main(int argc, char** argv) {
@@ -106,18 +108,26 @@ int main(int argc, char** argv) {
     std::thread updateThread([&]() { 
         // SetTargetFPS(TICK);
         // EnableEventWaiting();
+        using namespace std::chrono;
         SAFE_DRAWING = true;
+        updateLatency = 0;
         do {
-            WaitTime(dt);
+            WaitTime(dt - updateLatency);
+            
+            time_point from = steady_clock::now();
             PollInputEvents();
             if (!gamestate.pause) update();
+            time_point to = steady_clock::now();
+            
+            updateLatency = (double)duration_cast<milliseconds>(to-from).count() /1000.f;
+            if (dt - updateLatency < 0) updateLatency = dt;
 
-            // if (!SAFE_DRAWING) SAFE_DRAWING = true;
-            // draw();
+            // cout << dt << "\t" << updateLatency << "\t"  << dt-updateLatency << endl;
         } while (!STOP);
     });
 
     WaitTime(0.1);
+    bool swapped = false;
     while (!WindowShouldClose()) {
         
         if (IsWindowResized()) {
@@ -161,9 +171,19 @@ int main(int argc, char** argv) {
         // if (!gamestate.pause) update();
         if (SAFE_DRAWING) {
             draw();
+            DrawFPS(0,0);
+            {
+                char b[64];
+                int tps = (double)(1.f/(dt+updateLatency));
+                snprintf(b, 64, "%d TPS", tps);
+                DrawText(b, 0, 30, 20, RED);
+            }
+            swapped = false;
+        } else if (!swapped) {
+            SwapScreenBuffer();
+            swapped = true;
         }
 
-        DrawFPS(0,0);
         EndDrawing();
     }
     STOP = true;
@@ -380,6 +400,7 @@ void default_level() {
     en = NEW(Enemy) Enemy(gamestate.levelReference.MapPoints[11], k/1.5*Vector2({5.f, 10.f}), {12, 9, 10, 11});
     en->viewAround = p->viewAround*0.75;
     en->viewLength = p->viewLength*0.75;
+    en->stepsize = 8;
     en->speed = 1.5;
     ADD_OBJ(en);
 
@@ -391,6 +412,7 @@ void default_level() {
     en = NEW(Enemy) Enemy(gamestate.levelReference.MapPoints[22] + Vector2({-1,-1}), k/1.5*Vector2({5.f, 10.f}), {});
     en->viewAround = p->viewAround*0.75;
     en->viewLength = p->viewLength*0.75;
+    en->stepsize = 8;
     en->speed = 1.5;
     en->direction = {1/sqrtf(2), -1/sqrtf(2)};
     ADD_OBJ(en);
@@ -406,6 +428,7 @@ void default_level() {
     en = NEW(Enemy) Enemy(gamestate.levelReference.MapPoints[0], k/1.5*Vector2({5.f, 10.f}), {3, 8, 19, 21});
     en->viewAround = p->viewAround*0.75;
     en->viewLength = p->viewLength*0.75;
+    en->stepsize = 8;
     en->speed = 1.5;
     ADD_OBJ(en);
 
@@ -418,6 +441,7 @@ void default_level() {
     en = NEW(Enemy) Enemy(gamestate.levelReference.MapPoints[39], k/1.5*Vector2({5.f, 10.f}), {37, 35, 44, 43});
     en->viewAround = p->viewAround*0.75;
     en->viewLength = p->viewLength*0.75;
+    en->stepsize = 8;
     en->speed = 1.5;
     ADD_OBJ(en);
 
