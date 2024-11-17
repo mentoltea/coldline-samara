@@ -123,7 +123,6 @@ int main(int argc, char** argv) {
         SAFE_DRAWING = true;
         updateLatency = 0;
         do {
-            WaitTime(dt - updateLatency);
             
             time_point from = steady_clock::now();
             PollInputEvents();
@@ -133,6 +132,7 @@ int main(int argc, char** argv) {
             updateLatency = (double)duration_cast<microseconds>(to-from).count() /1000000.f;
             if (dt - updateLatency < 0) updateLatency = dt;
 
+            WaitTime(dt - updateLatency);
             // cout << dt << "\t" << updateLatency << "\t"  << dt-updateLatency << endl;
         } while (!STOP);
     });

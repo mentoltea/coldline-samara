@@ -1159,8 +1159,8 @@ void Enemy::update() {
 
     if (!intersUpdated || distance(position, gamestate.currentLevel.player->position) < gamestate.currentLevel.player->viewLength) {
 
-        bool temp = SAFE_DRAWING;
-        SAFE_DRAWING = false;
+        // bool temp = SafeToDraw;
+        // SafeToDraw = false;
         for (int i=0; i<Nray; i++) {
             a -= delta;
 
@@ -1174,16 +1174,20 @@ void Enemy::update() {
                 }
             }
         }
-        SAFE_DRAWING = temp;
+        // SafeToDraw = temp;
 
         intersUpdated = true;
     }
 
-    if (count_found_player > Nray*0.1) see_player = true;
+    if (count_found_player > Nray*0.15) see_player = true;
+    if (shocktick!=0) {
+        see_player = true;
+        shocktick = 0;
+    }
+    if (see_player || (!behaviour.currentway.empty() && behaviour.selfway.size()!=0) || shocktick!=0 || !firstUpdate) behaviour.update(this);
 
-    
-    if (see_player || (!behaviour.currentway.empty() && behaviour.selfway.size()!=0) || shocktick!=0) behaviour.update(this);
-    
+    if (!firstUpdate) firstUpdate = true;
+
     if (see_player) {
         selfColor = {200, 50, 50, 250};
         viewColor = {170,50,50,180};

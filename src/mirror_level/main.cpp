@@ -112,7 +112,6 @@ int main(int argc, char** argv) {
         SAFE_DRAWING = true;
         updateLatency = 0;
         do {
-            WaitTime(dt - updateLatency);
             
             time_point from = steady_clock::now();
             PollInputEvents();
@@ -122,6 +121,7 @@ int main(int argc, char** argv) {
             updateLatency = (double)duration_cast<milliseconds>(to-from).count() /1000.f;
             if (dt - updateLatency < 0) updateLatency = dt;
 
+            WaitTime(dt - updateLatency);
             // cout << dt << "\t" << updateLatency << "\t"  << dt-updateLatency << endl;
         } while (!STOP);
     });
@@ -401,7 +401,7 @@ void default_level() {
     en->viewAround = p->viewAround*0.75;
     en->viewLength = p->viewLength*0.75;
     en->stepsize = 8;
-    en->speed = 1.5;
+    en->speed = 1;
     ADD_OBJ(en);
 
     it = NEW(Pistol) Pistol({0,0}, {2*Point({10,-5}), 2*Point({-10,-5}), 2*Point({10,5}), 2*Point({-10,5})}, false);
@@ -413,7 +413,7 @@ void default_level() {
     en->viewAround = p->viewAround*0.75;
     en->viewLength = p->viewLength*0.75;
     en->stepsize = 8;
-    en->speed = 1.5;
+    en->speed = 1;
     en->direction = {1/sqrtf(2), -1/sqrtf(2)};
     ADD_OBJ(en);
 
@@ -429,7 +429,7 @@ void default_level() {
     en->viewAround = p->viewAround*0.75;
     en->viewLength = p->viewLength*0.75;
     en->stepsize = 8;
-    en->speed = 1.5;
+    en->speed = 1;
     ADD_OBJ(en);
 
     it = NEW(Pistol) Pistol({0,0}, {2*Point({10,-5}), 2*Point({-10,-5}), 2*Point({10,5}), 2*Point({-10,5})}, false);
@@ -442,7 +442,7 @@ void default_level() {
     en->viewAround = p->viewAround*0.75;
     en->viewLength = p->viewLength*0.75;
     en->stepsize = 8;
-    en->speed = 1.5;
+    en->speed = 1;
     ADD_OBJ(en);
 
     

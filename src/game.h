@@ -49,6 +49,7 @@ public:
     bool reflects;
     Vector2 normal;
     int raycount;
+    bool SafeToDraw = true;
 
     Object() {}
     virtual ~Object() {};
@@ -309,7 +310,7 @@ public:
     Color viewAroundColor = {110,110,110,100};
     float stepsize = 2;
     float hview = 30;
-    static const int Nray = 150;
+    static const int Nray = 100;
     static const int Nrayback = 60;
     float delta = 2*hview/Nray;
     float deltaback = (360-2*hview+5)/Nrayback;
@@ -378,6 +379,8 @@ public:
     bool intersUpdated = false;
     size_t maxlen;
 
+    bool firstUpdate = false;
+
     Point target;
     bool chase_target=false;
     bool turn_target=false;
@@ -393,7 +396,7 @@ public:
     float punchsizeProcent = 0.65;
 
     bool shocked = false;
-    int shocktick = 1;
+    int shocktick = 0;
     float shockdurancy = 0.8;
 
 
