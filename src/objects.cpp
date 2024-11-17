@@ -1155,11 +1155,13 @@ void Enemy::update() {
     int count_found_player = 0;
     see_player = false;
 
-    if (!intersUpdated || distance(position, gamestate.currentLevel.player->position) < gamestate.currentLevel.player->viewLength) {
+    if (!intersUpdated || distance(position, gamestate.currentLevel.player->position) < gamestate.currentLevel.player->viewLength
+        || raycount > 1) {
 
-        // bool temp = SafeToDraw;
-        // SafeToDraw = false;
+        // bool temp = SAFE_DRAWING;
+        // SAFE_DRAWING = false;
         for (int i=0; i<Nray; i++) {
+            if (STOP || RELOAD) break;
             a -= delta;
 
             raycastLimitedReflections(inters[i], position, a, stepsize, this, this, viewLength);
@@ -1172,8 +1174,8 @@ void Enemy::update() {
                 }
             }
         }
-        // SafeToDraw = temp;
-
+        // SAFE_DRAWING = temp;
+        
         intersUpdated = true;
     }
 

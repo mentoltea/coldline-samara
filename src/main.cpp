@@ -122,6 +122,7 @@ int main(int argc, char** argv) {
         using namespace std::chrono;
         SAFE_DRAWING = true;
         updateLatency = 0;
+        int NSD_ticks = 0;
         do {
             
             time_point from = steady_clock::now();
@@ -133,6 +134,13 @@ int main(int argc, char** argv) {
             updateLatency = (double)duration_cast<microseconds>(to-from).count() /1000000.f;
             if (dt - updateLatency < 0) updateLatency = dt;
 
+            if (!SAFE_DRAWING) {
+                NSD_ticks++;
+                if (NSD_ticks == 3) {
+                    SAFE_DRAWING = true;
+                    NSD_ticks = 0;
+                }
+            }
             WaitTime(dt - updateLatency);
             // cout << dt << "\t" << updateLatency << "\t"  << dt-updateLatency << endl;
         } while (!STOP);
@@ -169,8 +177,10 @@ int main(int argc, char** argv) {
             // RELOAD = true;
             // bool temp = gamestate.pause; 
             gamestate.pause = true;
+            RELOAD = true;
             WaitTime(4*dt);
             ReloadLevel(); 
+            RELOAD = false;
             gamestate.pause = false;
         }
         
