@@ -438,17 +438,21 @@ void draw() {
     DrawRectangleV(projectToCamera({0,0}), {gamestate.currentLevel.MapXf, gamestate.currentLevel.MapYf}, {25,25,25,255});
     if (gamestate.currentLevel.player) {
         gamestate.currentLevel.player->draw();
+        // std::cout << "player" << std::endl;
     }
-
+    // std::cout << "not player" << std::endl;
     for (auto it=gamestate.currentLevel.projects.begin(); it!=gamestate.currentLevel.projects.end(); it++) {
         if (!(*it)->finished && (*it)->visible) (*it)->draw();
     }
     
     for (auto it=gamestate.currentLevel.objects.begin(); it!=gamestate.currentLevel.objects.end(); it++) {
         if ((*it)==gamestate.currentLevel.player) continue;
+        // std::cout << (*it) << std::endl;
+        // std::cout << (*it)->type << " ";
         if ((*it)->visible) {
             (*it)->draw();
         }
+        // std::cout << "object" << std::endl;
     }
 
     for (auto it = gamestate.currentLevel.effects.begin(); it != gamestate.currentLevel.effects.end(); it++) {

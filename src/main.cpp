@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
     }
 
     ReloadLevel();
-            
+    
     // 2----1
     // |    |
     // 4----3
@@ -127,6 +127,7 @@ int main(int argc, char** argv) {
             time_point from = steady_clock::now();
             PollInputEvents();
             if (!gamestate.pause) update();
+            // cout << "here" << endl;
             time_point to = steady_clock::now();
             
             updateLatency = (double)duration_cast<microseconds>(to-from).count() /1000000.f;
@@ -181,6 +182,7 @@ int main(int argc, char** argv) {
         // ClearBackground(BLACK);
         // if (!gamestate.pause) update();
         if (SAFE_DRAWING) {
+            // cout << "there" << endl;
             draw();
             DrawFPS(0,0);
             {

@@ -191,7 +191,7 @@ int main(int argc, char** argv) {
     CloseWindow();
     MemManager::page_info(0);
 
-    // SaveLevel(gamestate.levelReference, "levels/l1.lvl");
+    SaveLevel(gamestate.levelReference, "levels/mirrors.lvl");
 
     gamestate.currentLevel.clear();
     UnloadLevel(gamestate.levelReference);

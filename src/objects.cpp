@@ -21,6 +21,7 @@ Firearm::Firearm(Point position, Poly body, bool onFloor) {
     this->body = body;
     visible = onFloor;
     subgentype = FIREARM;
+    selftexture = NULL;
 }
 Firearm::~Firearm() = default;
 void Firearm::drawA(unsigned char alfa) {
@@ -31,6 +32,7 @@ void Firearm::drawA(unsigned char alfa) {
     Point p3 = projectToCamera( position + body.p3 );
     Point p4 = projectToCamera( position + body.p4 );
 
+
     if (selftexture) {
         DrawTexturePro(*selftexture, 
             {.x=0, .y=0, .width=(float)selftexture->width, .height=(float)selftexture->height},
@@ -40,17 +42,13 @@ void Firearm::drawA(unsigned char alfa) {
             RAYWHITE);
     }
     else {
+        // std::cout << "2" << std::endl;
         DrawTriangle(p1, p2, p3, selfcolor );
         DrawTriangle(p3, p2, p4, selfcolor );
     }
 }
 void Firearm::draw() {
     if (onFloor) {
-        // std::cout << "draw" << std::endl;
-        // int max = 255;
-        // int base = 60;
-        // float rate = 20;
-        // int a = base + rate*(float)raycount/(float)(Player::Nray + Player::Nrayback/2) * (max-base);
         drawA((unsigned char) (200));
     }
     raycount = 0;
@@ -110,7 +108,7 @@ Pistol::Pistol(Point position, Poly body, bool onFloor): Firearm(position, body,
     extrarounds = 35;
     bulletsize = 3;
     delay = 0.5;
-    maxdeclining = 4;
+    maxdeclining = 6;
     usageDistance = 480;
     type = PISTOL;
     selfcolor = {80, 140, 190, 250};
@@ -124,7 +122,7 @@ Rifle::Rifle(Point position, Poly body, bool onFloor): Firearm(position, body, o
     extrarounds = 90;
     bulletsize = 2;
     delay = 0.1;
-    maxdeclining = 3;
+    maxdeclining = 9;
     usageDistance = 630;
     type = RIFLE;
     selfcolor = {140, 100, 130, 250};

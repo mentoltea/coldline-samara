@@ -41,9 +41,18 @@ bool InitializeObject(Object* obj) {
     }
     break;
 
-    VTABLECASECAST(PISTOL, Pistol, obj) {} break;
-    VTABLECASECAST(RIFLE, Rifle, obj) {} break;
-    VTABLECASECAST(SHOTGUN, Shotgun, obj) {} break;
+    VTABLECASECAST(PISTOL, Pistol, obj) {
+        Pistol* p = (Pistol*)obj;
+        p->selftexture = TM::GetT(TM::TPistol);
+    } break;
+    VTABLECASECAST(RIFLE, Rifle, obj) {
+        Rifle* p = (Rifle*)obj;
+        p->selftexture = TM::GetT(TM::TRifle);
+    } break;
+    VTABLECASECAST(SHOTGUN, Shotgun, obj) {
+        Shotgun* p = (Shotgun*)obj;
+        p->selftexture = TM::GetT(TM::TShotgun);
+    } break;
 
     default:
         std::cerr << "ERROR [READ]: Cannot figure out how to initialize the object " << obj->type << std::endl;
