@@ -407,6 +407,7 @@ public:
     void drawA(unsigned char alfa);
     void drawView(unsigned char alfa);
     void draw() override;
+    void makemove();
     void update() override;
     bool intersects(const Point& p) override;
     void raycallback(Object* obj, float dist) override;

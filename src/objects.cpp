@@ -255,7 +255,8 @@ void Punch::update() {
                 if (en->hp<=0) {
                     en->projectilecallback(this);
                 }
-                en->position = en->position - (position - en->position)*2/3;
+                // en->position = en->position - (position - en->position)*2/3;
+                en->move = en->move - (position - en->position)*2/3;
                 if (en->type==ENEMY) {
                     ((Enemy*)en)->shocked = true;
                     ((Enemy*)en)->shocktick = 0;
@@ -1130,6 +1131,23 @@ void Enemy::draw()  {
     drawA((unsigned char) (a > max ? max : a));
     raycount = 0;
 }
+
+void Enemy::makemove() {
+    Object* collision;
+    position.x += move.x * speed;
+    if ((collision= collideCircle(this, position, hitCircleSize, move))) {
+        if (collision->gentype == OBTACLE) move.x *= 1.1; 
+        position.x -= move.x * speed;
+    }
+    
+    position.y += move.y * speed;
+
+    if ((collision= collideCircle(this, position, hitCircleSize, move))) {
+        if (collision->gentype == OBTACLE) move.y *= 1.1;
+        position.y -= move.y * speed;
+    }
+    move = {0,0};
+}
 void Enemy::update() {
     if (!alive) {
         selfColor = GRAY;
@@ -1146,7 +1164,7 @@ void Enemy::update() {
         shocktick++;
         selfColor = {70,70,70, 200};
         viewColor = {50,50,50, 150};
-        move = {0,0};
+        makemove();
         return;
     }
     
@@ -1241,19 +1259,7 @@ void Enemy::update() {
     angle = angleRad*180/PI;
     
     
-    Object* collision;
-    position.x += move.x * speed;
-    if ((collision= collideCircle(this, position, hitCircleSize, move))) {
-        if (collision->gentype == OBTACLE) move.x *= 1.1; 
-        position.x -= move.x * speed;
-    }
-    
-    position.y += move.y * speed;
-
-    if ((collision= collideCircle(this, position, hitCircleSize, move))) {
-        if (collision->gentype == OBTACLE) move.y *= 1.1;
-        position.y -= move.y * speed;
-    }
+    makemove();
 
     p1 = {position.x + size * cosf(angleRad - dirSizeAngle), position.y + size * sinf(angleRad - dirSizeAngle)};
     p2 = {position.x + size * cosf(angleRad + dirSizeAngle), position.y + size * sinf(angleRad + dirSizeAngle)};
@@ -1296,10 +1302,6 @@ void Enemy::update() {
         }
     }
     if (!punching && punchtick <= punchcooldown*TICK) punchtick++;
-
-
-
-    move = {0,0};
 }
 bool Enemy::intersects(const Point& p)  {
     return CheckCollisionPointTriangle(p, p1, p2, p3) || CheckCollisionPointTriangle(p, p3, p2, p4);
