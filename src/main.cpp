@@ -191,6 +191,7 @@ int main(int argc, char** argv) {
                 // cout << "before" << endl;
                 update();
                 // cout << "after" << endl;
+                SAFE_DRAWING = true;
             }
             // cout << "here" << endl;
             time_point to = steady_clock::now();
@@ -198,13 +199,6 @@ int main(int argc, char** argv) {
             updateLatency = (double)duration_cast<microseconds>(to-from).count() /1000000.f;
             if (dt - updateLatency < 0) updateLatency = dt;
 
-            if (!SAFE_DRAWING) {
-                NSD_ticks++;
-                if (NSD_ticks == 3) {
-                    SAFE_DRAWING = true;
-                    NSD_ticks = 0;
-                }
-            }
             tk++;
             WaitTime(dt - updateLatency);
             // cout << dt << "\t" << updateLatency << "\t"  << dt-updateLatency << endl;
@@ -372,9 +366,11 @@ int main(int argc, char** argv) {
                     continue;
                 }
 
-                if (IsKeyPressed(KEY_N) && gamestate.levelComplete) {
+                // if (IsKeyPressed(KEY_N) && gamestate.levelComplete) {
+                if (IsKeyPressed(KEY_N)) {
                     gamestate.pause = true;
                     RELOAD = true;
+                    SAFE_DRAWING = false;
                     WaitTime(4*dt);
 
                     UDLevel();
