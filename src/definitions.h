@@ -133,10 +133,6 @@ typedef struct CheatFlags {
 
 struct ConnectedPoint: public Point {
     std::vector<int > connections; // indexes in MapPoints 
-    // ConnectedPoint(float x, float y) {
-    //     this->x = x;
-    //     this->y = y;
-    // }
 };
 
 struct Level {

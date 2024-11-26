@@ -75,8 +75,9 @@ bool LevelStateUpdate(int idx){
     else {
         gamestate.levelIdx = idx;
         do {
-            std::cout << "Loading level " << gamestate.levelIdx << ": " << gamestate.fileLevels[gamestate.levelIdx] << std::endl;
+            std::cout << "Loading level " << gamestate.levelIdx+1 << ": " << gamestate.fileLevels[gamestate.levelIdx] << std::endl;
             gamestate.levelReference = LoadLevel( gamestate.fileLevels[gamestate.levelIdx] );
+            std::cout << "Level loaded with status " << gamestate.levelReference.errorFlag << std::endl;
             gamestate.levelIdx++;
         } while (gamestate.levelReference.errorFlag && gamestate.levelIdx < (int)gamestate.fileLevels.size());
         if (gamestate.levelReference.errorFlag) {
@@ -217,13 +218,13 @@ int main(int argc, char** argv) {
         std::string("QUIT"), GREEN, GRAY);
     MainMenuUI.push_back(&q);
 
-    UI::Button d((Vector2){0.7,0.3}, (Vector2){0.25,0.12},
-        [] (int click) {
-            UDLevel();
-            if (LevelStateUpdate(-1)) {ReloadLevel(); gamestate.gamestep = GAME;}
-        },
-        std::string("DEFAULT\n\n\nLEVEL"), GREEN, GRAY);
-    MainMenuUI.push_back(&d);
+    // UI::Button d((Vector2){0.7,0.3}, (Vector2){0.25,0.12},
+    //     [] (int click) {
+    //         UDLevel();
+    //         if (LevelStateUpdate(-1)) {ReloadLevel(); gamestate.gamestep = GAME;}
+    //     },
+    //     std::string("DEFAULT\n\n\nLEVEL"), GREEN, GRAY);
+    // MainMenuUI.push_back(&d);
 
 
     UI::Button bp = UI::Button((Vector2){0.15,0.05}, (Vector2){0.05,0.05},
@@ -256,7 +257,7 @@ int main(int argc, char** argv) {
         switch (gamestate.gamestep) {
             case MAIN_MENU: {
                 if (updateThreadRunning) {
-                    MemManager::page_info(0);
+                    // MemManager::page_info(0);
                     STOP = true;
                     WaitTime(0.05);
                     if (updateThread.joinable()) updateThread.join();
@@ -273,7 +274,7 @@ int main(int argc, char** argv) {
                     clickpoint.x /= gamestate.WinX;
                     clickpoint.y /= gamestate.WinY;
                 }
-
+                
                 BeginDrawing();
                 ClearBackground({25,25,25,150});
                 for (auto elem: MainMenuUI) {
@@ -294,18 +295,21 @@ int main(int argc, char** argv) {
                         if ((clickpoint.x >= but.position.x && clickpoint.x <= but.position.x + but.box.x)
                         && (clickpoint.y >= but.position.y && clickpoint.y <= but.position.y + but.box.y)) {
                             but.click();
-                            if (LevelStateUpdate(listidx + currentpage*onpagecount)) {
-                                ReloadLevel();
-                                gamestate.gamestep = GAME;
-                            }
+                            // std::thread LoadThread( [&]() {
+                                if (LevelStateUpdate(listidx + currentpage*onpagecount)) {
+                                    ReloadLevel();
+                                    gamestate.gamestep = GAME;
+                                    
+                                }
+                            // });
                         }
                     }
                     but.draw(gamestate.WinX, gamestate.WinY);
                     listidx++;
                 }
                 char textbuff[16];
-                snprintf(textbuff, 16, "Page %d", currentpage);
-                DrawText(textbuff, gamestate.WinX*0.1, gamestate.WinY*0.05, 15, GREEN);
+                snprintf(textbuff, 16, "Page %d/%d", currentpage+1, (int)((gamestate.fileLevels.size()-1)/onpagecount + 1));
+                DrawText(textbuff, gamestate.WinX*0.06, gamestate.WinY*0.05, 22, GREEN);
 
                 EndDrawing();
             } break;
@@ -314,11 +318,11 @@ int main(int argc, char** argv) {
                     STOP = false;
                     SAFE_DRAWING = false;
                     gamestate.pause = false;
+                    // EndDrawing();
                     updateThread = std::thread(updateFunc);
-                    WaitTime(0.15);
+                    // WaitTime(0.15);
                     updateThreadRunning = true;
                 }
-
                 if (IsWindowResized()) {
                     gamestate.WinX = GetScreenWidth();
                     gamestate.WinY = GetScreenHeight();
@@ -373,7 +377,6 @@ int main(int argc, char** argv) {
                         continue;
                     }
                 }
-
                 BeginDrawing();
 
                 if (SAFE_DRAWING) {
@@ -444,7 +447,7 @@ int main(int argc, char** argv) {
 
 
 void default_level() {
-    gamestate.levelReference.destroy();
+    // gamestate.levelReference.destroy();
     gamestate.levelReference.errorFlag = false;
     gamestate.levelReference.MapX = 1000;
     gamestate.levelReference.MapY = 800;

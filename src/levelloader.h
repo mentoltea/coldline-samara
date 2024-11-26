@@ -20,6 +20,8 @@ void DestroyLevel(Level& level);
 
 void UDLevel();
 
+void UULevel();
+
 void ReloadLevel();
 
 #endif

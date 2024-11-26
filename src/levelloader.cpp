@@ -272,11 +272,25 @@ void DestroyLevel(Level& level) {
 }
 
 void UDLevel() {
+    std::cout << "Unloading " << gamestate.levelReference.name << std::endl;
     UnloadLevel(gamestate.currentLevel);
+    // DestroyLevel(gamestate.currentLevel);
     DestroyLevel(gamestate.levelReference);
+    std::cout << "Unloaded " << gamestate.levelReference.name << std::endl << std::endl;
+}
+
+void UULevel() {
+    std::cout << "Unloading " << gamestate.levelReference.name << std::endl;
+    UnloadLevel(gamestate.currentLevel);
+    // DestroyLevel(gamestate.currentLevel);
+    UnloadLevel(gamestate.levelReference);
+    std::cout << "Unloaded " << gamestate.levelReference.name << std::endl << std::endl;
 }
 
 void ReloadLevel() {
+    std::cout << "Reloading " << gamestate.levelReference.name << std::endl;
+    // std::cout << gamestate.levelReference.objects.size() << std::endl;
     gamestate.currentLevel = gamestate.levelReference;
     gamestate.levelComplete = false;
+    std::cout << "Reloaded " << gamestate.levelReference.name << std::endl;
 }
