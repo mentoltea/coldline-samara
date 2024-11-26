@@ -182,7 +182,7 @@ int main(int argc, char** argv) {
         using namespace std::chrono;
         SAFE_DRAWING = true;
         updateLatency = 0;
-        int NSD_ticks = 0;
+        // int NSD_ticks = 0;
         int tk = 0;
         do {
             time_point from = steady_clock::now();
