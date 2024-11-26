@@ -23,19 +23,20 @@ size_t ObjectSize(Object* obj) {
 
 #define CopyCaseDereferenceCast(Tenum, T, TO, FROM) case Tenum:\
     *(size_t*)TO = *(size_t*)& MacroExample(T);\
-    *(T*)(TO) = *(T*)(FROM);
+    T temp = *(T*) (FROM);\
+    *(T*)(TO) = temp;
 
 void CopyObject(Object* to, Object* from) {
     switch (from->type){
-    CopyCaseDereferenceCast(WALL, Wall, to, from); break;
-    CopyCaseDereferenceCast(TEXTSEGMENT, TextSegment, to, from); break;
-    CopyCaseDereferenceCast(MIRROR, Mirror, to, from); break;
-    CopyCaseDereferenceCast(DOOR, Door, to, from); break;
-    CopyCaseDereferenceCast(PLAYER, Player, to, from);break;
-    CopyCaseDereferenceCast(ENEMY, Enemy, to, from); break;
-    CopyCaseDereferenceCast(PISTOL, Pistol, to, from); break;
-    CopyCaseDereferenceCast(RIFLE, Rifle, to, from); break;
-    CopyCaseDereferenceCast(SHOTGUN, Shotgun, to, from); break;
+    {CopyCaseDereferenceCast(WALL, Wall, to, from); break;}
+    {CopyCaseDereferenceCast(TEXTSEGMENT, TextSegment, to, from); break;}
+    {CopyCaseDereferenceCast(MIRROR, Mirror, to, from); break;}
+    {CopyCaseDereferenceCast(DOOR, Door, to, from); break;}
+    {CopyCaseDereferenceCast(PLAYER, Player, to, from);break;}
+    {CopyCaseDereferenceCast(ENEMY, Enemy, to, from); break;}
+    {CopyCaseDereferenceCast(PISTOL, Pistol, to, from); break;}
+    {CopyCaseDereferenceCast(RIFLE, Rifle, to, from); break;}
+    {CopyCaseDereferenceCast(SHOTGUN, Shotgun, to, from); break;}
 
     default:
         fprintf(stderr, "COPY ERROR : unknown type.\n");
@@ -84,6 +85,8 @@ Level& Level::operator=(const Level& other) {
         // std::cout << "for start" << std::endl;
         for (auto it = other.objects.cbegin(); it != other.objects.end(); it++) {
             Object* temp = (Object*)MemManager::memloc(ObjectSize(*it));
+            Cstd::memset(temp, 0, ObjectSize(*it));
+            // std::cout << "t: " << (*it)->type << std::endl;
             // memcpy((void*)temp, *it, ObjectSize(*it));
             CopyObject(temp, *it);
             objects.push_back(temp);

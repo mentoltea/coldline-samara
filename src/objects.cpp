@@ -691,7 +691,6 @@ Player::Player(Point pos, Vector2 size): inters(Nray), intersBack(Nrayback) {
 }
 Player::~Player() = default;
 
-
 void Player::drawViewAround() {
     float a = angle - hview + 4;
     for (int i=0; i<Nrayback; i++) {
@@ -1195,7 +1194,10 @@ void Enemy::update() {
         intersUpdated = true;
     }
 
-    if (count_found_player > Nray*0.15) see_player = true;
+    if (behaviour.warned) procent_found = default_procent_found/3;
+    else procent_found = default_procent_found;
+
+    if (count_found_player > Nray*procent_found) see_player = true;
     if (shocktick!=0) {
         see_player = true;
         shocktick = 0;

@@ -91,8 +91,8 @@ bool LevelStateUpdate(int idx){
 };
 
 bool LoadNextLevel() {
-    if (gamestate.levelIdx<0) gamestate.levelIdx = 0;
-    if (LevelStateUpdate(gamestate.levelIdx)){ 
+    if (gamestate.levelIdx<0) {gamestate.levelIdx = 0;}
+    else if (gamestate.levelIdx < (int)gamestate.fileLevels.size() && LevelStateUpdate(gamestate.levelIdx)){ 
         if (!gamestate.fileLevels.empty() && gamestate.levelIdx > 0) {
             gamestate.levelIdx = gamestate.levelIdx % gamestate.fileLevels.size();
         }
@@ -188,7 +188,9 @@ int main(int argc, char** argv) {
             time_point from = steady_clock::now();
             if (!gamestate.pause) {
                 PollInputEvents();
+                // cout << "before" << endl;
                 update();
+                // cout << "after" << endl;
             }
             // cout << "here" << endl;
             time_point to = steady_clock::now();
@@ -218,13 +220,13 @@ int main(int argc, char** argv) {
         std::string("QUIT"), GREEN, GRAY);
     MainMenuUI.push_back(&q);
 
-    // UI::Button d((Vector2){0.7,0.3}, (Vector2){0.25,0.12},
-    //     [] (int click) {
-    //         UDLevel();
-    //         if (LevelStateUpdate(-1)) {ReloadLevel(); gamestate.gamestep = GAME;}
-    //     },
-    //     std::string("DEFAULT\n\n\nLEVEL"), GREEN, GRAY);
-    // MainMenuUI.push_back(&d);
+    UI::Button d((Vector2){0.7,0.3}, (Vector2){0.25,0.12},
+        [] (int click) {
+            UDLevel();
+            if (LevelStateUpdate(-1)) {ReloadLevel(); gamestate.gamestep = GAME;}
+        },
+        std::string("DEFAULT\n\n\nLEVEL"), GREEN, GRAY);
+    MainMenuUI.push_back(&d);
 
 
     UI::Button bp = UI::Button((Vector2){0.15,0.05}, (Vector2){0.05,0.05},
@@ -343,9 +345,10 @@ int main(int argc, char** argv) {
                 if ((IsKeyPressed(KEY_R) || RELOAD) && !gamestate.pause) {
                     gamestate.pause = true;
                     RELOAD = true;
-                    WaitTime(4*dt);
+                    WaitTime(2*dt);
                     ReloadLevel(); 
                     RELOAD = false;
+                    SAFE_DRAWING = false;
                     gamestate.pause = false;
                 }
                 
@@ -389,7 +392,6 @@ int main(int argc, char** argv) {
                 BeginDrawing();
 
                 if (SAFE_DRAWING) {
-
                     draw();
                     DrawFPS(0,0);
                     {
@@ -427,6 +429,7 @@ int main(int argc, char** argv) {
                     }
                 }
 
+                
                 EndDrawing();
             } break;
         }
@@ -456,7 +459,7 @@ int main(int argc, char** argv) {
 
 
 void default_level() {
-    // gamestate.levelReference.destroy();
+    gamestate.levelReference.clear();
     gamestate.levelReference.errorFlag = false;
     gamestate.levelReference.MapX = 1000;
     gamestate.levelReference.MapY = 800;

@@ -381,6 +381,8 @@ public:
     float delta = 2*hview/Nray;
     bool intersUpdated = false;
     size_t maxlen;
+    float default_procent_found = 0.15;
+    float procent_found = 0.15;
 
     bool firstUpdate = false;
 

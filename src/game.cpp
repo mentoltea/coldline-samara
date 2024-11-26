@@ -489,6 +489,7 @@ void draw() {
             if (it->reloading) {
                 DrawText("RELOADING", gamestate.WinX - 180, gamestate.WinY-100, 30, GREEN);
             }
+            // std::cout << linesize << std::endl;
             break;
         }
         

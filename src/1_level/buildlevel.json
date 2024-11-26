@@ -1,0 +1,109 @@
+{
+    "compiler" : "g++",
+    "linker" : "g++",
+    "format" : ".cpp",
+    "indir" : "src/",
+    "outdir" : "binlevels/1_level/",
+    "targetdir" : "build/",
+    "target" : "1_level.exe",
+    "cflags" : "-c -Wall -O0",
+    "libs" : "-lraylibdll -lwinmm -lgdi32 -lm",
+    "cpp_source" : [
+        {
+            "compiler" : "gcc",
+            "name" : "memmanager",
+            "format" : ".c",
+            "dependencies" : [
+                "src/memmanager.h"
+            ]    
+        },
+        {
+            "compiler" : "gcc",
+            "name" : "vector",
+            "format" : ".c",
+            "dependencies" : [
+                "src/vector.h"
+            ]    
+        },
+        {
+            "compiler" : "gcc",
+            "name" : "json",
+            "format" : ".c",
+            "dependencies" : [
+                "src/json.h"
+            ]    
+        },
+        {
+            "name" : "texturemanager",
+            "dependencies" : [
+                "src/texturemanager.h",
+                "src/MManager.hpp"
+            ]    
+        },
+        {
+            "name" : "levelmanager",
+            "dependencies" : [
+                "src/definitions.h",
+                "src/game.h",
+                "src/effects.h",
+                "src/MManager.hpp"
+            ]    
+        },
+        {
+            "name" : "1_level/main",
+            "dependencies" : [
+                "src/game.h",
+                "src/definitions.h",
+                "src/MManager.hpp",
+                "src/texturemanager.h"
+            ]
+        },
+        {
+            "name" : "game",
+            "dependencies" : [
+                "src/game.h",
+                "src/definitions.h",
+                "src/effects.h",
+                "src/MManager.hpp",
+                "src/texturemanager.h"
+            ]    
+        },
+        {
+            "name" : "effects",
+            "dependencies" : [
+                "src/game.h",
+                "src/effects.h",
+                "src/definitions.h",
+                "src/MManager.hpp"
+            ]    
+        },
+        {
+            "name" : "gamedefs",
+            "dependencies" : [
+                "src/game.h",
+                "src/definitions.h",
+                "src/MManager.hpp"
+            ]    
+        },
+        {
+            "name" : "objects",
+            "dependencies" : [
+                "src/game.h",
+                "src/definitions.h",
+                "src/effects.h",
+                "src/MManager.hpp",
+                "src/texturemanager.h"
+            ]    
+        },
+        {
+            "name" : "levelloader",
+            "dependencies" : [
+                "src/levelloader.h",
+                "src/game.h",
+                "src/definitions.h",
+                "src/MManager.hpp",
+                "src/texturemanager.h"
+            ]    
+        }
+    ]
+}
