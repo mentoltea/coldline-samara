@@ -275,6 +275,15 @@ int main(int argc, char** argv) {
                     clickpoint.y /= gamestate.WinY;
                 }
                 
+                if (IsKeyDown(KEY_D) && IsKeyDown(KEY_L) && IsKeyDown(KEY_T)) {
+                    UDLevel();
+                    if (LevelStateUpdate(-1)) {
+                        ReloadLevel();
+                        gamestate.gamestep = GAME;
+                        continue;
+                    }
+                }
+
                 BeginDrawing();
                 ClearBackground({25,25,25,150});
                 for (auto elem: MainMenuUI) {

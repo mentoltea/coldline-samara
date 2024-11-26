@@ -70,7 +70,7 @@ Level::~Level() {
 
 Level& Level::operator=(const Level& other) {
     if (this != &other) {
-        std::cout << 1 << std::endl;
+        // std::cout << 1 << std::endl;
         // MemManager::page_info(0);
         clear();
         errorFlag = other.errorFlag;
@@ -80,7 +80,7 @@ Level& Level::operator=(const Level& other) {
         MapXf = other.MapXf;
         MapYf = other.MapYf;
         cheats = other.cheats;
-        std::cout << 2 << std::endl;
+        // std::cout << 2 << std::endl;
         // std::cout << "for start" << std::endl;
         for (auto it = other.objects.cbegin(); it != other.objects.end(); it++) {
             Object* temp = (Object*)MemManager::memloc(ObjectSize(*it));
@@ -89,10 +89,10 @@ Level& Level::operator=(const Level& other) {
             objects.push_back(temp);
             if (temp->type == PLAYER) player = (Player*) temp;
         }
-        std::cout << 3 << std::endl;
+        // std::cout << 3 << std::endl;
         MapPoints = other.MapPoints;
         // std::cout << "for end" << std::endl;
-        std::cout << 4 << std::endl;
+        // std::cout << 4 << std::endl;
         // std::cout << "became " << objects.size() << std::endl;
         // MemManager::page_info(0);
     }
