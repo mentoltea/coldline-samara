@@ -68,7 +68,8 @@ void Firearm::update() {
         }
         reloading_tick++;
     }
-    if (delay_tick>0) delay_tick--;
+    if (delay_tick<0) delay_tick=0;
+    else if (delay_tick>0) delay_tick--;
 }
 bool Firearm::usable() {
     return (rounds + extrarounds > 0);
@@ -121,6 +122,7 @@ Rifle::Rifle(Point position, Poly body, bool onFloor): Firearm(position, body, o
     maxrounds = 30;
     extrarounds = 90;
     bulletsize = 2;
+    delay_tick = 0;
     delay = 0.1;
     maxdeclining = 9;
     usageDistance = 630;

@@ -93,9 +93,9 @@ bool LevelStateUpdate(int idx){
 bool LoadNextLevel() {
     if (gamestate.levelIdx<0) {gamestate.levelIdx = 0;}
     else if (gamestate.levelIdx < (int)gamestate.fileLevels.size() && LevelStateUpdate(gamestate.levelIdx)){ 
-        if (!gamestate.fileLevels.empty() && gamestate.levelIdx > 0) {
-            gamestate.levelIdx = gamestate.levelIdx % gamestate.fileLevels.size();
-        }
+        // if (!gamestate.fileLevels.empty() && gamestate.levelIdx > 0) {
+        //     gamestate.levelIdx = gamestate.levelIdx % gamestate.fileLevels.size();
+        // }
         ReloadLevel();
         return true;
     }
@@ -456,6 +456,11 @@ int main(int argc, char** argv) {
 
 void default_level() {
     gamestate.levelReference.clear();
+    // gamestate.currentLevel.clear();
+
+    gamestate.levelReference = Level();
+    // gamestate.currentLevel = Level();
+
     gamestate.levelReference.errorFlag = false;
     gamestate.levelReference.MapX = 1000;
     gamestate.levelReference.MapY = 800;
@@ -553,7 +558,7 @@ void default_level() {
     {int idx = gamestate.levelReference.objects.size()-1;
     en->selfitem = idx;}
 
-    Shotgun* rif = NEW(Shotgun) Shotgun({600, 200}, {(Vector2){30,-15}, (Vector2){-30,-15}, (Vector2){30,15}, (Vector2){-30,15}}, true);
+    Rifle* rif = NEW(Rifle) Rifle({600, 200}, {(Vector2){30,-15}, (Vector2){-30,-15}, (Vector2){30,15}, (Vector2){-30,15}}, true);
     gamestate.levelReference.objects.push_back(rif);
 
     // en = NEW(Enemy) Enemy({600, 400}, {10, 20});
