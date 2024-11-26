@@ -105,6 +105,11 @@ bool FinishLoadObject(std::ifstream &fd, Object* obj) {
 Level LoadLevel(std::string filename) {
     Level level;
     std::ifstream fd(filename, std::ios::binary);
+    level.name = filename;
+    if (level.name.find('/') != std::string::npos) {
+        level.name = level.name.substr(level.name.find_last_of('/')+1);
+    }
+
 
     // Byte-to-byte
     FD_AUTOREAD(fd, level.MapX);
@@ -260,6 +265,15 @@ bool SaveLevel(Level& level, std::string filename) {
 
 void UnloadLevel(Level& level) {
     level.clear();
+}
+
+void DestroyLevel(Level& level) {
+    level.destroy();
+}
+
+void UDLevel() {
+    UnloadLevel(gamestate.currentLevel);
+    DestroyLevel(gamestate.levelReference);
 }
 
 void ReloadLevel() {

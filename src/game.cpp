@@ -462,16 +462,18 @@ void draw() {
 
 
     // Draw bot path graph
-    for (int i=0; i<(int)gamestate.currentLevel.MapPoints.size(); i++) {
-        // DrawCircleV(projectToCamera({40, 40}), 4, {255,0,0,255});
-        auto curr = gamestate.currentLevel.MapPoints[i];
-        DrawCircleV(projectToCamera(curr), 4, {0, 255, 0, 255});
-        for (auto it2 = curr.connections.begin(); it2 != curr.connections.end(); it2++) {
-            // std::cout << *it2 << std::endl;
-            DrawLineV(projectToCamera(curr), projectToCamera(gamestate.currentLevel.MapPoints[*it2]), {0, 200, 100, 250});
+    if (gamestate.currentLevel.cheats.see_MP) {
+        for (int i=0; i<(int)gamestate.currentLevel.MapPoints.size(); i++) {
+            // DrawCircleV(projectToCamera({40, 40}), 4, {255,0,0,255});
+            auto curr = gamestate.currentLevel.MapPoints[i];
+            DrawCircleV(projectToCamera(curr), 4, {0, 255, 0, 255});
+            for (auto it2 = curr.connections.begin(); it2 != curr.connections.end(); it2++) {
+                // std::cout << *it2 << std::endl;
+                DrawLineV(projectToCamera(curr), projectToCamera(gamestate.currentLevel.MapPoints[*it2]), {0, 200, 100, 250});
+            }
+            snprintf(buffer, 32, "%d", i);
+            DrawText(buffer, projectToCamera(curr).x+5, projectToCamera(curr).y+5, 25, {0, 150, 200, 250});
         }
-        snprintf(buffer, 32, "%d", i);
-        DrawText(buffer, projectToCamera(curr).x+5, projectToCamera(curr).y+5, 25, {0, 150, 200, 250});
     }
 
     if (gamestate.currentLevel.player && gamestate.currentLevel.player->selfitem!=-1) {
@@ -497,13 +499,16 @@ void draw() {
     if (gamestate.currentLevel.player && !gamestate.currentLevel.player->alive) {
         DrawText("RESTART - R", gamestate.WinXf/2 - 6*50, gamestate.WinYf/2 - 20, 80, GREEN);
     } 
-    // else if (gamestate.levelComplete) {
-    //     DrawText("LEVEL COMPLETED", gamestate.WinXf/2 - 7*50, gamestate.WinYf/2 - 40, 80, GREEN);
-    //     DrawText("NEXT LEVEL - N", gamestate.WinXf/2 - 6*50, gamestate.WinYf/2 + 20, 80, GREEN);
-    // }
+    else if (gamestate.levelComplete) {
+        DrawText("LEVEL COMPLETED", gamestate.WinXf/2 - 7*50, gamestate.WinYf/2 - 40, 80, GREEN);
+        DrawText("NEXT LEVEL - N", gamestate.WinXf/2 - 6*50, gamestate.WinYf/2 + 20, 80, GREEN);
+    }
     if (gamestate.pause) {
         DrawText("PAUSED", gamestate.WinX - 6*20 - 5, 0, 30, GREEN);
     }
+
+    DrawText(gamestate.currentLevel.name.c_str(), 10, gamestate.WinY-30, 20, RED);
+
     // std::cout << "d3" << std::endl;
 
     // EndDrawing();

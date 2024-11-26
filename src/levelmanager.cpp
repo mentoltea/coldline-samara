@@ -49,7 +49,7 @@ Level::Level() = default;
 
 Level::Level(const Level& other) {
     errorFlag = other.errorFlag;
-    maxDrawingDistance = other.maxDrawingDistance;
+    name = other.name;
     MapX = other.MapX;
     MapY = other.MapY;
     MapXf = other.MapXf;
@@ -70,9 +70,11 @@ Level::~Level() {
 
 Level& Level::operator=(const Level& other) {
     if (this != &other) {
+        // std::cout << "was " << objects.size() << " ";
+        // MemManager::page_info(0);
         clear();
         errorFlag = other.errorFlag;
-        maxDrawingDistance = other.maxDrawingDistance;
+        name = other.name;
         MapX = other.MapX;
         MapY = other.MapY;
         MapXf = other.MapXf;
@@ -88,15 +90,18 @@ Level& Level::operator=(const Level& other) {
         }
         // std::cout << "for end" << std::endl;
         MapPoints = other.MapPoints;
+        // std::cout << "became " << objects.size() << std::endl;
+        // MemManager::page_info(0);
     }
     return *this;
 }
 
 Level& Level::operator=(Level&& other) {
     if (this != &other) {
+        // std::cout << "was " << objects.size() << " ";
         clear();
         errorFlag = other.errorFlag;
-        maxDrawingDistance = other.maxDrawingDistance;
+        name = other.name;
         MapX = other.MapX;
         MapY = other.MapY;
         MapXf = other.MapXf;
@@ -114,6 +119,7 @@ Level& Level::operator=(Level&& other) {
         other.effects.clear();
         
         player = other.player;
+        // std::cout << "became " << objects.size() << std::endl;
     }
     return *this;
 }

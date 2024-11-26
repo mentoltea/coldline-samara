@@ -128,6 +128,7 @@ typedef struct IntersectInfo {
 
 typedef struct CheatFlags {
     bool invisible=false;
+    bool see_MP=false;
 } CheatFlags;
 
 struct ConnectedPoint: public Point {
@@ -141,13 +142,13 @@ struct ConnectedPoint: public Point {
 struct Level {
     // if level loaded badly
     bool errorFlag = false;
+    std::string name = "default";
+
 
     // Save&read as bytes
     int MapX, MapY;
     float MapXf, MapYf;
     CheatFlags cheats = {0};
-
-    float maxDrawingDistance = INFINITY;
 
     // Save&read specially
     std::vector<ConnectedPoint> MapPoints;
@@ -172,6 +173,10 @@ struct Level {
     std::stack<int> way(int fromIdx, int toIdx) const; // Next point on a way
 };
 
+typedef enum GameStep {
+    MAIN_MENU = 0,
+    GAME
+} GameStep;
 
 typedef struct GameState {
     size_t id_counter;
@@ -179,12 +184,13 @@ typedef struct GameState {
     int WinX, WinY;
     float WinXf, WinYf;
     int MAX_REFLECTIONS;
+    GameStep gamestep;
     Level currentLevel;
     Level levelReference;
     bool levelComplete;
     bool pause;
     std::vector<std::string> fileLevels;
-    size_t levelIdx;
+    int levelIdx;
     Point camera;
 } GameState;
 

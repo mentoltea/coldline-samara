@@ -688,7 +688,6 @@ Player::Player(Point pos, Vector2 size): inters(Nray), intersBack(Nrayback) {
     if(selfTexture) this->size = sqrtf((float)selfTexture->width*(float)selfTexture->width + (float)selfTexture->height*(float)selfTexture->height);
 
     stepsize = logf(gamestate.WinXf*gamestate.WinXf + gamestate.WinYf*gamestate.WinYf)/5;
-    std::cout << stepsize << std::endl;
 }
 Player::~Player() = default;
 
@@ -778,8 +777,8 @@ void Player::draw()  {
         dp2 = {drawPosition.x + size * cosf(angleRad + dirSizeAngle), drawPosition.y + size * sinf(angleRad + dirSizeAngle)};
         dp3 = {drawPosition.x + size * cosf(PI + angleRad + dirSizeAngle), drawPosition.y + size * sinf(PI + angleRad + dirSizeAngle)};
         dp4 = {drawPosition.x + size * cosf(PI + angleRad - dirSizeAngle), drawPosition.y + size * sinf(PI + angleRad - dirSizeAngle)};
-        DrawTriangle(dp2, dp1,  dp3, {100, 100, 200, 250});
-        DrawTriangle(dp3, dp4, dp2,  {100, 100, 200, 250});
+        DrawTriangle(dp2, dp1,  dp3, selfcolor);
+        DrawTriangle(dp3, dp4, dp2,  selfcolor);
         if (punching) {
             Point pp1 = (dp1+dp3)/2;
             Point pp2 = pp1 - (dp3-dp1);
@@ -790,8 +789,8 @@ void Player::draw()  {
             // DrawCircleV(pp2, 1, {255,0,0,255});
             // DrawCircleV(pp3, 1, {255,0,0,255});
             // DrawCircleV(pp4, 1, {255,0,0,255});
-            DrawTriangle(pp2, pp1, pp3, {100, 100, 200, 160});
-            DrawTriangle(pp4, pp3, pp1, {100, 100, 200, 160});
+            DrawTriangle(pp2, pp1, pp3, selfcolor);
+            DrawTriangle(pp4, pp3, pp1, selfcolor);
         }
     }
     else {
@@ -824,7 +823,7 @@ void Player::draw()  {
 }
 void Player::update()  {
     if (!alive) {
-        // selfColor = GRAY;
+        selfcolor = GRAY;
         collidable = false;
         opaque = true;
         return;
@@ -1037,7 +1036,6 @@ Enemy::Enemy(Point pos, Vector2 size, std::vector<int> way): inters(Nray), behav
     hp = 3;
     type = ENEMY;
     stepsize = logf(gamestate.WinXf*gamestate.WinXf + gamestate.WinYf*gamestate.WinYf)/5;
-    std::cout << stepsize << std::endl;
     intersUpdated = false;
     move={0,0};
 }

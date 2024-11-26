@@ -55,7 +55,8 @@
                 "src/game.h",
                 "src/definitions.h",
                 "src/MManager.hpp",
-                "src/texturemanager.h"
+                "src/texturemanager.h",
+                "src/ui.h"
             ]
         },
         {
@@ -66,6 +67,14 @@
                 "src/effects.h",
                 "src/MManager.hpp",
                 "src/texturemanager.h"
+            ]    
+        },
+        {
+            "name" : "ui",
+            "dependencies" : [
+                "src/ui.h",
+                "src/definitions.h",
+                "src/MManager.hpp"
             ]    
         },
         {

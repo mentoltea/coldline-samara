@@ -3,7 +3,9 @@
 
 #include "definitions.h"
 
+extern bool QUIT;
 extern bool STOP;
+extern bool MENU;
 extern bool RELOAD;
 extern bool SAFE_DRAWING;
 
@@ -304,6 +306,7 @@ public:
     float dirSizeAngle;
     float viewAround = 50;
     float viewLength = 800;
+    Color selfcolor = {100, 100, 200, 160};
     std::vector<IntersectInfo> inters;
     std::vector<IntersectInfo> intersBack;
     Color viewColor = {110,110,110,180};

@@ -16,6 +16,10 @@ bool SaveLevel(Level& level, std::string filename);
 
 void UnloadLevel(Level& level);
 
+void DestroyLevel(Level& level);
+
+void UDLevel();
+
 void ReloadLevel();
 
 #endif

@@ -74,6 +74,7 @@ GameState gamestate = {
     // .MapYf = (float)gamestate.MapY ,
     .MAX_REFLECTIONS = 10 ,
     // .Gplayer = NULL ,
+    .gamestep = MAIN_MENU,
     .levelComplete = false,
     .pause = false ,
     .levelIdx = 0,
@@ -95,6 +96,8 @@ Shotgun ExampleShotgun;
 
 int tickcount = 0;
 
+bool QUIT = false;
 bool STOP = false;
+bool MENU = false;
 bool RELOAD = false;
 bool SAFE_DRAWING = false;
