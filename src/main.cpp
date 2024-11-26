@@ -70,7 +70,6 @@ bool LevelStateUpdate(int idx){
         return true;
     }
     else if (idx >= (int)gamestate.fileLevels.size()) {
-        // std::cout << "Incorrect index" << std::endl;
         return false;
     }
     else {
@@ -93,7 +92,6 @@ bool LevelStateUpdate(int idx){
 bool LoadNextLevel() {
     if (gamestate.levelIdx<0) gamestate.levelIdx = 0;
     if (LevelStateUpdate(gamestate.levelIdx)){ 
-        // gamestate.gamestep = GAME;
         if (!gamestate.fileLevels.empty() && gamestate.levelIdx > 0) {
             gamestate.levelIdx = gamestate.levelIdx % gamestate.fileLevels.size();
         }
@@ -174,19 +172,10 @@ int main(int argc, char** argv) {
     TM::LoadT("assets/shotgun.png", TM::TShotgun);
     
     
-    
-    // ReloadLevel();
     // 2----1
     // |    |
     // 4----3
     MemManager::page_info(0);
-
-
-    char buffer[64] = {0};
-    int buffer_idx = 0;
-
-    
-    
 
     auto updateFunc = [&]() { 
         using namespace std::chrono;
@@ -196,25 +185,6 @@ int main(int argc, char** argv) {
         int tk = 0;
         do {
             time_point from = steady_clock::now();
-            
-            
-            // if (!clicked || tk%10==0) {
-            //     if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-            //         clicked = true;
-            //         clickpoint = GetMousePosition();
-            //     } else {
-            //         clicked = false;
-            //     }
-            // }
-            // for (auto elem: GameMenuUI) {
-            //     if (clicked) {
-            //         if ((clickpoint.x >= elem->position.x && clickpoint.x <= elem->position.x + elem->box.x)
-            //         && (clickpoint.y >= elem->position.y && clickpoint.y <= elem->position.y + elem->box.y)) {
-            //             elem->click();
-            //         }
-            //     }
-            // }
-    
             if (!gamestate.pause) {
                 PollInputEvents();
                 update();
@@ -249,8 +219,6 @@ int main(int argc, char** argv) {
 
     UI::Button d((Vector2){0.7,0.3}, (Vector2){0.25,0.12},
         [] (int click) {
-            // UnloadLevel(gamestate.currentLevel);
-            // UnloadLevel(gamestate.levelReference); 
             UDLevel();
             if (LevelStateUpdate(-1)) {ReloadLevel(); gamestate.gamestep = GAME;}
         },
@@ -358,21 +326,8 @@ int main(int argc, char** argv) {
                     gamestate.WinYf = gamestate.WinY;
                 }
 
-                buffer[buffer_idx] = GetCharPressed();
-                if (buffer[buffer_idx] > 32) {
-                    buffer_idx++;
-                    // cout << buffer << endl;
-                }
-                if (buffer_idx>=63) {
-                    memcpy(buffer, buffer+32, 31);
-                    buffer_idx = buffer_idx%63;
-                }
-
                 if (IsKeyPressed(KEY_ESCAPE)) gamestate.pause = !gamestate.pause;
                 if ((IsKeyPressed(KEY_R) || RELOAD) && !gamestate.pause) {
-                    // SAFE_DRAWING = false;
-                    // RELOAD = true;
-                    // bool temp = gamestate.pause; 
                     gamestate.pause = true;
                     RELOAD = true;
                     WaitTime(4*dt);
@@ -395,8 +350,7 @@ int main(int argc, char** argv) {
                     MENU = false;
                     gamestate.pause = true;
                     WaitTime(2*dt);
-                    // UnloadLevel(gamestate.currentLevel);
-                    // UnloadLevel(gamestate.levelReference);
+
                     UDLevel();
                     gamestate.gamestep = MAIN_MENU;
                     continue;
@@ -406,15 +360,13 @@ int main(int argc, char** argv) {
                     gamestate.pause = true;
                     RELOAD = true;
                     WaitTime(4*dt);
-                    // UnloadLevel(gamestate.currentLevel);
-                    // UnloadLevel(gamestate.levelReference);
+
                     UDLevel();
                     if (LoadNextLevel()) {
                         RELOAD = false;
                         gamestate.pause = false;
                     } else {
-                        // UnloadLevel(gamestate.currentLevel);
-                        // UnloadLevel(gamestate.levelReference);
+
                         UDLevel();
                         RELOAD = false;
                         gamestate.gamestep = MAIN_MENU;
@@ -423,10 +375,9 @@ int main(int argc, char** argv) {
                 }
 
                 BeginDrawing();
-                // ClearBackground(BLACK);
-                // if (!gamestate.pause) update();
+
                 if (SAFE_DRAWING) {
-                    // cout << "there" << endl;
+
                     draw();
                     DrawFPS(0,0);
                     {
@@ -449,7 +400,7 @@ int main(int argc, char** argv) {
                         clickpoint = GetMousePosition();
                         clickpoint.x /= gamestate.WinX;
                         clickpoint.y /= gamestate.WinY;
-                        // std::cout << clickpoint.x << " " << clickpoint.y << std::endl;
+
                     }
                     for (auto elem: GameMenuUI) {
                         elem->update();
@@ -476,10 +427,7 @@ int main(int argc, char** argv) {
     // SaveLevel(gamestate.levelReference, "levels/l1.lvl");
 
     UDLevel();
-    // gamestate.currentLevel.clear();
-    // UnloadLevel(gamestate.levelReference);
-    // gamestate.levelReference.~Level();
-    // gamestate.currentLevel.~Level();
+
 
     TextureManager::UnloadT();
     
