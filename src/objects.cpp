@@ -920,7 +920,10 @@ void EnemyBehaviour::update(Enemy* self) {
             tick_warned = 1;
             self->chase_target = true;
             self->turn_target = true;
+        } else {
+            see_player_way_updated = false;
         }
+
         if (self->see_player && self->selfitem!=-1) {
             Item* itm = (Item*) gamestate.currentLevel.objects[self->selfitem];
             if (itm->usageDistance > distance(self->position, gamestate.currentLevel.player->position)) {
@@ -932,18 +935,22 @@ void EnemyBehaviour::update(Enemy* self) {
                 return;
             }   
         }
+
         self->chase_target = true;
         self->turn_target = true;
         if (!currentway.empty()) {
             self->target = gamestate.currentLevel.MapPoints[currentway.top()]; 
+            // std::cout << currentway.size() << std::endl;
     
-            if (distance(self->target, self->position) < self->hitCircleSize*2/5) {
+            if (distance(self->target, self->position) < self->hitCircleSize*3/5) {
                 currentway.pop();
-                if (currentway.empty()) {
+                if (currentway.empty() && (self->see_player)) {
                     near = gamestate.currentLevel.nearPoint(self->position);
                     auto playernear = gamestate.currentLevel.nearPoint(gamestate.currentLevel.player->position);
                     currentway = gamestate.currentLevel.way(std::get<1>(near), std::get<1>(playernear));
                     currentway.pop();
+                    if (!currentway.empty()) self->target = gamestate.currentLevel.MapPoints[currentway.top()];
+                    else self->target = gamestate.currentLevel.player->position;
                 }
             }
         } else {
@@ -972,17 +979,24 @@ void EnemyBehaviour::update(Enemy* self) {
                         tick_lost = 1;
                         self->chase_target = false;
                         self->turn_target = false;
-                    }
-                    else {
-                        tick_lost++;
-                        if (tick_lost>3*TICK) {
-                            warned = false;
-                        }
-                    }    
+                    }  
+                }
+                else {
+                    near = gamestate.currentLevel.nearPoint(self->position);
+                    auto lastplayer = gamestate.currentLevel.nearPoint(self->target);
+                    currentway = gamestate.currentLevel.way(std::get<1>(near), std::get<1>(lastplayer));
+                    currentway.pop();
+                    if (!currentway.empty()) self->target = gamestate.currentLevel.MapPoints[currentway.top()];
                 }
             }
         }
 
+        if (lost) {
+            tick_lost++;
+            if (tick_lost>5*TICK) {
+                warned = false;
+            }
+        }
         tick_warned++;
         if (tick_warned > 5*TICK && !self->see_player) warned=false; 
     } 
@@ -1107,6 +1121,7 @@ void Enemy::drawA(unsigned char alfa)  {
     DrawTriangle(dp2, dp1,  dp3, selfColor);
     DrawTriangle(dp3, dp4, dp2,  selfColor);
     DrawLine(drawPosition.x, drawPosition.y, drawPosition.x+size*direction.x, drawPosition.y+size*direction.y, selfColor);
+    if (gamestate.currentLevel.cheats.see_MP) DrawCircleV(projectToCamera(target), 10, RED);
     // DrawCircleLinesV(drawPosition, hitCircleSize, {255, 50, 50, 250});
     if (punching) {
         Point pp1 = (dp1+dp3)/2;
@@ -1204,7 +1219,8 @@ void Enemy::update() {
         see_player = true;
         shocktick = 0;
     }
-    if (see_player || (!behaviour.currentway.empty() && behaviour.selfway.size()!=0) || shocktick!=0 || !firstUpdate) behaviour.update(this);
+    if (see_player || (!behaviour.currentway.empty() && behaviour.selfway.size()!=0) || shocktick!=0 || !firstUpdate
+        || (behaviour.warned) || behaviour.lost) behaviour.update(this);
 
     if (!firstUpdate) firstUpdate = true;
 
