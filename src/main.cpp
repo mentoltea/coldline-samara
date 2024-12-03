@@ -19,6 +19,8 @@ double df = 1/(double)FPS;
 
 std::vector<std::string> GetFilesFromDirExt(const std::string &path, const std::string& extension) {
     std::vector<std::string> result;
+    bool filepathExists = std::filesystem::is_directory(path);
+    if (!filepathExists) return result;
     for (const auto& entry : std::filesystem::directory_iterator(path)) {
         if (entry.path().has_extension() && entry.path().extension()==extension) result.push_back(entry.path().string());
     }
@@ -313,7 +315,7 @@ int main(int argc, char** argv) {
                     listidx++;
                 }
                 char textbuff[16];
-                snprintf(textbuff, 16, "Page %d/%d", currentpage+1, (int)((gamestate.fileLevels.size()-1)/onpagecount + 1));
+                snprintf(textbuff, 16, "Page %d/%d", currentpage+1, (int)(((int)gamestate.fileLevels.size()-1)/onpagecount + 1));
                 DrawText(textbuff, gamestate.WinX*0.06, gamestate.WinY*0.05, 22, GREEN);
 
                 EndDrawing();
